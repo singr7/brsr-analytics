@@ -24,3 +24,19 @@ Status: complete.
   demo plan users, and one Studio organisation/draft; two consecutive runs were stable.
 - Verified 14 offline Python tests, 3 live PostgreSQL integration tests, strict typing,
   linting, TypeScript compilation, and the frontend suite.
+
+## S03 — 2026-08-14
+
+Status: complete.
+
+- Added Argon2 signup/login/email verification and JWT access/refresh rotation with
+  family-wide reuse detection and revocation.
+- Added database-enforced org context, owner/member invites, platform-admin plan changes,
+  composable tier gates, Redis rate limits, and quota scaffolds.
+- Made first-party tracking live with registered batched events, anonymous cookies,
+  login-time attribution, server-side emits, and privacy export/delete.
+- Built signup/login/verify UX, org switching, tier-aware locked navigation, cookie
+  disclosure, and the typed pageview/custom-event beacon.
+- Verified 24 offline Python tests, 4 live database tests, 1 live S03 API flow, strict
+  typing/linting, and 2 frontend tests. Browser bridge initialization was unavailable;
+  live persistence plus the component beacon test served as the recorded fallback.

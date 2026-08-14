@@ -1,53 +1,74 @@
-# HANDOFF — after S02 (2026-08-14)
+# HANDOFF — after S03 (2026-08-14)
 
-## Repo state: `main` · dev services up · migrations head `0001`
+## Repo state: `main` · dev services up · migrations head `0002`
 
 ## Delivered
 
-- Initial Alembic migration and typed SQLAlchemy models for the complete relational spine.
-- Append-only extracted-field versions with same-field/same-filing composite pin integrity;
-  a database trigger permits only `sampled_ok` or `corrected` values to be pinned.
-- Metrics and scores require a `field_version_pins` FK; public materialisations cannot
-  reference raw or unreviewed extraction versions directly.
-- PostgreSQL `vector(1024)` embeddings with cosine IVFFlat index and native monthly
-  event partitions, including a safe default partition.
-- `taxonomy/form_schema.yaml` v0.1.0 with 120 representative fields and an idempotent
-  validated upsert loader.
-- Idempotent seed with 20 companies, 40 filings, deliberate gaps/outliers, demo users
-  at all four tiers, and one Studio organisation/draft.
+- Argon2 password hashing and signed JWT access/refresh pairs. Refresh tokens rotate under
+  a family ID; reuse revokes the whole family and records `reuse_detected=true`.
+- Signup, Mailhog email verification, login, refresh, `/me`, organisation create/invite/
+  accept, platform-admin-only plan changes, and membership-backed org isolation.
+- First-party event ingestion into PostgreSQL partitions with registry validation, batch
+  inserts, anonymous IDs, login-time anon→user stitching, and server-side auth/org emits.
+- Redis per-IP and per-org rate-limit primitives. Plan records now carry NLQ and LLM-token
+  quota scaffolds for later enforcement.
+- Authenticated event export/delete privacy endpoints and a disclosed, one-year first-party
+  `anon_id` cookie. It is `httpOnly=false` deliberately so the browser beacon can use it;
+  `SameSite=Lax`, and production adds `Secure`.
+- Signup/login/verification UI, org switcher, tier-aware locked navigation with explicit
+  upgrade affordances, cookie disclosure, and the typed browser beacon.
 
-## Contracts next session relies on
+## Auth and access contracts
 
-- Tables: `companies`, `filings`, `filing_pages`, `field_defs`, `extracted_fields`,
-  `field_version_pins`, `metrics`, `scores`, `embeddings`, `users`, `orgs`,
-  `memberships`, `plans`, `api_keys`, `events`, `leads`, `deepdive_requests`,
-  `studio_orgs`, `studio_filings`, `studio_answers`, `studio_docs`.
-- Extraction identity: unique `(filing_id, field_key, version)`; versions are positive.
-- Pin identity: unique `(filing_id, field_key)`; `extracted_field_id` must match both and
-  its `qa_status` must be `sampled_ok|corrected`.
-- Public materialisations: `metrics.field_version_pin_id` and
-  `scores.field_version_pin_id` are required FKs to `field_version_pins.id`.
-- Field grammar: `a.<section>.<name>` or `pN.<section>.<name>`; nested KPI groups are
-  allowed, e.g. `p6.e1.energy_total_gj`. Segments are lowercase snake_case.
-- Loader: `load_form_schema(path=None) -> (version, fields)` and
-  `upsert_field_defs(session, path=None) -> count`.
-- Database: `create_engine(settings=None)` and `create_session_factory(engine)`.
-- Commands: `make migrate`; `make seed` (safe to rerun).
-- Event partitions: `events_YYYY_MM`; migration creates -12/+24 months and
-  `events_default`. Choice is documented in `docs/adr/0001-events-partitioning.md`.
+- Dependencies: `optional_user`, `current_user` / `CurrentUser`, `current_org` /
+  `CurrentOrg`, `require_role(*roles)`, `require_plan(*tiers)` in `core/access.py`.
+- Auth routes: `POST /api/auth/signup|verify|login|refresh`, `GET /api/auth/me`.
+- Org routes: `POST /api/orgs`, `/api/orgs/invites`, `/api/orgs/invites/accept`.
+  Org-scoped calls pass `X-Org-ID`; membership is always checked in the database.
+- Plan route: `PATCH /api/admin/orgs/{org_id}/plan`; only `users.is_admin=true`.
+  The seeded research user is the local platform admin.
+- Privacy: `GET /api/privacy/export`, `DELETE /api/privacy/delete`.
+- Tier doctrine: `explore|pro|studio|research`; feature routes compose
+  `require_plan(...)`. Locked items remain visible in the frontend.
 
-## Sharp edges
+## Tracking contracts
 
-- Demo password hashes are placeholders until S03 implements Argon2 authentication.
-- Event-partition maintenance scheduling is a production-infrastructure concern for S18;
-  the default partition safely accepts dates outside the pre-created window meanwhile.
-- Seed sources and values are explicitly synthetic and must never be presented as real.
+- Beacon: `track(name, properties)` and `trackPageview()` in `frontend/src/lib/track.ts`.
+  Requests include credentials and an access token when present; the server accepts at most
+  50 registered events per batch.
+- Live registry: `demo_chart_viewed`, `page_viewed`, `signup_completed`,
+  `login_completed`, `org_created`, `viewed_company`, `viewed_gap_panel`, `nlq_asked`,
+  `export_generated`, `studio_gap_report`, `pricing_viewed`, `deepdive_requested`.
+- Merge semantics: login updates only rows matching the browser's `anon_id` whose
+  `user_id IS NULL`; already-attributed history is never reassigned.
+
+## Verification
+
+- `make verify`: 25 Python tests passed, 5 opt-in integration tests skipped; TypeScript,
+  ESLint, and 2 frontend tests passed.
+- Live PostgreSQL suite: 4 passed, including partition routing, pin integrity, cross-org
+  isolation, and anonymous-history merge.
+- Live S03 API suite: passed refresh reuse, isolation, beacon persistence, privacy, and
+  admin-plan behavior.
+- Migration `0002` applied; an empty-database `0001→0002` chain passed and its temporary
+  database was removed; the seed ran twice without changing inventory.
+- In-app browser initialization was unavailable. The real API persistence test and browser
+  component beacon test are the recorded fallback; visual browser QA remains a manual check.
+
+## Demo credentials
+
+- `demo+{explore|pro|studio|research}@brsrlens.local`
+- Password: `DemoPassword123!`
+- Demo Studio org: `demo-studio`; Studio user is owner. Research user is platform admin.
 
 ## Env/secrets added
 
-None.
+`JWT_SECRET`, `JWT_ISSUER`, token lifetimes, SMTP host/port/from, `FRONTEND_URL`,
+`AUTH_EXPOSE_VERIFICATION_TOKEN`, and public/org rate limits. Production startup rejects a
+default or sub-32-character JWT secret. Set token exposure to `false` outside local dev.
 
-## Next: S03 — expected entry state
+## Next: S04 — expected entry state
 
-Run `make up && make migrate && make seed`; build auth and live event persistence on the
-existing users/orgs/plans/memberships/events contracts without weakening pin invariants.
+Build acquisition on the authenticated service spine. Public acquisition/status routes may
+use the per-IP limiter; operator/org routes must use `CurrentOrg` plus the appropriate role
+and plan gate. Emit only names already registered in `events.yaml`.
