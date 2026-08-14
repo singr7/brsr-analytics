@@ -33,6 +33,7 @@ class Company(UUIDPrimaryKey, Timestamped, Base):
     sector: Mapped[str] = mapped_column(String(100), index=True)
     industry: Mapped[str] = mapped_column(String(160))
     mcap_band: Mapped[str] = mapped_column(String(16), index=True)
+    ir_url: Mapped[str | None] = mapped_column(Text)
 
 
 class Filing(UUIDPrimaryKey, Timestamped, Base):
@@ -45,8 +46,23 @@ class Filing(UUIDPrimaryKey, Timestamped, Base):
     fy: Mapped[int] = mapped_column(Integer)
     source: Mapped[str] = mapped_column(String(16))
     s3_raw: Mapped[str | None] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String(32), default="acquired")
-    acquired_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(32), default="missing")
+    acquired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    source_adapter: Mapped[str | None] = mapped_column(String(64))
+    source_url: Mapped[str | None] = mapped_column(Text)
+    filename: Mapped[str | None] = mapped_column(String(255))
+    checksum_sha256: Mapped[str | None] = mapped_column(String(64), index=True)
+    acquisition_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    acquisition_error: Mapped[str | None] = mapped_column(Text)
+
+
+class AcquisitionCursor(UUIDPrimaryKey, Timestamped, Base):
+    __tablename__ = "acquisition_cursors"
+    __table_args__ = (UniqueConstraint("source_adapter", "company_id", "fy"),)
+    source_adapter: Mapped[str] = mapped_column(String(64))
+    company_id: Mapped[UUID] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"))
+    fy: Mapped[int] = mapped_column(Integer)
+    cursor_json: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
 
 
 class FilingPage(UUIDPrimaryKey, Base):

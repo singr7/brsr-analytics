@@ -34,6 +34,7 @@ services:
       - ./api:/app/api
       - ./prompts:/app/prompts:ro
       - ./events.yaml:/app/events.yaml:ro
+      - ./.data:/app/.data
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
@@ -53,6 +54,7 @@ services:
       - ./worker:/app/worker
       - ./prompts:/app/prompts:ro
       - ./events.yaml:/app/events.yaml:ro
+      - ./.data:/app/.data
     depends_on:
       redis:
         condition: service_healthy

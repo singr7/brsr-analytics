@@ -11,6 +11,7 @@ from api.app.services.publication import ExtractionVersion, latest_publishable
 def test_relational_spine_is_complete() -> None:
     expected = {
         "companies",
+        "acquisition_cursors",
         "filings",
         "filing_pages",
         "field_defs",

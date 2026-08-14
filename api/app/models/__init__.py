@@ -10,6 +10,7 @@ from api.app.models.access import (
 )
 from api.app.models.base import Base
 from api.app.models.corpus import (
+    AcquisitionCursor,
     Company,
     Embedding,
     ExtractedField,
@@ -24,6 +25,7 @@ from api.app.models.engagement import DeepdiveRequest, Event, Lead
 from api.app.models.studio import StudioAnswer, StudioDoc, StudioFiling, StudioOrg
 
 __all__ = [
+    "AcquisitionCursor",
     "ApiKey",
     "Base",
     "Company",

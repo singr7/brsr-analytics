@@ -1,0 +1,4 @@
+cin,name,ticker,exchange,nic_code,industry,market_cap
+L00001MH2000PLC000001,Alpha Energy Limited,ALPHA,NSE,35101,Electric power generation,900
+L00002MH2000PLC000002,Beta Software Limited,BETA,NSE,62010,Software development,1100
+L00003MH2000PLC000003,Gamma Bank Limited,GAMMA,BSE,64191,Banking,1000
