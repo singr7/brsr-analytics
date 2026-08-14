@@ -14,4 +14,3 @@ def test_unregistered_event_fails() -> None:
     tracker = Tracker(InMemoryEventSink())
     with pytest.raises(ValueError, match="Unregistered event"):
         tracker.track("typo_event")
-

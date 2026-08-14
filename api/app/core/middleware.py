@@ -18,4 +18,3 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
             return response
         finally:
             structlog.contextvars.clear_contextvars()
-

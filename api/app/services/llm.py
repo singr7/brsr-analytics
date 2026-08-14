@@ -116,4 +116,3 @@ def get_llm(settings: Settings | None = None) -> LLMClient:
     if resolved.llm_provider == "fake":
         return FakeLLM(resolved.llm_fixture_case)
     return OpenAICompatibleLLM(resolved)
-

@@ -39,10 +39,10 @@ fmt:
 	pnpm --dir frontend exec eslint src --ext ts,tsx --fix
 
 migrate:
-	@echo "not yet: S02"
+	$(PYTHON) -m alembic upgrade head
 
 seed:
-	@echo "not yet: S02"
+	$(PYTHON) -m api.app.db.seed
 
 rebuild-metrics:
 	@echo "not yet: S07"
@@ -52,4 +52,3 @@ fetch-testdata:
 
 bench-extraction:
 	@echo "not yet: S06"
-

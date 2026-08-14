@@ -13,4 +13,3 @@ class HealthResponse(BaseModel):
     database: DependencyHealth
     redis: DependencyHealth
     llm_config: DependencyHealth
-

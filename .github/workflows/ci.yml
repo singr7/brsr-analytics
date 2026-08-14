@@ -44,10 +44,16 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: uv sync --frozen --extra dev
       - run: pnpm --dir frontend install --frozen-lockfile
+      - run: make migrate
+        env:
+          DATABASE_URL: postgresql+asyncpg://brsrlens:brsrlens@localhost:5432/brsrlens
+      - run: make seed
+        env:
+          DATABASE_URL: postgresql+asyncpg://brsrlens:brsrlens@localhost:5432/brsrlens
       - run: make verify
         env:
           DATABASE_URL: postgresql+asyncpg://brsrlens:brsrlens@localhost:5432/brsrlens
           REDIS_URL: redis://localhost:6379/0
           LLM_PROVIDER: fake
           LLM_NETWORK_ENABLED: "false"
-
+          BRSRLENS_DB_TESTS: "true"

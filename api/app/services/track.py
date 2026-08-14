@@ -38,4 +38,3 @@ class Tracker:
         if name not in self.registered:
             raise ValueError(f"Unregistered event: {name}")
         self.sink.emit(Event(name=name, properties=properties or {}))
-

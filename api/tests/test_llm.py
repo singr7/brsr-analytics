@@ -42,4 +42,3 @@ def test_factory_selects_fake() -> None:
 def test_prompt_fixture_naming_contract() -> None:
     fixture = Path("prompts/fixtures/demo_summary@v1/default.json")
     assert fixture.is_file()
-

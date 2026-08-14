@@ -13,4 +13,3 @@ async def healthz(response: Response, settings: Settings = Depends(get_settings)
     if result.status == "degraded":
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     return result
-
