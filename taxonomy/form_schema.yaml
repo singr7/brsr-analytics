@@ -1,0 +1,1083 @@
+schema_version: "0.1.0"
+fields:
+  - field_key: a.basics.company_name
+    principle: A
+    section: basics
+    label: Name of the listed entity
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_company_name
+  - field_key: a.basics.cin
+    principle: A
+    section: basics
+    label: Corporate identity number
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_cin
+  - field_key: a.basics.year_of_incorporation
+    principle: A
+    section: basics
+    label: Year of incorporation
+    dtype: integer
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_year_of_incorporation
+  - field_key: a.basics.registered_office
+    principle: A
+    section: basics
+    label: Registered office address
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_registered_office
+  - field_key: a.basics.corporate_office
+    principle: A
+    section: basics
+    label: Corporate office address
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_corporate_office
+  - field_key: a.basics.email
+    principle: A
+    section: basics
+    label: Corporate email
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_email
+  - field_key: a.basics.telephone
+    principle: A
+    section: basics
+    label: Corporate telephone
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_telephone
+  - field_key: a.basics.website
+    principle: A
+    section: basics
+    label: Corporate website
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_website
+  - field_key: a.basics.financial_year
+    principle: A
+    section: basics
+    label: Reporting financial year
+    dtype: integer
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_financial_year
+  - field_key: a.basics.stock_exchange
+    principle: A
+    section: basics
+    label: Stock exchange
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_stock_exchange
+  - field_key: a.basics.paid_up_capital_inr
+    principle: A
+    section: basics
+    label: Paid-up capital
+    dtype: number
+    unit_family: currency
+    unit: INR
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_paid_up_capital_inr
+  - field_key: a.basics.contact_name
+    principle: A
+    section: basics
+    label: BRSR contact name
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_contact_name
+  - field_key: a.basics.contact_email
+    principle: A
+    section: basics
+    label: BRSR contact email
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_contact_email
+  - field_key: a.basics.reporting_boundary
+    principle: A
+    section: basics
+    label: Reporting boundary
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_reporting_boundary
+  - field_key: a.basics.assurance_provider
+    principle: A
+    section: basics
+    label: Assurance provider
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_assurance_provider
+  - field_key: a.basics.assurance_standard
+    principle: A
+    section: basics
+    label: Assurance standard
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_assurance_standard
+  - field_key: a.basics.assurance_scope
+    principle: A
+    section: basics
+    label: Assurance scope
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_assurance_scope
+  - field_key: a.basics.turnover_inr
+    principle: A
+    section: basics
+    label: Turnover
+    dtype: number
+    unit_family: currency
+    unit: INR
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_turnover_inr
+  - field_key: a.basics.net_worth_inr
+    principle: A
+    section: basics
+    label: Net worth
+    dtype: number
+    unit_family: currency
+    unit: INR
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_net_worth_inr
+  - field_key: a.basics.locations_national
+    principle: A
+    section: basics
+    label: National locations
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_locations_national
+  - field_key: a.basics.locations_international
+    principle: A
+    section: basics
+    label: International locations
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_locations_international
+  - field_key: a.basics.markets_national
+    principle: A
+    section: basics
+    label: National markets served
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_markets_national
+  - field_key: a.basics.markets_international
+    principle: A
+    section: basics
+    label: International markets served
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_markets_international
+  - field_key: a.basics.employees_total
+    principle: A
+    section: basics
+    label: Total employees
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_employees_total
+  - field_key: a.basics.workers_total
+    principle: A
+    section: basics
+    label: Total workers
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_workers_total
+  - field_key: a.basics.holding_company
+    principle: A
+    section: basics
+    label: Holding company
+    dtype: text
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_holding_company
+  - field_key: a.basics.subsidiary_count
+    principle: A
+    section: basics
+    label: Subsidiary count
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_subsidiary_count
+  - field_key: a.basics.associate_count
+    principle: A
+    section: basics
+    label: Associate company count
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_associate_count
+  - field_key: a.basics.csr_applicable
+    principle: A
+    section: basics
+    label: CSR provisions applicable
+    dtype: boolean
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_csr_applicable
+  - field_key: a.basics.complaints_grievances
+    principle: A
+    section: basics
+    label: Sustainability grievances
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_a_basics_complaints_grievances
+  - field_key: p3.workforce.employees_permanent_male
+    principle: P3
+    section: workforce
+    label: Permanent male employees
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_employees_permanent_male
+  - field_key: p3.workforce.employees_permanent_female
+    principle: P3
+    section: workforce
+    label: Permanent female employees
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_employees_permanent_female
+  - field_key: p3.workforce.employees_permanent_other
+    principle: P3
+    section: workforce
+    label: Permanent other-gender employees
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_employees_permanent_other
+  - field_key: p3.workforce.employees_other_male
+    principle: P3
+    section: workforce
+    label: Other male employees
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_employees_other_male
+  - field_key: p3.workforce.employees_other_female
+    principle: P3
+    section: workforce
+    label: Other female employees
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_employees_other_female
+  - field_key: p3.workforce.employees_other_other
+    principle: P3
+    section: workforce
+    label: Other other-gender employees
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_employees_other_other
+  - field_key: p3.workforce.workers_permanent_male
+    principle: P3
+    section: workforce
+    label: Permanent male workers
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_workers_permanent_male
+  - field_key: p3.workforce.workers_permanent_female
+    principle: P3
+    section: workforce
+    label: Permanent female workers
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_workers_permanent_female
+  - field_key: p3.workforce.workers_permanent_other
+    principle: P3
+    section: workforce
+    label: Permanent other-gender workers
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_workers_permanent_other
+  - field_key: p3.workforce.workers_other_male
+    principle: P3
+    section: workforce
+    label: Other male workers
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_workers_other_male
+  - field_key: p3.workforce.workers_other_female
+    principle: P3
+    section: workforce
+    label: Other female workers
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_workers_other_female
+  - field_key: p3.workforce.workers_other_other
+    principle: P3
+    section: workforce
+    label: Other other-gender workers
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_workers_other_other
+  - field_key: p3.workforce.turnover_employee_male_pct
+    principle: P3
+    section: workforce
+    label: Male employee turnover
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_turnover_employee_male_pct
+  - field_key: p3.workforce.turnover_employee_female_pct
+    principle: P3
+    section: workforce
+    label: Female employee turnover
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_turnover_employee_female_pct
+  - field_key: p3.workforce.turnover_worker_male_pct
+    principle: P3
+    section: workforce
+    label: Male worker turnover
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_turnover_worker_male_pct
+  - field_key: p3.workforce.turnover_worker_female_pct
+    principle: P3
+    section: workforce
+    label: Female worker turnover
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_turnover_worker_female_pct
+  - field_key: p3.workforce.health_insurance_employees_pct
+    principle: P3
+    section: workforce
+    label: Employees covered by health insurance
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_health_insurance_employees_pct
+  - field_key: p3.workforce.health_insurance_workers_pct
+    principle: P3
+    section: workforce
+    label: Workers covered by health insurance
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_health_insurance_workers_pct
+  - field_key: p3.workforce.accident_insurance_employees_pct
+    principle: P3
+    section: workforce
+    label: Employees covered by accident insurance
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_accident_insurance_employees_pct
+  - field_key: p3.workforce.accident_insurance_workers_pct
+    principle: P3
+    section: workforce
+    label: Workers covered by accident insurance
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_accident_insurance_workers_pct
+  - field_key: p3.workforce.maternity_benefit_employees_pct
+    principle: P3
+    section: workforce
+    label: Employees receiving maternity benefits
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_maternity_benefit_employees_pct
+  - field_key: p3.workforce.paternity_benefit_employees_pct
+    principle: P3
+    section: workforce
+    label: Employees receiving paternity benefits
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_paternity_benefit_employees_pct
+  - field_key: p3.workforce.return_to_work_maternity_pct
+    principle: P3
+    section: workforce
+    label: Return-to-work after maternity leave
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_return_to_work_maternity_pct
+  - field_key: p3.workforce.return_to_work_paternity_pct
+    principle: P3
+    section: workforce
+    label: Return-to-work after paternity leave
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_return_to_work_paternity_pct
+  - field_key: p3.workforce.safety_incidents_employees
+    principle: P3
+    section: workforce
+    label: Employee safety incidents
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_safety_incidents_employees
+  - field_key: p3.workforce.safety_incidents_workers
+    principle: P3
+    section: workforce
+    label: Worker safety incidents
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_safety_incidents_workers
+  - field_key: p3.workforce.fatalities_employees
+    principle: P3
+    section: workforce
+    label: Employee fatalities
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_fatalities_employees
+  - field_key: p3.workforce.fatalities_workers
+    principle: P3
+    section: workforce
+    label: Worker fatalities
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_fatalities_workers
+  - field_key: p3.workforce.safety_training_employees_pct
+    principle: P3
+    section: workforce
+    label: Employees receiving safety training
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_safety_training_employees_pct
+  - field_key: p3.workforce.safety_training_workers_pct
+    principle: P3
+    section: workforce
+    label: Workers receiving safety training
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p3_workforce_safety_training_workers_pct
+  - field_key: p5.human_rights.training_employees_pct
+    principle: P5
+    section: human_rights
+    label: Employees receiving human-rights training
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_training_employees_pct
+  - field_key: p5.human_rights.training_workers_pct
+    principle: P5
+    section: human_rights
+    label: Workers receiving human-rights training
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_training_workers_pct
+  - field_key: p5.human_rights.minimum_wage_employees_pct
+    principle: P5
+    section: human_rights
+    label: Employees paid at least minimum wage
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_minimum_wage_employees_pct
+  - field_key: p5.human_rights.minimum_wage_workers_pct
+    principle: P5
+    section: human_rights
+    label: Workers paid at least minimum wage
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_minimum_wage_workers_pct
+  - field_key: p5.human_rights.complaints_sexual_harassment
+    principle: P5
+    section: human_rights
+    label: Sexual-harassment complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_sexual_harassment
+  - field_key: p5.human_rights.complaints_discrimination
+    principle: P5
+    section: human_rights
+    label: Discrimination complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_discrimination
+  - field_key: p5.human_rights.complaints_child_labour
+    principle: P5
+    section: human_rights
+    label: Child-labour complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_child_labour
+  - field_key: p5.human_rights.complaints_forced_labour
+    principle: P5
+    section: human_rights
+    label: Forced-labour complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_forced_labour
+  - field_key: p5.human_rights.complaints_wages
+    principle: P5
+    section: human_rights
+    label: Wage complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_wages
+  - field_key: p5.human_rights.complaints_other
+    principle: P5
+    section: human_rights
+    label: Other human-rights complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_other
+  - field_key: p5.human_rights.complaints_pending_sexual_harassment
+    principle: P5
+    section: human_rights
+    label: Pending sexual-harassment complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_pending_sexual_harassment
+  - field_key: p5.human_rights.complaints_pending_discrimination
+    principle: P5
+    section: human_rights
+    label: Pending discrimination complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_pending_discrimination
+  - field_key: p5.human_rights.complaints_pending_child_labour
+    principle: P5
+    section: human_rights
+    label: Pending child-labour complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_pending_child_labour
+  - field_key: p5.human_rights.complaints_pending_forced_labour
+    principle: P5
+    section: human_rights
+    label: Pending forced-labour complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_pending_forced_labour
+  - field_key: p5.human_rights.complaints_pending_wages
+    principle: P5
+    section: human_rights
+    label: Pending wage complaints
+    dtype: integer
+    unit_family: count
+    unit: count
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_complaints_pending_wages
+  - field_key: p5.human_rights.assessment_plants_pct
+    principle: P5
+    section: human_rights
+    label: Plants assessed for human rights
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_assessment_plants_pct
+  - field_key: p5.human_rights.assessment_offices_pct
+    principle: P5
+    section: human_rights
+    label: Offices assessed for human rights
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_assessment_offices_pct
+  - field_key: p5.human_rights.value_chain_assessed_pct
+    principle: P5
+    section: human_rights
+    label: Value-chain partners assessed
+    dtype: number
+    unit_family: percentage
+    unit: percent
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_value_chain_assessed_pct
+  - field_key: p5.human_rights.human_rights_policy
+    principle: P5
+    section: human_rights
+    label: Human-rights policy available
+    dtype: boolean
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_human_rights_policy
+  - field_key: p5.human_rights.grievance_mechanism
+    principle: P5
+    section: human_rights
+    label: Human-rights grievance mechanism available
+    dtype: boolean
+    unit_family: null
+    unit: null
+    core_kpi: false
+    xbrl_concept: BRSR_p5_human_rights_grievance_mechanism
+  - field_key: p6.e1.energy_renewable_gj
+    principle: P6
+    section: environment
+    label: Renewable energy consumed
+    dtype: number
+    unit_family: energy
+    unit: GJ
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e1_energy_renewable_gj
+  - field_key: p6.e1.energy_nonrenewable_gj
+    principle: P6
+    section: environment
+    label: Non-renewable energy consumed
+    dtype: number
+    unit_family: energy
+    unit: GJ
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e1_energy_nonrenewable_gj
+  - field_key: p6.e1.energy_total_gj
+    principle: P6
+    section: environment
+    label: Total energy consumed
+    dtype: number
+    unit_family: energy
+    unit: GJ
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e1_energy_total_gj
+  - field_key: p6.e1.energy_intensity_turnover
+    principle: P6
+    section: environment
+    label: Energy intensity per turnover
+    dtype: number
+    unit_family: intensity
+    unit: GJ/INR crore
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e1_energy_intensity_turnover
+  - field_key: p6.e1.energy_intensity_output
+    principle: P6
+    section: environment
+    label: Energy intensity per physical output
+    dtype: number
+    unit_family: intensity
+    unit: GJ/unit
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e1_energy_intensity_output
+  - field_key: p6.e1.energy_assured
+    principle: P6
+    section: environment
+    label: Energy data externally assured
+    dtype: boolean
+    unit_family: null
+    unit: null
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e1_energy_assured
+  - field_key: p6.e2.water_surface_kl
+    principle: P6
+    section: environment
+    label: Surface water withdrawal
+    dtype: number
+    unit_family: volume
+    unit: kL
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_surface_kl
+  - field_key: p6.e2.water_ground_kl
+    principle: P6
+    section: environment
+    label: Groundwater withdrawal
+    dtype: number
+    unit_family: volume
+    unit: kL
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_ground_kl
+  - field_key: p6.e2.water_third_party_kl
+    principle: P6
+    section: environment
+    label: Third-party water withdrawal
+    dtype: number
+    unit_family: volume
+    unit: kL
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_third_party_kl
+  - field_key: p6.e2.water_seawater_kl
+    principle: P6
+    section: environment
+    label: Seawater withdrawal
+    dtype: number
+    unit_family: volume
+    unit: kL
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_seawater_kl
+  - field_key: p6.e2.water_other_kl
+    principle: P6
+    section: environment
+    label: Other water withdrawal
+    dtype: number
+    unit_family: volume
+    unit: kL
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_other_kl
+  - field_key: p6.e2.water_total_kl
+    principle: P6
+    section: environment
+    label: Total water withdrawal
+    dtype: number
+    unit_family: volume
+    unit: kL
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_total_kl
+  - field_key: p6.e2.water_consumption_kl
+    principle: P6
+    section: environment
+    label: Total water consumption
+    dtype: number
+    unit_family: volume
+    unit: kL
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_consumption_kl
+  - field_key: p6.e2.water_intensity_turnover
+    principle: P6
+    section: environment
+    label: Water intensity per turnover
+    dtype: number
+    unit_family: intensity
+    unit: kL/INR crore
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_intensity_turnover
+  - field_key: p6.e2.water_intensity_output
+    principle: P6
+    section: environment
+    label: Water intensity per physical output
+    dtype: number
+    unit_family: intensity
+    unit: kL/unit
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_intensity_output
+  - field_key: p6.e2.water_assured
+    principle: P6
+    section: environment
+    label: Water data externally assured
+    dtype: boolean
+    unit_family: null
+    unit: null
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e2_water_assured
+  - field_key: p6.e3.scope1_tco2e
+    principle: P6
+    section: environment
+    label: Scope 1 GHG emissions
+    dtype: number
+    unit_family: emissions
+    unit: tCO2e
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e3_scope1_tco2e
+  - field_key: p6.e3.scope2_tco2e
+    principle: P6
+    section: environment
+    label: Scope 2 GHG emissions
+    dtype: number
+    unit_family: emissions
+    unit: tCO2e
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e3_scope2_tco2e
+  - field_key: p6.e3.scope12_total_tco2e
+    principle: P6
+    section: environment
+    label: Total Scope 1 and 2 emissions
+    dtype: number
+    unit_family: emissions
+    unit: tCO2e
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e3_scope12_total_tco2e
+  - field_key: p6.e3.ghg_intensity_turnover
+    principle: P6
+    section: environment
+    label: GHG intensity per turnover
+    dtype: number
+    unit_family: intensity
+    unit: tCO2e/INR crore
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e3_ghg_intensity_turnover
+  - field_key: p6.e3.ghg_intensity_output
+    principle: P6
+    section: environment
+    label: GHG intensity per physical output
+    dtype: number
+    unit_family: intensity
+    unit: tCO2e/unit
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e3_ghg_intensity_output
+  - field_key: p6.e3.scope3_tco2e
+    principle: P6
+    section: environment
+    label: Scope 3 GHG emissions
+    dtype: number
+    unit_family: emissions
+    unit: tCO2e
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e3_scope3_tco2e
+  - field_key: p6.e3.ghg_assured
+    principle: P6
+    section: environment
+    label: GHG data externally assured
+    dtype: boolean
+    unit_family: null
+    unit: null
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e3_ghg_assured
+  - field_key: p6.e4.ozone_depleting_mt
+    principle: P6
+    section: environment
+    label: Ozone-depleting substances
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e4_ozone_depleting_mt
+  - field_key: p6.e4.nox_mt
+    principle: P6
+    section: environment
+    label: Nitrogen oxides
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e4_nox_mt
+  - field_key: p6.e4.sox_mt
+    principle: P6
+    section: environment
+    label: Sulphur oxides
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e4_sox_mt
+  - field_key: p6.e4.pm_mt
+    principle: P6
+    section: environment
+    label: Particulate matter
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e4_pm_mt
+  - field_key: p6.e4.voc_mt
+    principle: P6
+    section: environment
+    label: Volatile organic compounds
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e4_voc_mt
+  - field_key: p6.e5.waste_plastic_mt
+    principle: P6
+    section: environment
+    label: Plastic waste generated
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_plastic_mt
+  - field_key: p6.e5.waste_electronic_mt
+    principle: P6
+    section: environment
+    label: E-waste generated
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_electronic_mt
+  - field_key: p6.e5.waste_biomedical_mt
+    principle: P6
+    section: environment
+    label: Biomedical waste generated
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_biomedical_mt
+  - field_key: p6.e5.waste_construction_mt
+    principle: P6
+    section: environment
+    label: Construction waste generated
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_construction_mt
+  - field_key: p6.e5.waste_battery_mt
+    principle: P6
+    section: environment
+    label: Battery waste generated
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_battery_mt
+  - field_key: p6.e5.waste_radioactive_mt
+    principle: P6
+    section: environment
+    label: Radioactive waste generated
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_radioactive_mt
+  - field_key: p6.e5.waste_other_hazardous_mt
+    principle: P6
+    section: environment
+    label: Other hazardous waste generated
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_other_hazardous_mt
+  - field_key: p6.e5.waste_other_nonhazardous_mt
+    principle: P6
+    section: environment
+    label: Other non-hazardous waste generated
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_other_nonhazardous_mt
+  - field_key: p6.e5.waste_recycled_mt
+    principle: P6
+    section: environment
+    label: Waste recycled
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_recycled_mt
+  - field_key: p6.e5.waste_reused_mt
+    principle: P6
+    section: environment
+    label: Waste reused
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_reused_mt
+  - field_key: p6.e5.waste_landfilled_mt
+    principle: P6
+    section: environment
+    label: Waste sent to landfill
+    dtype: number
+    unit_family: mass
+    unit: MT
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_landfilled_mt
+  - field_key: p6.e5.waste_assured
+    principle: P6
+    section: environment
+    label: Waste data externally assured
+    dtype: boolean
+    unit_family: null
+    unit: null
+    core_kpi: true
+    xbrl_concept: BRSR_p6_e5_waste_assured
+
