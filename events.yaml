@@ -1,0 +1,5 @@
+version: 1
+events:
+  demo_chart_viewed:
+    description: Demo dashboard chart was displayed.
+
