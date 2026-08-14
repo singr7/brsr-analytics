@@ -1,0 +1,53 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: brsrlens
+          POSTGRES_USER: brsrlens
+          POSTGRES_PASSWORD: brsrlens
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U brsrlens"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.5.x"
+          enable-cache: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: uv sync --frozen --extra dev
+      - run: pnpm --dir frontend install --frozen-lockfile
+      - run: make verify
+        env:
+          DATABASE_URL: postgresql+asyncpg://brsrlens:brsrlens@localhost:5432/brsrlens
+          REDIS_URL: redis://localhost:6379/0
+          LLM_PROVIDER: fake
+          LLM_NETWORK_ENABLED: "false"
+
