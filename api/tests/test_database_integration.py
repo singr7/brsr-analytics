@@ -6,7 +6,8 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
-from api.app.db.session import create_engine
+from api.app.db.session import create_engine, create_session_factory
+from api.app.services.track import merge_anonymous_history
 
 pytestmark = pytest.mark.skipif(
     os.getenv("BRSRLENS_DB_TESTS") != "true",
@@ -70,8 +71,9 @@ async def test_database_rejects_pin_to_unreviewed_version() -> None:
     async with engine.connect() as connection:
         transaction = await connection.begin()
         candidate = (
-            await connection.execute(
-                text("""
+            (
+                await connection.execute(
+                    text("""
                     SELECT p.id AS pin_id, candidate.id AS candidate_id
                     FROM field_version_pins p
                     JOIN extracted_fields published ON published.id = p.extracted_field_id
@@ -81,8 +83,11 @@ async def test_database_rejects_pin_to_unreviewed_version() -> None:
                     WHERE candidate.version = 2 AND candidate.qa_status = 'unreviewed'
                     LIMIT 1
                 """)
+                )
             )
-        ).mappings().one()
+            .mappings()
+            .one()
+        )
         with pytest.raises(DBAPIError, match="only QA-passed extracted fields may be pinned"):
             await connection.execute(
                 text("""
@@ -92,4 +97,38 @@ async def test_database_rejects_pin_to_unreviewed_version() -> None:
                 candidate,
             )
         await transaction.rollback()
+    await engine.dispose()
+
+
+async def test_cross_org_membership_isolation_and_anon_event_merge() -> None:
+    engine = create_engine()
+    factory = create_session_factory(engine)
+    event_id, anon_id, session_id = uuid4(), uuid4(), uuid4()
+    async with factory() as session:
+        studio_user_id = await session.scalar(
+            text("SELECT id FROM users WHERE email = 'demo+studio@brsrlens.local'")
+        )
+        explore_user_id = await session.scalar(
+            text("SELECT id FROM users WHERE email = 'demo+explore@brsrlens.local'")
+        )
+        org_id = await session.scalar(text("SELECT id FROM orgs WHERE slug = 'demo-studio'"))
+        assert studio_user_id and explore_user_id and org_id
+        leaked = await session.scalar(
+            text("SELECT count(*) FROM memberships WHERE user_id = :user_id AND org_id = :org_id"),
+            {"user_id": explore_user_id, "org_id": org_id},
+        )
+        assert leaked == 0
+        await session.execute(
+            text("""
+                INSERT INTO events (id, anon_id, session_id, name, props_json, ts)
+                VALUES (:id, :anon_id, :session_id, 'page_viewed', '{}'::jsonb, now())
+            """),
+            {"id": event_id, "anon_id": anon_id, "session_id": session_id},
+        )
+        assert await merge_anonymous_history(session, anon_id, studio_user_id) == 1
+        merged_user = await session.scalar(
+            text("SELECT user_id FROM events WHERE id = :id"), {"id": event_id}
+        )
+        assert merged_user == studio_user_id
+        await session.rollback()
     await engine.dispose()

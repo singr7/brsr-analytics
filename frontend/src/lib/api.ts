@@ -7,7 +7,7 @@ export interface HealthResponse {
   llm_config: { status: ServiceState; detail: string | null }
 }
 
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+export const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
 export async function fetchHealth(): Promise<HealthResponse> {
   const response = await fetch(`${apiUrl}/healthz`)
@@ -15,4 +15,3 @@ export async function fetchHealth(): Promise<HealthResponse> {
   if (!response.ok && response.status !== 503) throw new Error('Health check failed')
   return body
 }
-

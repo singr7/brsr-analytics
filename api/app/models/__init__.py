@@ -1,4 +1,13 @@
-from api.app.models.access import ApiKey, Membership, Org, Plan, User
+from api.app.models.access import (
+    ApiKey,
+    EmailVerification,
+    Membership,
+    Org,
+    OrgInvite,
+    Plan,
+    RefreshToken,
+    User,
+)
 from api.app.models.base import Base
 from api.app.models.corpus import (
     Company,
@@ -20,6 +29,7 @@ __all__ = [
     "Company",
     "DeepdiveRequest",
     "Embedding",
+    "EmailVerification",
     "Event",
     "ExtractedField",
     "FieldDef",
@@ -30,7 +40,9 @@ __all__ = [
     "Membership",
     "Metric",
     "Org",
+    "OrgInvite",
     "Plan",
+    "RefreshToken",
     "Score",
     "StudioAnswer",
     "StudioDoc",

@@ -23,6 +23,7 @@ from api.app.models import (
     StudioOrg,
     User,
 )
+from api.app.services.auth import hash_password
 
 COMPANIES = [
     ("Aster Steel", "ASTSTEEL", "Metals", "Steel", "large"),
@@ -47,6 +48,12 @@ COMPANIES = [
     ("Terra Tyres", "TERTYRE", "Automotive", "Tyres", "small"),
 ]
 TIERS = ("explore", "pro", "studio", "research")
+PLAN_LIMITS = {
+    "explore": '{"nlq_monthly": 10, "llm_tokens_monthly": 10000}',
+    "pro": '{"nlq_monthly": 500, "llm_tokens_monthly": 500000}',
+    "studio": '{"nlq_monthly": 200, "llm_tokens_monthly": 1000000}',
+    "research": '{"nlq_monthly": 2000, "llm_tokens_monthly": 2000000}',
+}
 FISCAL_YEARS = (2024, 2025)
 
 
@@ -114,17 +121,18 @@ async def seed_access(session: AsyncSession) -> None:
     await _upsert(
         session,
         Plan,
-        [{"tier": tier, "name": tier.title(), "limits_json": "{}"} for tier in TIERS],
+        [{"tier": tier, "name": tier.title(), "limits_json": PLAN_LIMITS[tier]} for tier in TIERS],
         "tier",
     )
     users = [
         {
             "id": stable_id("user", tier),
             "email": f"demo+{tier}@brsrlens.local",
-            "password_hash": "auth-lands-in-s03",
+            "password_hash": hash_password("DemoPassword123!"),
             "display_name": f"{tier.title()} Demo",
             "email_verified_at": datetime.now(UTC),
             "plan_tier": tier,
+            "is_admin": tier == "research",
         }
         for tier in TIERS
     ]

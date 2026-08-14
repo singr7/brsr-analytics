@@ -2,4 +2,25 @@ version: 1
 events:
   demo_chart_viewed:
     description: Demo dashboard chart was displayed.
-
+  page_viewed:
+    description: A first-party pageview was recorded.
+  signup_completed:
+    description: A new user completed signup.
+  login_completed:
+    description: A registered user logged in.
+  org_created:
+    description: A user created an organisation.
+  viewed_company:
+    description: A company profile was viewed.
+  viewed_gap_panel:
+    description: A disclosure gap panel was viewed.
+  nlq_asked:
+    description: A natural-language analytics question was asked.
+  export_generated:
+    description: An analytics export was generated.
+  studio_gap_report:
+    description: A Studio document-gap report was generated.
+  pricing_viewed:
+    description: The pricing page was viewed.
+  deepdive_requested:
+    description: An expert deep-dive was requested.
