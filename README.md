@@ -40,3 +40,20 @@ PHASE 3  S13 questionnaire engine → S14 doc-to-draft AI → S15 exports (XBRL/
 PHASE 4  S16 analytics+leads → S17 tiers+billing-lite → S18 infra+deploy → S19 hardening+launch
 ```
 ~19 sessions ≈ 5–8 working weeks for one operator at 3–4 sessions/week — consistent with the strategy doc's month-4 launch target (Deliverable 5 §8), with Filing Studio landing weeks 10–14.
+
+## Local development
+
+Session S01 provides the first runnable stack. Install Python 3.12–3.13, Node 20,
+pnpm 9, uv, Docker, and Compose, then run:
+
+```sh
+cp .env.example .env
+make bootstrap
+make up
+make verify
+make seed
+```
+
+The app is served at `http://localhost:5173`, the API at
+`http://localhost:8000`, and MailHog at `http://localhost:8025`. Host ports are
+configurable in `.env` when those defaults are already occupied.
