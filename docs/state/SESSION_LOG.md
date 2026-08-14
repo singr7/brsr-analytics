@@ -40,3 +40,18 @@ Status: complete.
 - Verified 24 offline Python tests, 4 live database tests, 1 live S03 API flow, strict
   typing/linting, and 2 frontend tests. Browser bridge initialization was unavailable;
   live persistence plus the component beacon test served as the recorded fallback.
+
+## S04 — 2026-08-14
+
+Status: complete.
+
+- Added governed registry construction with market-cap ranking, CIN validation, and a
+  committed NIC-derived sector taxonomy.
+- Added default-OFF exchange XBRL, announcement PDF, and company-IR discovery adapters with
+  polite rate limits, persisted cursors, SHA-256 dedupe, and bounded Celery retries.
+- Added local/S3 raw-object storage at `raw/{cin}/{fy}/{filename}`, acquisition provenance,
+  statuses/errors, migration `0003`, and six synthetic offline artifacts.
+- Added platform-admin manual upload/API and CLI fallback plus sector × mcap coverage API.
+- Committed `worker/acquire/SOURCES.md`; source flags remain OFF pending human legal review.
+- Verified 40 offline Python tests, 4 live database tests, 1 live S04 API flow, strict
+  typing/linting, TypeScript/ESLint, and 2 frontend tests.
