@@ -10,6 +10,7 @@ from api.app.core.config import get_settings
 from api.app.core.logging import configure_logging
 from api.app.core.middleware import RequestIDMiddleware
 from api.app.db.session import create_engine, create_session_factory
+from api.app.routers.acquisition import router as acquisition_router
 from api.app.routers.auth import router as auth_router
 from api.app.routers.health import router as health_router
 from api.app.routers.orgs import admin_router
@@ -45,3 +46,4 @@ app.include_router(auth_router)
 app.include_router(orgs_router)
 app.include_router(admin_router)
 app.include_router(tracking_router)
+app.include_router(acquisition_router)
