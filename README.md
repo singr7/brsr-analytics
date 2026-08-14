@@ -1,0 +1,42 @@
+# BRSR Lens — AI-Agent Build Plan
+### Production-grade BRSR analytics platform + Filing Studio + engagement engine, built in 19 self-sufficient sessions
+
+Companion pack to the VerityGrid build plan, same operating model: executed by an AI coding agent (Claude Opus / GPT-class) one session at a time, human operator supervising; every session self-verifies (`make verify`), commits cleanly, and hands off via a structured state file. **This is an independent product on an independent, deliberately lighter stack** (see 00_ARCHITECTURE — Postgres+pgvector single-database design; no Elastic, no EO). It can later exchange data with VerityGrid through plain APIs; nothing couples them at build time.
+
+## What gets built (three pillars, one platform)
+1. **Insights** — interactive analytics over ~1,000 companies' BRSR filings: sector scorecards, substance-vs-boilerplate index, materiality maps, assurance tracker, company deep-dives, peer benchmarking — with **natural-language querying**, smart filters, and click-any-number-to-see-the-filing-text lineage.
+2. **Filing Studio** — a guided preparation tool: a company uploads its documents (policies, HR data, energy/water records, prior filings) and the system drafts its BRSR in the prescribed format — section-by-section questionnaire, LLM-assisted field mapping with confidence + human review, validations, and exports (SEBI-format XBRL + board-ready PDF/Word draft + assurance-readiness gap report).
+3. **Engagement engine** — first-party product analytics, lead scoring, and conversion paths: every high-intent behavior (peer-gap views, gap reports, NLQ patterns, deep-dive requests) routes to Panacea Bioedge with context; on-demand expert deep-dives are a productised request flow.
+
+## Pack contents
+| File | Purpose |
+|---|---|
+| `README.md` | This file — operating manual |
+| `00_ARCHITECTURE.md` | Stack decisions (independent), data model spine, LLM usage doctrine, AWS balanced managed/self-managed |
+| `01_CONVENTIONS.md` | Repo layout, standards, session protocol + handoff schema (read every session) |
+| `sessions/PHASE0_FOUNDATION.md` | S01–S03 scaffold · schema · auth & access tiers |
+| `sessions/PHASE1_PIPELINE.md` | S04–S07 filing acquisition · XBRL/PDF parsing · LLM extraction+QA · scoring engines |
+| `sessions/PHASE2_INSIGHTS.md` | S08–S12 semantic layer · design system · dashboards · NLQ+smart filters · lineage & library |
+| `sessions/PHASE3_FILING_STUDIO.md` | S13–S15 questionnaire engine · doc-to-draft AI · exports (XBRL/PDF/gap report) |
+| `sessions/PHASE4_ENGAGE_PROD.md` | S16–S19 analytics+lead engine · tiering · AWS infra+deploy · hardening & launch |
+| `DEPLOYMENT.md` | Topology, release flow, backups, launch checklist |
+| `QA_PLAN.md` | Test strategy incl. extraction-accuracy benchmarks and editorial gates |
+
+## How to run a session
+Identical protocol to the VerityGrid pack: fresh agent conversation + exactly three inputs — `01_CONVENTIONS.md`, the single session spec, current `docs/state/HANDOFF.md` — then: *"Execute session SNN per spec; follow the protocol exactly; end with DoD table + `make verify` output."* Human verifies, merges, moves on.
+
+## Token strategy (same doctrine, one addition)
+Handoff-file state · read-listed-files-only · vertical slices · phase-file splitting · verbs in Make. **Addition for this product:** all LLM prompts live in versioned files (`prompts/*.yaml`) with committed fixture responses for offline tests — sessions never depend on live LLM calls to pass `make verify` (live accuracy runs are nightly/manual; see QA_PLAN §4).
+
+## Special governance gates (this product publishes numbers about named companies)
+Two human gates are wired into the plan and cannot be skipped: **Editorial gate** (S07/S19 — no company-level figure goes public below the confidence threshold or without QA-sampled extraction accuracy ≥ target) and **Legal gate** (S04/S19 — source acquisition terms and the methodology page reviewed by counsel before launch). The agent builds the mechanisms; humans sign the gates.
+
+## Build order at a glance
+```
+PHASE 0  S01 scaffold → S02 schema → S03 auth+tiers
+PHASE 1  S04 acquisition+registry → S05 XBRL/PDF parsing → S06 LLM extraction+QA → S07 scoring engines
+PHASE 2  S08 semantic layer → S09 design system+shell → S10 dashboards → S11 NLQ+filters → S12 lineage+library
+PHASE 3  S13 questionnaire engine → S14 doc-to-draft AI → S15 exports (XBRL/PDF/gap)
+PHASE 4  S16 analytics+leads → S17 tiers+billing-lite → S18 infra+deploy → S19 hardening+launch
+```
+~19 sessions ≈ 5–8 working weeks for one operator at 3–4 sessions/week — consistent with the strategy doc's month-4 launch target (Deliverable 5 §8), with Filing Studio landing weeks 10–14.
