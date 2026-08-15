@@ -24,3 +24,7 @@
 - Run a visual and keyboard pass on the S17 config-driven `/pricing` and invoice `/billing`
   surfaces. The in-app browser could not create a session; component tests, responsive CSS review,
   TypeScript/ESLint and rebuilt-service route smoke checks passed instead.
+- Run the S18 five-second comprehension check with three internal reviewers and a desktop/mobile
+  visual keyboard walk across `/`, `/sectors`, `/assurance`, `/studio`, and `/ask`. The browser
+  runtime exposed no available browser; route, responsive-navigation, Escape/focus, auth/org,
+  terminology, metadata, and privacy-safe event contracts passed automated tests.

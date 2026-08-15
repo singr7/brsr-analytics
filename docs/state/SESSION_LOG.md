@@ -180,3 +180,20 @@ Status: complete (pricing/billing browser pass backlogged).
 - Migration `0008` applied live; rebuilt API returned all four plans and all five S17 route groups.
   `make verify` passed 115 Python tests (6 integration skips), strict Python/TypeScript checks and
   8 frontend tests.
+
+## S18 — 2026-08-15
+
+Status: complete (visual browser pass backlogged).
+
+- Added the canonical experience contract and an intent-led responsive shell with separate journey
+  and utility navigation, active-route semantics, skip navigation, mobile Escape/focus handling,
+  and unchanged sign-in/organisation switching.
+- Rebuilt home around Explore, Analyse, and File outcomes, a private-by-default analysis promise,
+  and a real QA-pinned FY25 sector-completeness insight with honest loading/suppression/error states.
+- Added staged `/explore`, `/analyse`, and `/learn` journeys while keeping all legacy/indexable and
+  saved-query routes; renamed Assurance trends, Filing Studio, Ask BRSR Lens, Refine this view, and
+  Peer benchmarks without changing stable API or route contracts.
+- Registered four entry events constrained to intent/auth/tier/surface metadata and added shell,
+  route, keyboard, copy, query-state, and event-privacy tests.
+- `make verify` passed schema validation, Ruff, strict mypy, 115 Python tests (6 integration skips),
+  TypeScript/ESLint, and 18 frontend tests. The browser bridge exposed no browser instance.
