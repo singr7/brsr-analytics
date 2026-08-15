@@ -88,7 +88,9 @@ class OpenAICompatibleLLM:
     ) -> SchemaT:
         prompt = load_prompt(prompt_key, version, variables)
         payload = {
-            "model": prompt.get("model", self.settings.llm_model),
+            # Deployment configuration owns model selection. The prompt's model remains
+            # useful provenance for the baseline used when the prompt was benchmarked.
+            "model": self.settings.llm_model,
             "temperature": prompt.get("temperature", 0),
             "messages": [
                 {"role": "system", "content": prompt["system"]},
