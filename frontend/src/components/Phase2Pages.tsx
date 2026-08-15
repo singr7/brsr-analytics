@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Distribution, Heatmap, PercentilePill, RankedBar, ScoreBadge, Timeseries, type ChartDatum } from '../charts/ChartKit'
 import { accessToken } from '../lib/auth'
 import { apiUrl } from '../lib/api'
-import { decodeQueryState, replaceQueryState, type SemanticDSL, useSemanticQuery } from '../lib/semantic'
+import { consolidatePolicyNotices, decodeQueryState, replaceQueryState, type SemanticDSL, useSemanticQuery } from '../lib/semantic'
 import { track } from '../lib/track'
 import { tokens } from '../theme/tokens'
 import { LineageViewer } from './LineageViewer'
@@ -25,7 +25,12 @@ export function SmartFilters({ dsl, onChange }: { dsl: SemanticDSL; onChange: (n
     <div className="filter-chips">{dsl.filters.map(item => <span key={item.dimension}>{item.dimension}: {String(item.value)}</span>)}</div></div>
 }
 
-function Policy({ notices }: { notices?: Array<{ code: string; message: string }> }) { if (!notices?.length) return null; return <aside className="policy-note">{notices.map(item => <p key={`${item.code}:${item.message}`}><strong>{item.code.replaceAll('_', ' ')}</strong> · {item.message}</p>)}</aside> }
+function Policy({ notices }: { notices?: Array<{ code: string; message: string }> }) {
+  const unique = consolidatePolicyNotices(notices)
+  if (!unique.length) return null
+  const labels: Record<string, string> = { minimum_cohort: 'Cohort protection', tier_gated: 'Plan access', company_detail_gated: 'Company detail', bottom_ranking_anonymised: 'Responsible ranking' }
+  return <aside className="policy-note"><strong>Why some results are not shown</strong>{unique.map(item => <p key={item.code}><span>{labels[item.code] ?? item.code.replaceAll('_', ' ')}</span>{item.message}</p>)}</aside>
+}
 
 export function HomePage() {
   const { data, query } = useDashboard(sectorDSL)
@@ -76,7 +81,8 @@ interface Methodology { method_version: string; minimum_cohort_size: number; cov
 export function MethodologyPage() {
   const [data, setData] = useState<Methodology | null>(null); useEffect(() => { void fetch(`${apiUrl}/api/methodology`).then(r => r.json() as Promise<Methodology>).then(setData) }, [])
   const cite = () => void navigator.clipboard?.writeText(`BRSR Lens. “Methodology v${data?.method_version ?? '1.0.0'}.” ${location.href} (accessed ${new Date().toLocaleDateString('en-IN')}).`)
-  return <><PageHead eyebrow="Public methodology" title="How every score earns its place." copy="Definitions, coverage, cohort protection, versioning, and corrections—written for scrutiny."/><section className="method-grid"><article><span>01</span><h2>Pinned evidence only</h2><p>Public materialisations use the QA-passed field version pin, never a raw extraction candidate.</p></article><article><span>02</span><h2>Explainable components</h2><p>Completeness, substance and assurance readiness preserve their method version and component ledger.</p></article><article><span>03</span><h2>Cohort protection</h2><p>Sector aggregates are suppressed below n = {data?.minimum_cohort_size ?? 8}. Lower performers are discussed as cohorts.</p></article></section><section className="coverage"><div><p className="eyebrow">Schema coverage</p><h2>120 governed BRSR fields</h2></div>{data?.coverage.map(item => <div key={item.principle}><strong>P{item.principle}</strong><span>{item.fields} fields</span></div>)}</section><aside className="sla"><strong>Correction commitment</strong><p>{data?.correction_sla ?? 'Reports are acknowledged within five business days.'}</p></aside><button onClick={cite}>Copy formatted citation ↗</button><p className="version">Current method v{data?.method_version ?? '1.0.0'} · Changelog is permanent and versioned.</p></>
+  const fieldCount = data?.coverage.reduce((total, item) => total + item.fields, 0) ?? 300
+  return <><PageHead eyebrow="Public methodology" title="How every score earns its place." copy="Definitions, coverage, cohort protection, versioning, and corrections—written for scrutiny."/><section className="method-grid"><article><span>01</span><h2>Pinned evidence only</h2><p>Public materialisations use the QA-passed field version pin, never a raw extraction candidate.</p></article><article><span>02</span><h2>Explainable components</h2><p>Completeness, substance and assurance readiness preserve their method version and component ledger.</p></article><article><span>03</span><h2>Cohort protection</h2><p>Sector aggregates are suppressed below n = {data?.minimum_cohort_size ?? 8}. Lower performers are discussed as cohorts.</p></article></section><section className="coverage"><div><p className="eyebrow">Schema coverage</p><h2>{fieldCount} governed BRSR fields</h2></div>{data?.coverage.map(item => <div key={item.principle}><strong>{item.principle}</strong><span>{item.fields} fields</span></div>)}</section><aside className="sla"><strong>Correction commitment</strong><p>{data?.correction_sla ?? 'Reports are acknowledged within five business days.'}</p></aside><button onClick={cite}>Copy formatted citation ↗</button><p className="version">Current method v{data?.method_version ?? '1.0.0'} · Changelog is permanent and versioned.</p></>
 }
 
 interface LibraryResult { access: string; items: Array<{ id: string; title: string; topic: string; pattern_note: string }> }

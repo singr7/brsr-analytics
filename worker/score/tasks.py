@@ -21,7 +21,7 @@ async def run_rebuild() -> tuple[int, int]:
         try:
             cursor = 0
             while True:
-                cursor, keys = await client.scan(cursor, match="semantic:v1:*", count=250)
+                cursor, keys = await client.scan(cursor, match="semantic:v*:*", count=250)
                 if keys:
                     await client.delete(*keys)
                 if cursor == 0:

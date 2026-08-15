@@ -36,6 +36,10 @@ export function useSemanticQuery(dsl: SemanticDSL) {
   return useQuery({ queryKey: ['semantic', dsl], queryFn: () => runSemanticQuery(dsl), staleTime: 300_000 })
 }
 
+export function consolidatePolicyNotices(notices: PolicyNotice[] = []): PolicyNotice[] {
+  return [...new Map(notices.map(item => [item.code, item])).values()]
+}
+
 export function encodeQueryState(dsl: SemanticDSL): string {
   return new URLSearchParams({ q: JSON.stringify(dsl) }).toString()
 }

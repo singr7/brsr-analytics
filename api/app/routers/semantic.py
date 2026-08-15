@@ -82,7 +82,7 @@ async def invalidate_semantic_cache(redis_client: object) -> int:
     deleted = 0
     cursor = 0
     while True:
-        cursor, keys = await redis_client.scan(cursor, match="semantic:v1:*", count=250)  # type: ignore[attr-defined]
+        cursor, keys = await redis_client.scan(cursor, match="semantic:v*:*", count=250)  # type: ignore[attr-defined]
         if keys:
             deleted += int(await redis_client.delete(*keys))  # type: ignore[attr-defined]
         if cursor == 0:

@@ -46,7 +46,7 @@ def load_catalog(path: Path | None = None) -> SemanticCatalog:
 def query_cache_key(query: SemanticQuery, tier: str) -> str:
     payload = query.model_dump(mode="json", exclude_none=True)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    return "semantic:v1:" + tier + ":" + hashlib.sha256(canonical.encode()).hexdigest()
+    return "semantic:v2:" + tier + ":" + hashlib.sha256(canonical.encode()).hexdigest()
 
 
 def validate_query(query: SemanticQuery, tier: str, catalog: SemanticCatalog) -> list[PolicyNotice]:
@@ -202,6 +202,7 @@ async def execute_query(
         return [], {}, notices
     data: list[dict[str, object]] = []
     pins: set[str] = set()
+    suppressed_cohorts: list[int] = []
     for measure in query.measures:
         if measure in gated:
             continue
@@ -218,17 +219,23 @@ async def execute_query(
             cohort_n = row.get("cohort_n")
             if cohort_n is not None and int(cohort_n) < catalog.minimum_cohort_size:
                 item["value"] = None
-                notices.append(
-                    PolicyNotice(
-                        code="minimum_cohort",
-                        measure=measure,
-                        message=(
-                            f"Suppressed cohort of {cohort_n}; minimum is "
-                            f"{catalog.minimum_cohort_size}."
-                        ),
-                    )
-                )
+                suppressed_cohorts.append(int(cohort_n))
             data.append(item)
+    if suppressed_cohorts:
+        observed = sorted(set(suppressed_cohorts))
+        range_label = str(observed[0])
+        if len(observed) > 1:
+            range_label = f"{observed[0]}–{observed[-1]}"
+        notices.append(
+            PolicyNotice(
+                code="minimum_cohort",
+                message=(
+                    f"{len(suppressed_cohorts)} cohort results are hidden because fewer than "
+                    f"{catalog.minimum_cohort_size} companies were available "
+                    f"(observed n={range_label})."
+                ),
+            )
+        )
     # The critique-by-cohort rule is enforced after ordering and before serialization.
     bottom_requested = bool(query.sort and query.sort.direction == "asc") or any(
         item.operator == "bottom_n" for item in query.filters
