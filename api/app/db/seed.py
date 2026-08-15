@@ -16,6 +16,8 @@ from api.app.models import (
     FieldVersionPin,
     Filing,
     FilingPage,
+    LibraryExemplar,
+    LibraryPattern,
     Membership,
     Org,
     Plan,
@@ -293,6 +295,44 @@ async def seed_corpus(session: AsyncSession, fields: list[dict[str, Any]]) -> No
     await _upsert(session, FieldVersionPin, pins, "id")
 
 
+async def seed_library(session: AsyncSession) -> None:
+    pattern_id = stable_id("library-pattern", "scope3-boundary")
+    await _upsert(
+        session,
+        LibraryPattern,
+        [
+            {
+                "id": pattern_id,
+                "title": "Boundary before ambition",
+                "pattern_note": (
+                    "Leading Scope 3 disclosures name included categories, estimation coverage, "
+                    "exclusions, and the decision rule before presenting a target."
+                ),
+                "topic": "Scope 3 methodology",
+                "is_published": True,
+            }
+        ],
+        "id",
+    )
+    await _upsert(
+        session,
+        LibraryExemplar,
+        [
+            {
+                "id": stable_id("library-exemplar", "scope3-boundary-aster"),
+                "pattern_id": pattern_id,
+                "filing_page_id": stable_id("page", "ASTSTEEL-2025-1"),
+                "excerpt": (
+                    "The disclosure defines category coverage, estimation boundaries, and "
+                    "exclusions before stating its Scope 3 target."
+                ),
+                "company_permission": False,
+            }
+        ],
+        "id",
+    )
+
+
 async def seed() -> None:
     engine = create_engine()
     factory = create_session_factory(engine)
@@ -301,6 +341,7 @@ async def seed() -> None:
         await upsert_field_defs(session)
         await seed_access(session)
         await seed_corpus(session, fields)
+        await seed_library(session)
     await engine.dispose()
     summary = (
         f"Seeded {len(COMPANIES)} companies, {len(COMPANIES) * 2} filings, "

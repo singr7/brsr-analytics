@@ -1,0 +1,13 @@
+{
+  "fields": [
+    {
+      "field_key": "p6.e1.energy_total_gj",
+      "value": "9,999 GJ",
+      "unit": "GJ",
+      "source_page": 12,
+      "source_quote": "This quote was invented by the model.",
+      "confidence": 0.99,
+      "not_found": false
+    }
+  ]
+}

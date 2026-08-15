@@ -1,0 +1,22 @@
+{
+  "fields": [
+    {
+      "field_key": "p6.e1.energy_total_gj",
+      "value": "1,000 GJ",
+      "unit": "GJ",
+      "source_page": 12,
+      "source_quote": "Total energy consumption was 1,000 GJ.",
+      "confidence": 0.98,
+      "not_found": false
+    },
+    {
+      "field_key": "p6.e2.water_total_kl",
+      "value": "Nil",
+      "unit": "KL",
+      "source_page": 13,
+      "source_quote": "Water withdrawal during the year was Nil.",
+      "confidence": 0.97,
+      "not_found": false
+    }
+  ]
+}

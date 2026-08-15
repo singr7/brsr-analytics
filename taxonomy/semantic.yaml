@@ -1,0 +1,70 @@
+version: "1.0.0"
+minimum_cohort_size: 8
+measures:
+  completeness:
+    label: Disclosure completeness
+    source: score
+    unit: score
+    format: ".1f"
+    tiers: [explore, pro, studio, research]
+  substance:
+    label: Disclosure substance
+    source: score
+    unit: score
+    format: ".1f"
+    tiers: [explore, pro, studio, research]
+  assurance_readiness:
+    label: Assurance readiness
+    source: score
+    unit: score
+    format: ".1f"
+    tiers: [explore, pro, studio, research]
+  p6.e1.energy_total_gj:
+    label: Total energy consumed
+    source: metric
+    unit: GJ
+    format: ",.0f"
+    tiers: [explore, pro, studio, research]
+  p6.e2.water_total_kl:
+    label: Total water withdrawal
+    source: metric
+    unit: kL
+    format: ",.0f"
+    tiers: [explore, pro, studio, research]
+  p6.e3.scope1_tco2e:
+    label: Scope 1 emissions
+    source: metric
+    unit: tCO2e
+    format: ",.0f"
+    tiers: [explore, pro, studio, research]
+  normalized.energy_gj_per_inr_crore:
+    label: Energy intensity
+    source: metric
+    unit: GJ / INR crore
+    format: ".2f"
+    tiers: [pro, studio, research]
+  normalized.water_kl_per_inr_crore:
+    label: Water intensity
+    source: metric
+    unit: kL / INR crore
+    format: ".2f"
+    tiers: [pro, studio, research]
+  normalized.scope12_tco2e_per_inr_crore:
+    label: Scope 1+2 emissions intensity
+    source: metric
+    unit: tCO2e / INR crore
+    format: ".2f"
+    tiers: [pro, studio, research]
+dimensions:
+  sector: {label: Sector, type: string}
+  industry: {label: Industry, type: string}
+  mcap_band: {label: Market-cap band, type: string}
+  fy: {label: Financial year, type: integer}
+  company: {label: Company, type: string, tiers: [pro, studio, research]}
+  assurance_status: {label: Assurance status, type: string}
+filters:
+  equality: [sector, industry, mcap_band, fy, company, assurance_status]
+  range: [fy]
+  score_band: [completeness, substance, assurance_readiness]
+  rank: [top_n, bottom_n]
+shapes: [distribution, ranking, timeseries, comparison, single]

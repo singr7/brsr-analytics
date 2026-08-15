@@ -54,6 +54,12 @@ class Filing(UUIDPrimaryKey, Timestamped, Base):
     checksum_sha256: Mapped[str | None] = mapped_column(String(64), index=True)
     acquisition_attempts: Mapped[int] = mapped_column(Integer, default=0)
     acquisition_error: Mapped[str | None] = mapped_column(Text)
+    parse_version: Mapped[int] = mapped_column(Integer, default=0)
+    parsed_pages: Mapped[int] = mapped_column(Integer, default=0)
+    sections_found: Mapped[int] = mapped_column(Integer, default=0)
+    xbrl_fact_count: Mapped[int] = mapped_column(Integer, default=0)
+    section_confidence: Mapped[Decimal | None] = mapped_column(Numeric(5, 4))
+    parsed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class AcquisitionCursor(UUIDPrimaryKey, Timestamped, Base):
@@ -72,6 +78,10 @@ class FilingPage(UUIDPrimaryKey, Base):
     page_no: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
     s3_image: Mapped[str | None] = mapped_column(Text)
+    parse_version: Mapped[int] = mapped_column(Integer, default=1)
+    section_key: Mapped[str | None] = mapped_column(String(64), index=True)
+    locator_confidence: Mapped[Decimal | None] = mapped_column(Numeric(5, 4))
+    table_regions: Mapped[list[dict[str, object]]] = mapped_column(JSONB, default=list)
 
 
 class FieldDef(Base):
@@ -182,3 +192,50 @@ class Embedding(UUIDPrimaryKey, Base):
     owner_id: Mapped[UUID]
     embedding: Mapped[list[float]] = mapped_column(Vector(1024))
     model: Mapped[str] = mapped_column(String(100))
+
+
+class LLMUsage(UUIDPrimaryKey, Timestamped, Base):
+    __tablename__ = "llm_usage"
+    filing_id: Mapped[UUID] = mapped_column(ForeignKey("filings.id", ondelete="CASCADE"))
+    prompt_key: Mapped[str] = mapped_column(String(100))
+    prompt_version: Mapped[str] = mapped_column(String(32))
+    call_count: Mapped[int] = mapped_column(Integer, default=1)
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[Decimal] = mapped_column(Numeric(12, 6), default=0)
+
+
+class QAReview(UUIDPrimaryKey, Timestamped, Base):
+    __tablename__ = "qa_reviews"
+    __table_args__ = (
+        UniqueConstraint("extracted_field_id"),
+        CheckConstraint("status IN ('queued','accepted','corrected')", name="status"),
+    )
+    extracted_field_id: Mapped[UUID] = mapped_column(
+        ForeignKey("extracted_fields.id", ondelete="CASCADE")
+    )
+    family: Mapped[str] = mapped_column(String(64), index=True)
+    confidence_band: Mapped[str] = mapped_column(String(16), index=True)
+    status: Mapped[str] = mapped_column(String(16), default="queued")
+    reviewer_user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    corrected_field_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("extracted_fields.id", ondelete="SET NULL")
+    )
+
+
+class QualityStat(UUIDPrimaryKey, Timestamped, Base):
+    __tablename__ = "quality_stats"
+    __table_args__ = (UniqueConstraint("family"),)
+    family: Mapped[str] = mapped_column(String(64), index=True)
+    reviewed_count: Mapped[int] = mapped_column(Integer, default=0)
+    correct_count: Mapped[int] = mapped_column(Integer, default=0)
+    accuracy: Mapped[Decimal] = mapped_column(Numeric(7, 6), default=0)
+
+
+class SharedPhrase(UUIDPrimaryKey, Base):
+    __tablename__ = "shared_phrases"
+    __table_args__ = (UniqueConstraint("method_version", "phrase_hash"),)
+    method_version: Mapped[str] = mapped_column(String(32))
+    phrase_hash: Mapped[str] = mapped_column(String(64), index=True)
+    phrase: Mapped[str] = mapped_column(Text)
+    company_count: Mapped[int] = mapped_column(Integer)

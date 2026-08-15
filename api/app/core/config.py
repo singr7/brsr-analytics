@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4.1-mini"
     llm_fixture_case: str = "default"
     llm_network_enabled: bool = Field(default=False)
+    embedding_model: str = "hash-embedding-v1"
+    embedding_batch_size: int = Field(default=32, ge=1, le=500)
+    publish_threshold: float = Field(default=0.90, ge=0, le=1)
+    publish_family_accuracy_target: float = Field(default=0.98, ge=0, le=1)
+    extraction_max_attempts: int = Field(default=3, ge=1, le=10)
 
     @property
     def llm_config_present(self) -> bool:

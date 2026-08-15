@@ -55,3 +55,73 @@ Status: complete.
 - Committed `worker/acquire/SOURCES.md`; source flags remain OFF pending human legal review.
 - Verified 40 offline Python tests, 4 live database tests, 1 live S04 API flow, strict
   typing/linting, TypeScript/ESLint, and 2 frontend tests.
+
+## S05 — 2026-08-14
+
+Status: complete.
+
+- Added XBRL concept/context/unit parsing, tested canonical conversions, and versioned fact
+  emission with full source context.
+- Added PyMuPDF section location, ambiguity confidence, table-region flags, 150-dpi page
+  images, deterministic embeddings, parse statistics, and reparse orchestration.
+- Added migration `0004` for pipeline metadata and validated it on Compose PostgreSQL.
+
+## S06 — 2026-08-14
+
+Status: complete.
+
+- Added schema-constrained section extraction, table-image references, retries, spend
+  accounting, citation tripwires, Indian-number parsing, and relation checks.
+- Added stratified QA sampling, admin queue/UI, human correction versions, family accuracy,
+  and QA/confidence/accuracy pin gating.
+- Added the offline benchmark harness and fixtures; both committed families achieved 100%.
+
+## S07 — 2026-08-14
+
+Status: complete.
+
+- Added deterministic pinned-field metrics, normalized intensities, percentiles with the
+  minimum-sector guard, and YoY deltas.
+- Added explainable completeness, substance/boilerplate, and assurance-readiness scores,
+  shared-phrase corpus detection, method versioning, nightly/pin-change tasks, and drift API.
+- Added single-source scoring configuration and generated public methodology. Two live seeded
+  rebuilds produced identical counts: 3,850 metrics and 120 scores.
+- Phase 1 complete; 70 offline tests plus 4 live database tests passed.
+
+## S08 — 2026-08-14
+
+Status: complete (offline contracts).
+
+- Added the semantic catalog, validated DSL, parameterised compiler, central tier/cohort policy,
+  lineage response envelope, Redis cache invalidation, and governed board PDF.
+
+## S09 — 2026-08-14
+
+Status: complete (browser pass backlogged).
+
+- Added design tokens, styleguide, chart kit with honest states and PNG export, tier-aware shell,
+  typed TanStack query layer, URL state, and citation metadata.
+
+## S10 — 2026-08-14
+
+Status: complete (browser pass backlogged).
+
+- Built sector, company, peer, materiality, and assurance surfaces with smart filters, gap-panel
+  tracking, learning teasers, and PDF export workflow.
+
+## S11 — 2026-08-14
+
+Status: complete (offline FakeLLM).
+
+- Added catalog-aware NLQ, transparent query chips, inherited semantic enforcement, tier quotas,
+  out-of-scope refusal, and shareable views.
+
+## S12 — 2026-08-14
+
+Status: complete (live visual/service checks backlogged).
+
+- Added lineage viewing, correction tickets, company annotations, Learning Library authoring/search,
+  methodology coverage/SLA/changelog, citations, and migration `0005`.
+- Phase 2 verification: 73 Python passed, 6 skipped; Ruff/mypy/TypeScript/ESLint green; 3 frontend
+  test files passed. Migration/seed/materialisation and core API flows passed live on Compose.
+  Browser bridge initialization was unavailable, so visual/axe/Lighthouse inspection is backlogged.

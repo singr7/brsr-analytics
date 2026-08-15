@@ -3,3 +3,12 @@
 - Manual visual browser pass for the S03 signup/login/org-switcher surfaces and a browser-
   observed pageview row. The in-app browser bridge could not initialize during S03; live
   API persistence and the frontend beacon component test passed.
+- Human legal gate: approve individual acquisition sources in `worker/acquire/SOURCES.md`;
+  keep all automated-source flags disabled until then.
+- Human editorial gate: review `/api/admin/quality`, publication thresholds, benchmark
+  representativeness, and `docs/methodology/substance_index.md` before public exposure.
+- Grow the S06 golden extraction corpus to QA_PLAN's ≥400 values across ≥25 lawfully obtained
+  real filings; current committed CI fixture is intentionally synthetic and small.
+- Run the Phase 2 browser/axe/Lighthouse and visual screenshot pass when the in-app browser bridge
+  is available; its host integration could not initialize in this session. Target Home performance
+  remains ≥85 and public-route axe violations must be zero.

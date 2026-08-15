@@ -61,6 +61,24 @@ services:
       postgres:
         condition: service_healthy
 
+  scheduler:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    command: celery -A worker.celery_app:celery_app beat --loglevel=INFO
+    env_file: .env
+    volumes:
+      - ./api:/app/api
+      - ./worker:/app/worker
+      - ./prompts:/app/prompts:ro
+      - ./events.yaml:/app/events.yaml:ro
+      - ./.data:/app/.data
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
   frontend:
     build:
       context: .

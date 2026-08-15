@@ -45,10 +45,10 @@ seed:
 	$(PYTHON) -m api.app.db.seed
 
 rebuild-metrics:
-	@echo "not yet: S07"
+	$(PYTHON) -m worker.score.cli
 
 fetch-testdata:
-	@echo "not yet: S05"
+	$(PYTHON) -m worker.parse.fixtures
 
 bench-extraction:
-	@echo "not yet: S06"
+	$(PYTHON) -m worker.extract.benchmark

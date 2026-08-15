@@ -1,0 +1,15 @@
+{
+  "section": "environment",
+  "pages": {
+    "12": "Total energy consumption was 1,000 GJ.",
+    "13": "Water withdrawal during the year was Nil."
+  },
+  "field_defs": [
+    {"field_key": "p6.e1.energy_total_gj", "label": "Total energy", "dtype": "number", "unit": "GJ"},
+    {"field_key": "p6.e2.water_total_kl", "label": "Total water", "dtype": "number", "unit": "KL"}
+  ],
+  "expected": {
+    "p6.e1.energy_total_gj": "1,000 GJ",
+    "p6.e2.water_total_kl": "Nil"
+  }
+}

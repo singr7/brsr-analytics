@@ -1,0 +1,14 @@
+{
+  "dsl": {
+    "measures": ["completeness"],
+    "dimensions": ["sector"],
+    "filters": [{"dimension": "fy", "operator": "eq", "value": 2025}],
+    "shape": "comparison",
+    "sort": {"by": "value", "direction": "desc"},
+    "limit": 25
+  },
+  "interpretation": "Compare average disclosure completeness by sector for FY 2025.",
+  "confidence": 0.96,
+  "unresolved_terms": [],
+  "refusal": null
+}

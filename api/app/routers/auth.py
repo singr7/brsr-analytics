@@ -199,6 +199,7 @@ async def me(user: CurrentUser, session: SessionDep) -> MeResponse:
         display_name=user.display_name,
         email_verified_at=user.email_verified_at,
         plan_tier=user.plan_tier,
+        is_admin=user.is_admin,
         orgs=[
             OrgSummary(
                 id=org.id,

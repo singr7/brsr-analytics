@@ -20,6 +20,10 @@ def test_relational_spine_is_complete() -> None:
         "metrics",
         "scores",
         "embeddings",
+        "llm_usage",
+        "qa_reviews",
+        "quality_stats",
+        "shared_phrases",
         "users",
         "orgs",
         "memberships",
@@ -35,6 +39,10 @@ def test_relational_spine_is_complete() -> None:
         "studio_filings",
         "studio_answers",
         "studio_docs",
+        "correction_tickets",
+        "library_patterns",
+        "library_exemplars",
+        "company_annotations",
     }
     assert set(Base.metadata.tables) == expected
 

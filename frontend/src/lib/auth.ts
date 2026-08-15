@@ -13,6 +13,7 @@ export interface UserProfile {
   email: string
   display_name: string
   plan_tier: string
+  is_admin: boolean
   orgs: OrgSummary[]
 }
 

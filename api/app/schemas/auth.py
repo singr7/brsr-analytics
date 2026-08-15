@@ -50,6 +50,7 @@ class MeResponse(BaseModel):
     display_name: str
     email_verified_at: datetime | None
     plan_tier: str
+    is_admin: bool
     orgs: list[OrgSummary]
 
 

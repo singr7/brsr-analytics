@@ -9,5 +9,6 @@ COPY worker ./worker
 COPY prompts ./prompts
 COPY taxonomy ./taxonomy
 COPY events.yaml ./events.yaml
+COPY scoring.yaml ./scoring.yaml
 ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH=/app
 CMD ["uvicorn", "api.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

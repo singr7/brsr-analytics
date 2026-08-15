@@ -1,0 +1,37 @@
+method_version: "1.0.0"
+minimum_sector_size: 8
+
+completeness:
+  # Core indicators carry twice the weight because they are the SEBI BRSR Core baseline.
+  core_weight: 2.0
+  # Every remaining Essential indicator still contributes to disclosure completeness.
+  essential_weight: 1.0
+
+substance:
+  # Concrete quantities are the strongest evidence that narrative goes beyond policy prose.
+  quantified_target_weight: 0.35
+  dated_commitment_weight: 0.25
+  named_methodology_weight: 0.20
+  corpus_originality_weight: 0.20
+  boilerplate_company_threshold: 3
+  phrase_words: 8
+
+assurance_readiness:
+  # External assurance, Core coverage, and auditable lineage are independently explainable.
+  assurance_status_weight: 0.40
+  core_coverage_weight: 0.35
+  lineage_quality_weight: 0.25
+
+derived_metrics:
+  - metric_key: normalized.energy_gj_per_inr_crore
+    numerator: p6.e1.energy_total_gj
+    denominator: a.basics.turnover_inr
+    denominator_scale: 10000000
+  - metric_key: normalized.water_kl_per_inr_crore
+    numerator: p6.e2.water_total_kl
+    denominator: a.basics.turnover_inr
+    denominator_scale: 10000000
+  - metric_key: normalized.scope12_tco2e_per_inr_crore
+    numerator: p6.e3.scope12_total_tco2e
+    denominator: a.basics.turnover_inr
+    denominator_scale: 10000000
