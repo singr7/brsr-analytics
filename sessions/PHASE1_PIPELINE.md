@@ -69,4 +69,4 @@
 
 **SELF-CHECK:** rebuild determinism · min-n suppression · boilerplate detector flags the seeded template-twin companies · hand-computed goldens match · methodology doc regenerates from config · verify green.
 **COMMITS:** `feat(score): metrics + percentiles + yoy [S07]`, `feat(score): substance + completeness + assurance-readiness [S07]`, `feat(admin): drift report [S07]`, close.
-**HANDOFF:** metric/score key catalog (the semantic layer's raw material), scoring.yaml knobs, methodology doc path. **Flag to human: editorial-gate criteria now testable — review `/admin/quality` + policy before any public exposure (S19 signs).** Next: S08 (PHASE2).
+**HANDOFF:** metric/score key catalog (the semantic layer's raw material), scoring.yaml knobs, methodology doc path. **Flag to human: editorial-gate criteria now testable — review `/admin/quality` + policy before any public exposure (S25 signs).** Next: S08 (PHASE2).

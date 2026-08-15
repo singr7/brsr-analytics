@@ -26,4 +26,4 @@ credentials, or access obtained for one source must not be reused for another.
 
 Counsel should record source-by-source decision, review date, reviewer, permitted purpose,
 rate/attribution requirements, retention/redistribution conditions, and next-review date in
-`docs/gates/legal.md`. S19 requires that signed record before launch.
+`docs/gates/legal.md`. S25 requires that signed record before launch.

@@ -1,7 +1,7 @@
-# Phase 4 corpus plan — NSE pilot to the 1,000-company run
+# Production corpus plan — NSE pilot to the 1,000-company run
 
-Status: active preflight. Phase 3 remains complete; this work is an input to Phase 4 and does
-not reopen or renumber the completed Phase 3 sessions.
+Status: active preflight. This work is an input to Phase 6 and does not reopen or renumber
+completed sessions. UX work in S18–S23 does not publish or live-process the corpus.
 
 ## Sequence
 
@@ -9,13 +9,14 @@ not reopen or renumber the completed Phase 3 sessions.
 |---|---|---|---|
 | 1 | S16 | Keep analytics/leads work unchanged. Stage the pilot artifacts in parallel; do not publish them. | Product work green; pilot provenance manifest exists. |
 | 2 | S17 | Keep tiers, quotas, exports, and API work unchanged. Define which extracted families each tier can expose. | Entitlements remain independent of extraction. |
-| 3 | S18 | Add the production ingestion foundations: NSE index adapter, batch/checkpoint queues, real embeddings, durable analysis-run cache, S3 raw/artifact stores, and spend telemetry. | A 25-filing dry run can resume without duplicate downloads or LLM calls. |
-| 4 | S19A | Run the 25-filing calibration set through parse, retrieve, extract, validate, and human QA. | At least 400 hand-verified values; family accuracy and cost report signed. |
-| 5 | S19B | Apply pilot fixes, freeze parser/prompt/schema versions, and rerun only invalidated work. | Publishable families meet the QA gate; cache reuse is demonstrated. |
-| 6 | S19C | Run the governed 1,000-company corpus on the batch node, then complete hardening/UAT/release. | Existing S19 corpus, legal, editorial, security, load, and launch gates pass. |
+| 3 | S18–S23 | Implement and assure the intent-led UX. Pilot artifacts may remain staged; do not publish or run live-LLM extraction. | UX gate signed; final route/smoke inventory handed to production work. |
+| 4 | S24 | Add the production ingestion foundations: NSE index adapter, batch/checkpoint queues, real embeddings, durable analysis-run cache, S3 raw/artifact stores, and spend telemetry. | A 25-filing dry run can resume without duplicate downloads or LLM calls. |
+| 5 | S25A | Run the 25-filing calibration set through parse, retrieve, extract, validate, and human QA. | At least 400 hand-verified values; family accuracy and cost report signed. |
+| 6 | S25B | Apply pilot fixes, freeze parser/prompt/schema versions, and rerun only invalidated work. | Publishable families meet the QA gate; cache reuse is demonstrated. |
+| 7 | S25C | Run the governed 1,000-company corpus on the batch node, then complete hardening/UAT/release. | S25 corpus, legal, editorial, UX, security, load, and launch gates pass. |
 
-The 25 reports are therefore a **Phase 4 preflight/calibration corpus**, not a new phase. Raw
-files may be staged now, but live-LLM processing belongs to S19A after S18's cost, cache, and
+The 25 reports are therefore a **production preflight/calibration corpus**, not a new phase. Raw
+files may be staged now, but live-LLM processing belongs to S25A after S24's cost, cache, and
 batch controls are in place.
 
 ## Pilot corpus contract
@@ -43,20 +44,20 @@ Reproduce or verify the acquisition with:
 | ID | Session | Task | Acceptance |
 |---|---|---|---|
 | C01 | Preflight | Acquire the 25 PDF/XBRL pairs and commit their manifest. | 25 rows, 50 valid artifacts, unique checksums/provenance. |
-| C02 | S18 | Replace URL templates with an NSE portal-index adapter and a reviewed source-policy record. Classify stale archive links separately from missing metadata and retry/fallback only through approved sources. | Cursor/date-window sync; ETag/checksum dedupe; fixture-backed tests incl. portal-row/404-artifact; source flag remains off by default. |
-| C03 | S18 | Add batch orchestration by filing and stage, with checkpoints and dead-letter visibility. | Kill/restart resumes; no duplicate filing, extraction, or usage rows. |
-| C04 | S18 | Persist `analysis_runs` keyed by source checksum, parser, taxonomy/schema, prompt, model, and retrieval configuration versions. | Identical key reuses results and incurs zero new model calls; changed input creates a new immutable run. |
-| C05 | S18 | Replace hash embeddings in real runs with a configurable embedding provider while retaining the hash provider for offline tests. | Provider batching/retries/usage recorded; tenant-safe vector retrieval; offline suite remains network-free. |
-| C06 | S18 | Implement hybrid section retrieval: heading/field lexicon + lexical score + vector score + adjacent-page windows. | Field-family retrieval recall benchmarked; the model never receives an entire long filing by default. |
-| C07 | S18 | Route only low-confidence table pages to a vision-capable path; keep XBRL-first extraction deterministic. | Vision calls are explainable, metered, cached, and absent when XBRL supplies the fact. |
-| C08 | S18 | Add canonical units, reporting-boundary tags, nil/not-applicable semantics, and cross-source conflict checks. | PDF/XBRL disagreements enter QA; values are never silently merged. |
-| C09 | S19A | Import/parse all 25 pairs and produce a coverage/parse-quality report before any LLM call. | 25/25 parse outcomes recorded; failures classified; deterministic fields materialized. |
-| C10 | S19A | Build the golden set, stratified by field family, XBRL/PDF, table/narrative, and confidence band. | At least 400 human-verified values with page/quote evidence. |
-| C11 | S19A | Run live extraction in capped batches of five filings, review spend and accuracy after each checkpoint. | Token/cost/latency per filing and per accepted field reported; budget stop works. |
-| C12 | S19B | Tune retrieval/prompts/validators from error classes, not individual-company patches. | Regression benchmark improves without reducing any passing family below its gate. |
-| C13 | S19B | Freeze version set and demonstrate selective invalidation. | Second unchanged run makes zero model calls; a prompt-only change reruns only affected families. |
-| C14 | S19C | Load the governed top-1,000 registry and execute acquisition/analysis in supervised batches. | Coverage and publishability meet the existing S19 targets or a variance is signed. |
-| C15 | S19C | Complete legal/editorial gates, hardening, load/restore drills, UAT, and release. | Existing S19 definition of done is fully satisfied. |
+| C02 | S24 | Replace URL templates with an NSE portal-index adapter and a reviewed source-policy record. Classify stale archive links separately from missing metadata and retry/fallback only through approved sources. | Cursor/date-window sync; ETag/checksum dedupe; fixture-backed tests incl. portal-row/404-artifact; source flag remains off by default. |
+| C03 | S24 | Add batch orchestration by filing and stage, with checkpoints and dead-letter visibility. | Kill/restart resumes; no duplicate filing, extraction, or usage rows. |
+| C04 | S24 | Persist `analysis_runs` keyed by source checksum, parser, taxonomy/schema, prompt, model, and retrieval configuration versions. | Identical key reuses results and incurs zero new model calls; changed input creates a new immutable run. |
+| C05 | S24 | Replace hash embeddings in real runs with a configurable embedding provider while retaining the hash provider for offline tests. | Provider batching/retries/usage recorded; tenant-safe vector retrieval; offline suite remains network-free. |
+| C06 | S24 | Implement hybrid section retrieval: heading/field lexicon + lexical score + vector score + adjacent-page windows. | Field-family retrieval recall benchmarked; the model never receives an entire long filing by default. |
+| C07 | S24 | Route only low-confidence table pages to a vision-capable path; keep XBRL-first extraction deterministic. | Vision calls are explainable, metered, cached, and absent when XBRL supplies the fact. |
+| C08 | S24 | Add canonical units, reporting-boundary tags, nil/not-applicable semantics, and cross-source conflict checks. | PDF/XBRL disagreements enter QA; values are never silently merged. |
+| C09 | S25A | Import/parse all 25 pairs and produce a coverage/parse-quality report before any LLM call. | 25/25 parse outcomes recorded; failures classified; deterministic fields materialized. |
+| C10 | S25A | Build the golden set, stratified by field family, XBRL/PDF, table/narrative, and confidence band. | At least 400 human-verified values with page/quote evidence. |
+| C11 | S25A | Run live extraction in capped batches of five filings, review spend and accuracy after each checkpoint. | Token/cost/latency per filing and per accepted field reported; budget stop works. |
+| C12 | S25B | Tune retrieval/prompts/validators from error classes, not individual-company patches. | Regression benchmark improves without reducing any passing family below its gate. |
+| C13 | S25B | Freeze version set and demonstrate selective invalidation. | Second unchanged run makes zero model calls; a prompt-only change reruns only affected families. |
+| C14 | S25C | Load the governed top-1,000 registry and execute acquisition/analysis in supervised batches. | Coverage and publishability meet the S25 targets or a variance is signed. |
+| C15 | S25C | Complete legal/editorial/UX gates, hardening, load/restore drills, UAT, and release. | S25 definition of done is fully satisfied. |
 
 ## Extraction and persistence design
 

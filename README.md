@@ -1,5 +1,5 @@
 # BRSR Lens — AI-Agent Build Plan
-### Production-grade BRSR analytics platform + Filing Studio + engagement engine, built in 19 self-sufficient sessions
+### Production-grade BRSR analytics platform + Filing Studio + engagement engine, built in 25 self-sufficient sessions
 
 Companion pack to the VerityGrid build plan, same operating model: executed by an AI coding agent (Claude Opus / GPT-class) one session at a time, human operator supervising; every session self-verifies (`make verify`), commits cleanly, and hands off via a structured state file. **This is an independent product on an independent, deliberately lighter stack** (see 00_ARCHITECTURE — Postgres+pgvector single-database design; no Elastic, no EO). It can later exchange data with VerityGrid through plain APIs; nothing couples them at build time.
 
@@ -18,7 +18,10 @@ Companion pack to the VerityGrid build plan, same operating model: executed by a
 | `sessions/PHASE1_PIPELINE.md` | S04–S07 filing acquisition · XBRL/PDF parsing · LLM extraction+QA · scoring engines |
 | `sessions/PHASE2_INSIGHTS.md` | S08–S12 semantic layer · design system · dashboards · NLQ+smart filters · lineage & library |
 | `sessions/PHASE3_FILING_STUDIO.md` | S13–S15 questionnaire engine · doc-to-draft AI · exports (XBRL/PDF/gap report) |
-| `sessions/PHASE4_ENGAGE_PROD.md` | S16–S19 analytics+lead engine · tiering · AWS infra+deploy · hardening & launch |
+| `UX-revamp.md` | Critical UX evaluation, target journeys, terminology, and acceptance criteria |
+| `sessions/PHASE4_ENGAGE_PROD.md` | S16–S17 analytics+lead engine · tiering and billing-lite |
+| `sessions/PHASE5_UX_REVAMP.md` | S18–S23 intent-led shell · guided Explore · private BRSR analysis · learning mode · Studio alignment |
+| `sessions/PHASE6_PRODUCTION.md` | S24–S25 AWS infra+deploy · corpus · hardening and launch |
 | `DEPLOYMENT.md` | Topology, release flow, backups, launch checklist |
 | `QA_PLAN.md` | Test strategy incl. extraction-accuracy benchmarks and editorial gates |
 
@@ -29,7 +32,7 @@ Identical protocol to the VerityGrid pack: fresh agent conversation + exactly th
 Handoff-file state · read-listed-files-only · vertical slices · phase-file splitting · verbs in Make. **Addition for this product:** all LLM prompts live in versioned files (`prompts/*.yaml`) with committed fixture responses for offline tests — sessions never depend on live LLM calls to pass `make verify` (live accuracy runs are nightly/manual; see QA_PLAN §4).
 
 ## Special governance gates (this product publishes numbers about named companies)
-Two human gates are wired into the plan and cannot be skipped: **Editorial gate** (S07/S19 — no company-level figure goes public below the confidence threshold or without QA-sampled extraction accuracy ≥ target) and **Legal gate** (S04/S19 — source acquisition terms and the methodology page reviewed by counsel before launch). The agent builds the mechanisms; humans sign the gates.
+Three human gates are wired into the plan and cannot be skipped: **Editorial gate** (S07/S25 — no company-level figure goes public below the confidence threshold or without QA-sampled extraction accuracy ≥ target), **Legal gate** (S04/S25 — source acquisition terms, upload/privacy promises, and methodology reviewed before launch), and **UX gate** (S23/S25 — the intended journeys pass comprehension, accessibility, and expert-bypass checks). The agent builds the mechanisms; humans sign the gates.
 
 ## Build order at a glance
 ```
@@ -37,9 +40,11 @@ PHASE 0  S01 scaffold → S02 schema → S03 auth+tiers
 PHASE 1  S04 acquisition+registry → S05 XBRL/PDF parsing → S06 LLM extraction+QA → S07 scoring engines
 PHASE 2  S08 semantic layer → S09 design system+shell → S10 dashboards → S11 NLQ+filters → S12 lineage+library
 PHASE 3  S13 questionnaire engine → S14 doc-to-draft AI → S15 exports (XBRL/PDF/gap)
-PHASE 4  S16 analytics+leads → S17 tiers+billing-lite → S18 infra+deploy → S19 hardening+launch
+PHASE 4  S16 analytics+leads → S17 tiers+billing-lite
+PHASE 5  S18 shell+home → S19 guided Explore+Ask → S20 private analysis pipeline → S21 Analyse journey → S22 learning → S23 Studio alignment+UX gate
+PHASE 6  S24 infra+deploy → S25 corpus+hardening+launch
 ```
-~19 sessions ≈ 5–8 working weeks for one operator at 3–4 sessions/week — consistent with the strategy doc's month-4 launch target (Deliverable 5 §8), with Filing Studio landing weeks 10–14.
+~25 sessions. S18–S23 deliberately precede production hardening so launch UAT validates the intended information architecture, upload privacy flow, accessibility, and analytics funnels rather than a superseded shell.
 
 ## Local development
 

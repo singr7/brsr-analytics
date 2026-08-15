@@ -56,7 +56,7 @@ The prescribed BRSR structure (Sections A/B/C, nine principles, Essential+Leader
 ## 7. AWS managed vs self-managed (lighter twin of the sibling decision table)
 S3/SES/SSM/ECR/Route53 managed (same rationale as sibling repo §3); Postgres/Redis/nginx+certbot self-managed on one EC2 (t3.large dev/beta → t3.xlarge at launch, 100 GB gp3); worker runs on the same instance (extraction batches are overnight jobs; a second stopped "batch" instance is a Terraform flag, off by default). No ALB/RDS/OpenSearch — revisit triggers: >3k concurrent users, DB > 100 GB, or team > 1 ops owner. Indicative cost: **$90–140/mo** + LLM API spend (budget: extraction of 1,000 filings ≈ one-off $1.5–4K depending on PDF share and model mix; NLQ/Studio inference metered per plan). Budget alarm at $300/mo infra + monthly LLM-spend review; per-org token quotas enforced in `services/llm.py`.
 
-## 8. Performance & quality budgets (tested in S19)
+## 8. Performance & quality budgets (tested in S25)
 Public dashboard p95 < 400 ms (metrics are pre-materialised; charts hit `metrics/scores`, never raw fields) · NLQ end-to-end p95 < 6 s · extraction pipeline: full 1,000-filing reprocess < 24 h on batch instance · published-field extraction accuracy ≥ 98% on the QA benchmark set (QA_PLAN §4) — below that, the field family stays Tier-B-gated with confidence flags, not public.
 
 ## 9. Non-goals (MVP)
