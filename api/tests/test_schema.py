@@ -32,6 +32,7 @@ def test_relational_spine_is_complete() -> None:
         "refresh_tokens",
         "email_verifications",
         "org_invites",
+        "invoice_requests",
         "events",
         "event_daily_aggregates",
         "leads",

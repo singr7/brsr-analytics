@@ -12,6 +12,7 @@ from api.app.core.middleware import RequestIDMiddleware
 from api.app.db.session import create_engine, create_session_factory
 from api.app.routers.acquisition import router as acquisition_router
 from api.app.routers.auth import router as auth_router
+from api.app.routers.billing import router as billing_router
 from api.app.routers.engagement import admin_router as engagement_admin_router
 from api.app.routers.engagement import router as engagement_router
 from api.app.routers.health import router as health_router
@@ -19,6 +20,7 @@ from api.app.routers.nlq import router as nlq_router
 from api.app.routers.orgs import admin_router
 from api.app.routers.orgs import router as orgs_router
 from api.app.routers.quality import router as quality_router
+from api.app.routers.research import router as research_router
 from api.app.routers.scoring import router as scoring_router
 from api.app.routers.semantic import router as semantic_router
 from api.app.routers.studio import router as studio_router
@@ -51,6 +53,7 @@ app.add_middleware(
 app.add_middleware(RequestIDMiddleware)
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(billing_router)
 app.include_router(orgs_router)
 app.include_router(admin_router)
 app.include_router(tracking_router)
@@ -58,6 +61,7 @@ app.include_router(engagement_router)
 app.include_router(engagement_admin_router)
 app.include_router(acquisition_router)
 app.include_router(quality_router)
+app.include_router(research_router)
 app.include_router(scoring_router)
 app.include_router(semantic_router)
 app.include_router(nlq_router)
