@@ -12,3 +12,9 @@
 - Run the Phase 2 browser/axe/Lighthouse and visual screenshot pass when the in-app browser bridge
   is available; its host integration could not initialize in this session. Target Home performance
   remains ≥85 and public-route axe violations must be zero.
+- Mandatory Phase 3 domain-expert gate: review the complete schema encode against the current
+  exchange format and sign off one full fixture XBRL plus draft document before any real company
+  uses Studio. The bundled taxonomy namespace is deterministic for local validation; install the
+  official current exchange taxonomy drop and run Arelle against it for production submission prep.
+- Replace the deterministic local Studio mapper with live accuracy runs after building a reviewed
+  synthetic/consented five-document golden pack; offline CI intentionally remains provider-free.

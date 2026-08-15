@@ -26,7 +26,17 @@ from api.app.models.corpus import (
     SharedPhrase,
 )
 from api.app.models.engagement import DeepdiveRequest, Event, Lead
-from api.app.models.studio import StudioAnswer, StudioDoc, StudioFiling, StudioOrg
+from api.app.models.studio import (
+    StudioAnswer,
+    StudioComment,
+    StudioDoc,
+    StudioEditorLock,
+    StudioExport,
+    StudioFiling,
+    StudioOrg,
+    StudioProposal,
+    StudioTokenUsage,
+)
 from api.app.models.trust import (
     CompanyAnnotation,
     CorrectionTicket,
@@ -65,8 +75,13 @@ __all__ = [
     "Score",
     "SharedPhrase",
     "StudioAnswer",
+    "StudioComment",
     "StudioDoc",
+    "StudioEditorLock",
+    "StudioExport",
     "StudioFiling",
     "StudioOrg",
+    "StudioProposal",
+    "StudioTokenUsage",
     "User",
 ]

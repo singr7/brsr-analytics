@@ -1,0 +1,90 @@
+sections:
+  - {key: a.entity, title: "Section A — General disclosures", order: 10}
+  - {key: b.policy, title: "Section B — Management and process disclosures", order: 20}
+  - {key: c.p1, title: "Principle 1 — Ethics, transparency and accountability", order: 31}
+  - {key: c.p2, title: "Principle 2 — Sustainable and safe goods and services", order: 32}
+  - {key: c.p3, title: "Principle 3 — Employee well-being", order: 33}
+  - {key: c.p4, title: "Principle 4 — Stakeholder responsiveness", order: 34}
+  - {key: c.p5, title: "Principle 5 — Human rights", order: 35}
+  - {key: c.p6, title: "Principle 6 — Environment", order: 36}
+  - {key: c.p7, title: "Principle 7 — Public policy advocacy", order: 37}
+  - {key: c.p8, title: "Principle 8 — Inclusive growth", order: 38}
+  - {key: c.p9, title: "Principle 9 — Consumer value", order: 39}
+  - {key: core, title: "BRSR Core KPI annexure", order: 50}
+
+field_templates:
+  - key_pattern: "b.policy.p{principle}.{item}"
+    principle_pattern: "P{principle}"
+    section: policy_matrix
+    items:
+      principles: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      item:
+        - {key: policy_exists, label: "Policy approved by the board", dtype: boolean}
+        - {key: policy_url, label: "Policy web link", dtype: text, required: false}
+        - {key: translated_to_procedures, label: "Policy translated into procedures", dtype: boolean}
+        - {key: value_chain_extended, label: "Policy extends to value-chain partners", dtype: boolean}
+        - {key: national_standards, label: "National/international standards adopted", dtype: text}
+        - {key: commitments_targets, label: "Specific commitments, goals and targets", dtype: text}
+        - {key: target_performance, label: "Performance against commitments", dtype: text}
+        - {key: responsible_executive, label: "Responsible director/executive", dtype: text}
+        - {key: board_statement, label: "Director responsible for BRSR statement", dtype: text}
+        - {key: review_frequency, label: "Policy review frequency", dtype: text}
+        - {key: external_assessment, label: "External assessment undertaken", dtype: boolean}
+        - {key: exception_reason, label: "Reason where a policy is not available", dtype: text, required: false, condition: "policy_exists == false"}
+  - key_pattern: "p{principle}.essential.{item}"
+    principle_pattern: "P{principle}"
+    section: essential
+    items:
+      principles: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      item:
+        - {key: processes, label: "Processes and controls for this principle", dtype: text}
+        - {key: training_pct, label: "Employees/workers covered by training", dtype: number, unit: percent, unit_family: percentage}
+        - {key: complaints_received, label: "Complaints received", dtype: integer, unit: count, unit_family: count}
+        - {key: complaints_pending, label: "Complaints pending at year end", dtype: integer, unit: count, unit_family: count}
+        - {key: assessment_pct, label: "Operations assessed", dtype: number, unit: percent, unit_family: percentage}
+  - key_pattern: "p{principle}.leadership.{item}"
+    principle_pattern: "P{principle}"
+    section: leadership
+    items:
+      principles: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      item:
+        - {key: programme, label: "Leadership programme or initiative", dtype: text, required: false, leadership: true}
+        - {key: outcome, label: "Measured outcome from the initiative", dtype: text, required: false, leadership: true}
+  - key_pattern: "a.operations.{item}"
+    principle_pattern: A
+    section: operations
+    items:
+      item:
+        - {key: products_services, label: "Main products and services (NIC code and turnover share)", dtype: text, repeating_group: products}
+        - {key: plants_national, label: "National plants", dtype: integer, unit: count, unit_family: count}
+        - {key: offices_national, label: "National offices", dtype: integer, unit: count, unit_family: count}
+        - {key: plants_international, label: "International plants", dtype: integer, unit: count, unit_family: count}
+        - {key: offices_international, label: "International offices", dtype: integer, unit: count, unit_family: count}
+        - {key: export_turnover_pct, label: "Exports as percentage of turnover", dtype: number, unit: percent, unit_family: percentage}
+        - {key: customer_types, label: "Types of customers", dtype: text}
+        - {key: csr_projects, label: "CSR project details", dtype: text, repeating_group: csr_projects, condition: "csr_applicable == true", required: false}
+        - {key: transparency_issues, label: "Material responsible-business issues", dtype: text, repeating_group: material_issues}
+
+repeating_groups:
+  products: {columns: [description, nic_code, turnover_pct], min_rows: 1}
+  csr_projects: {columns: [state, district, aspirational_district, amount_inr], min_rows: 0}
+  material_issues: {columns: [issue, risk_or_opportunity, rationale, mitigation, financial_implication], min_rows: 1}
+  workforce: {columns: [category, gender, permanent, other, total], min_rows: 6}
+
+relations:
+  - {key: employee_total, op: sum_equals, target: a.basics.employees_total, operands: [p3.workforce.employees_permanent_male, p3.workforce.employees_permanent_female, p3.workforce.employees_permanent_other, p3.workforce.employees_other_male, p3.workforce.employees_other_female, p3.workforce.employees_other_other], tolerance: 0}
+  - {key: worker_total, op: sum_equals, target: a.basics.workers_total, operands: [p3.workforce.workers_permanent_male, p3.workforce.workers_permanent_female, p3.workforce.workers_permanent_other, p3.workforce.workers_other_male, p3.workforce.workers_other_female, p3.workforce.workers_other_other], tolerance: 0}
+  - {key: energy_total, op: sum_equals, target: p6.e1.energy_total_gj, operands: [p6.e1.energy_renewable_gj, p6.e1.energy_nonrenewable_gj], tolerance: 0.01}
+  - {key: water_total, op: sum_equals, target: p6.e2.water_total_kl, operands: [p6.e2.water_surface_kl, p6.e2.water_ground_kl, p6.e2.water_third_party_kl, p6.e2.water_seawater_kl, p6.e2.water_other_kl], tolerance: 0.01}
+  - {key: ghg_total, op: sum_equals, target: p6.e3.scope12_total_tco2e, operands: [p6.e3.scope1_tco2e, p6.e3.scope2_tco2e], tolerance: 0.01}
+
+core_fields:
+  - p6.e1.energy_total_gj
+  - p6.e2.water_total_kl
+  - p6.e2.water_consumption_kl
+  - p6.e3.scope1_tco2e
+  - p6.e3.scope2_tco2e
+  - p6.e5.waste_recycled_mt
+  - p3.workforce.fatalities_employees
+  - p3.workforce.fatalities_workers
+  - p5.human_rights.complaints_sexual_harassment

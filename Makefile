@@ -1,4 +1,4 @@
-.PHONY: bootstrap up down verify test-api test-worker test-fe migrate seed rebuild-metrics fetch-testdata bench-extraction fmt
+.PHONY: bootstrap up down verify test-api test-worker test-fe migrate seed rebuild-metrics fetch-testdata bench-extraction lint-schema fmt
 
 PYTHON := .venv/bin/python
 RUFF := .venv/bin/ruff
@@ -17,6 +17,7 @@ down:
 	docker compose down
 
 verify:
+	$(PYTHON) -m worker.studio.schema
 	$(RUFF) check api worker
 	$(MYPY)
 	$(PYTEST) api/tests worker/tests
@@ -52,3 +53,6 @@ fetch-testdata:
 
 bench-extraction:
 	$(PYTHON) -m worker.extract.benchmark
+
+lint-schema:
+	$(PYTHON) -m worker.studio.schema

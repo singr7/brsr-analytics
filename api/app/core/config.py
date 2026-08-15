@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     publish_threshold: float = Field(default=0.90, ge=0, le=1)
     publish_family_accuracy_target: float = Field(default=0.98, ge=0, le=1)
     extraction_max_attempts: int = Field(default=3, ge=1, le=10)
+    studio_document_max_bytes: int = Field(default=25_000_000, ge=1)
+    studio_monthly_token_limit: int = Field(default=1_000_000, ge=1)
+    studio_bulk_accept_confidence: float = Field(default=0.90, ge=0, le=1)
 
     @property
     def llm_config_present(self) -> bool:

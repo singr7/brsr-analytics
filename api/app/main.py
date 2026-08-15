@@ -19,6 +19,7 @@ from api.app.routers.orgs import router as orgs_router
 from api.app.routers.quality import router as quality_router
 from api.app.routers.scoring import router as scoring_router
 from api.app.routers.semantic import router as semantic_router
+from api.app.routers.studio import router as studio_router
 from api.app.routers.tracking import router as tracking_router
 from api.app.routers.trust import router as trust_router
 
@@ -57,3 +58,4 @@ app.include_router(scoring_router)
 app.include_router(semantic_router)
 app.include_router(nlq_router)
 app.include_router(trust_router)
+app.include_router(studio_router)

@@ -125,3 +125,29 @@ Status: complete (live visual/service checks backlogged).
 - Phase 2 verification: 73 Python passed, 6 skipped; Ruff/mypy/TypeScript/ESLint green; 3 frontend
   test files passed. Migration/seed/materialisation and core API flows passed live on Compose.
   Browser bridge initialization was unavailable, so visual/axe/Lighthouse inspection is backlogged.
+
+## S13 — 2026-08-15
+
+Status: complete.
+
+- Expanded schema `1.0.0` to 300+ data-defined fields covering Section A, the 9×12 Section B
+  matrix, all principles, Leadership indicators, repeating groups, relations, and BRSR Core.
+- Added the schema linter, typed answer CRUD, single-editor locking, comments, tiered validation,
+  per-section/Core progress, prior-year candidates, and the generated Studio questionnaire UI.
+
+## S14 — 2026-08-15
+
+Status: complete.
+
+- Added tenant-isolated PDF/DOCX/XLSX intake, classification, parsed private corpora, evidence
+  retrieval, verbatim-quote tripwire, governed proposals, human decisions, token quotas, and
+  document-gap guidance. AI proposals never overwrite human answers or count before review.
+
+## S15 — 2026-08-15
+
+Status: complete (domain sign-off required before real-company use).
+
+- Added XBRL instance generation and validation adapter, hard export gates, draft PDF/DOCX with
+  provenance and submission note, contextual assurance gap PDF, artifact history and staleness.
+- Phase 3 focused checks cover 15-error validation goldens, org isolation, quote tripwire,
+  AI-review blocking, XBRL/XML, PDF/DOCX structure, Bioedge agenda, schema coverage and routes.

@@ -182,7 +182,7 @@ async def seed_access(session: AsyncSession) -> None:
                 "studio_org_id": studio_org_id,
                 "fy": 2025,
                 "status": "draft",
-                "schema_version": "0.1.0",
+                "schema_version": "1.0.0",
             }
         ],
         "id",

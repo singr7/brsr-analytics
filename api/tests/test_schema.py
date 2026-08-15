@@ -39,6 +39,11 @@ def test_relational_spine_is_complete() -> None:
         "studio_filings",
         "studio_answers",
         "studio_docs",
+        "studio_proposals",
+        "studio_comments",
+        "studio_editor_locks",
+        "studio_exports",
+        "studio_token_usage",
         "correction_tickets",
         "library_patterns",
         "library_exemplars",
@@ -47,11 +52,11 @@ def test_relational_spine_is_complete() -> None:
     assert set(Base.metadata.tables) == expected
 
 
-def test_form_schema_contains_representative_120_fields() -> None:
+def test_form_schema_contains_complete_phase3_format() -> None:
     version, fields = load_form_schema()
     keys = {field["field_key"] for field in fields}
-    assert version == "0.1.0"
-    assert len(fields) == len(keys) == 120
+    assert version == "1.0.0"
+    assert len(fields) == len(keys) == 300
     assert all(FIELD_KEY_PATTERN.fullmatch(key) for key in keys)
     assert {
         "a.basics.company_name",
@@ -61,6 +66,8 @@ def test_form_schema_contains_representative_120_fields() -> None:
         "p6.e2.water_total_kl",
         "p6.e3.scope1_tco2e",
         "p6.e5.waste_recycled_mt",
+        "b.policy.p9.external_assessment",
+        "p8.leadership.outcome",
     } <= keys
 
 

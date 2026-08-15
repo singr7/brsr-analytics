@@ -20,6 +20,14 @@ events:
     description: An analytics export was generated.
   studio_gap_report:
     description: A Studio document-gap report was generated.
+  studio_answer_saved:
+    description: A human saved or accepted a Studio answer.
+  studio_document_uploaded:
+    description: A private evidence document was uploaded to Studio.
+  studio_proposal_reviewed:
+    description: A human accepted, edited, or rejected an AI proposal.
+  studio_export_created:
+    description: A Studio export package or report was generated.
   pricing_viewed:
     description: The pricing page was viewed.
   deepdive_requested:

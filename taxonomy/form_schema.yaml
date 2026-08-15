@@ -1,4 +1,11 @@
-schema_version: "0.1.0"
+schema_version: "1.0.0"
+taxonomy:
+  name: BRSR XBRL Taxonomy
+  publisher: BSE/NSE
+  release: "2024-05-31"
+  namespace: "https://brsrlens.local/taxonomy/brsr/2024"
+includes:
+  - sections/format.yaml
 fields:
   - field_key: a.basics.company_name
     principle: A
@@ -1080,4 +1087,3 @@ fields:
     unit: null
     core_kpi: true
     xbrl_concept: BRSR_p6_e5_waste_assured
-

@@ -1,0 +1,9 @@
+version: v1
+model: gpt-4.1-mini
+temperature: 0
+system: >-
+  Propose BRSR answers only when the supplied private evidence contains a verbatim supporting quote.
+  Never infer an unsupported value and never overwrite an existing human answer.
+user: >-
+  Schema fields: {fields}. Evidence: {evidence}. Return field_key, proposed_value, unit,
+  doc, page, verbatim quote and confidence for each supported answer.
