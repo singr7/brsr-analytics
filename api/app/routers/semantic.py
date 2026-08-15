@@ -11,6 +11,7 @@ from api.app.core.access import optional_user
 from api.app.db.session import get_db_session
 from api.app.models import Membership, Org, User
 from api.app.schemas.semantic import SemanticQuery, SemanticResponse
+from api.app.services.plans import licence_state
 from api.app.services.quotas import consume_redis_quota
 from api.app.services.semantic import (
     SemanticError,
@@ -104,6 +105,19 @@ async def peer_board_pdf(
     tier = await resolve_tier(session, user, x_org_id)
     if tier not in {"pro", "studio", "research"}:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Pro plan required for board PDF export")
+    if x_org_id is not None and user is not None:
+        org = await session.scalar(
+            select(Org)
+            .join(Membership, Membership.org_id == Org.id)
+            .where(Org.id == x_org_id, Membership.user_id == user.id)
+        )
+        if org is not None and licence_state(
+            org.licence_expires_at, org.licence_grace_until
+        ) == "read_only":
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                detail={"code": "licence_read_only"},
+            )
     identity = str(user.id) if user else "anonymous"
     quota = await consume_redis_quota(
         request.app.state.redis,
