@@ -197,3 +197,20 @@ Status: complete (visual browser pass backlogged).
   route, keyboard, copy, query-state, and event-privacy tests.
 - `make verify` passed schema validation, Ruff, strict mypy, 115 Python tests (6 integration skips),
   TypeScript/ESLint, and 18 frontend tests. The browser bridge exposed no browser instance.
+
+## S19 — 2026-08-15
+
+Status: complete (visual browser pass backlogged).
+
+- Added a versioned eight-question registry spanning sector completeness, substance, BRSR Core
+  readiness, materiality evidence, assurance context, market-cap quality, emissions, and boilerplate.
+- Replaced `/explore` with a tier-aware guided hub containing governed results, human-readable
+  cohorts, takeaways, explanations, robust states, shareable query state, and one-action expert paths.
+- Added reusable contextual follow-ups and `/api/nlq` `base_dsl` merge provenance. Same-dimension
+  follow-up filters override base context; other filters inherit before central validation/policy.
+- Reframed Ask transparency copy and removed raw free-text questions from first-party analytics.
+  Registered four privacy-safe S19 events and added merge, policy, route, tier, URL, and payload tests.
+- `make verify` passed schema validation, Ruff, strict mypy, 117 Python tests (6 integration skips),
+  TypeScript/ESLint, and 22 frontend tests. The browser runtime exposed no browser instance; live
+  HTTP, responsive CSS, component interaction, keyboard-native control, and production-build checks
+  passed as the fallback.

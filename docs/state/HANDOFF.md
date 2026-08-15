@@ -1,48 +1,52 @@
-# HANDOFF — after S18 (2026-08-15)
+# HANDOFF — after S19 (2026-08-15)
 
-## Repo state: `main` · S18 complete · dev services up · migrations head `0008`
+## Repo state: `main` · S19 complete · dev services up · migrations head `0008`
 
 ## Delivered
 
-- Added `docs/ux/experience-contract.md` as the canonical navigation, copy, route, role/tier,
-  responsive, and entry-event contract.
-- Replaced the module-first header with `SiteHeader`, `JourneyNav`, `UtilityNav`, and an
-  Escape-closing/focus-restoring mobile menu while retaining sign-in and organisation switching.
-- Rebuilt `/` around Explore, Analyse, and File outcomes, an explicit private-analysis promise,
-  and a QA-pinned FY25 semantic insight using the existing ranked chart and policy states.
-- Added staged `/explore`, `/analyse`, and `/learn` entries; retained `/sectors`, `/assurance`,
-  `/studio`, `/ask`, `/library`, `/benchmarks`, and saved semantic query URLs.
-- Applied canonical S18 terms, active-route state, skip navigation, focus styling, route titles,
-  citation/public URL metadata, and canonical links.
-- Registered and tested four privacy-safe entry events plus anonymous/authenticated shell, routes,
-  mobile keyboard behaviour, copy, query-state, and payload contracts.
+- Added the versioned `frontend/src/content/guided-questions.ts` registry with eight stable guided
+  questions, approved DSL, explanation, follow-ups, tier eligibility, and expert destinations.
+- Replaced the `/explore` alias with a guided hub: zero-config result, current cohort, takeaway,
+  honest states, sources, tier locks, responsive question grid, and one-action advanced controls.
+- Persisted the active question and refined DSL in `?question=<id>&q=<json>` while retaining all
+  canonical expert routes and the full `/ask` workspace.
+- Added reusable `AskFollowUp`; contextual NLQ sends `question` and `base_dsl` separately and shows
+  inherited context before and after execution.
+- Extended `/api/nlq` with merge provenance. Follow-up filters override the same base dimension;
+  non-conflicting base filters inherit. The merged DSL uses the existing semantic validator,
+  tier/cohort policy, compiler, execution, and lineage path.
+- Registered four S19 events and removed raw question text from `nlq_asked` analytics.
 
 ## Contracts next session relies on
 
-- Shell API: `SiteHeader({ path, tier, profile, org, onOrgChange, onSignIn, onSignOut })`;
-  `JourneyNav({ path })`; `UtilityNav({ path })`.
-- Route aliases: `/explore` renders the current sector view (canonical `/sectors`); `/learn` renders
-  the current library (canonical `/library`); `/analyse` is the private-analysis promise.
-- Home insight DSL: `completeness` by `sector`, `fy = 2025`, distribution, descending, limit 20;
-  public values remain sourced through `/api/query` only.
-- S18 event properties are exactly `intent`, `auth_state`, `plan_tier`, `source_surface`; raw report,
-  company, organisation, query, question, and email data are prohibited.
-- Event names: `home_intent_selected`, `guided_insight_viewed`, `analyse_cta_selected`,
-  `filing_cta_selected`.
+- Registry version: `1.0.0`; IDs: `sector-completeness-fy25`, `substance-by-sector`,
+  `core-readiness-gaps`, `materiality-evidence`, `assurance-trend`, `market-cap-quality`,
+  `company-scope3`, `boilerplate-watch`.
+- `/api/nlq` request: `{ question: string, base_dsl?: SemanticQuery }`.
+- `/api/nlq` response adds `context: { applied, inherited_filters, overridden_filters }`.
+- Merge precedence: translated filters replace base filters with the same `dimension`; remaining
+  base filters are inherited. Translated measures, dimensions, shape, sort, and limit are explicit.
+- S19 event names: `guided_question_selected`, `guided_filter_opened`,
+  `guided_followup_selected`, `learn_explanation_opened`. No raw question or DSL text is allowed.
+- `/explore` is now canonical to itself. `/sectors` remains the canonical detailed sector surface.
 
 ## Sharp edges
 
-- `/explore` and `/learn` are intentional aliases until S19/S22 replace their staged content.
-- `/analyse` deliberately promises outcomes but has no file selector; S20 owns private upload.
-- The browser bridge exposed no browser instance, so desktop/mobile visual inspection is backlogged;
-  responsive CSS review and mobile focus/Escape component tests passed.
-- Vitest prints the existing root `@tsconfig/node16` resolution warning; checks still pass.
+- The assurance guided question uses the governed `assurance_readiness` timeseries as an explicitly
+  labelled proxy; public assurance adoption detail remains on `/assurance`. Do not conflate them.
+- The current `SmartFilters` exposes FY and market-cap band; registry DSL and full expert pages retain
+  the broader query surface until later guided-control expansion.
+- Existing ECharts component mocks print ref warnings and Vitest prints the root tsconfig warning;
+  both predate S19 and checks pass.
+- The browser runtime exposed no browser instance. Live HTTP, responsive CSS, component interaction,
+  URL, keyboard-native control, and production-build checks passed; visual inspection is backlogged.
 
 ## Env/secrets added
 
 - None.
 
-## Next: S19 — Guided Explore and contextual Ask BRSR Lens
+## Next: S20 — Private BRSR analysis pipeline and report contract
 
-Build the curated-question registry and replace the `/explore` alias with the guided hub. Preserve
-the S18 shell API, event privacy shape, canonical old routes, semantic compiler, and expert bypass.
+Build migration `0009`, private analysis upload/report/storage contracts, isolated API and worker
+orchestration, retention/deletion, quota policy, and fixture report. Preserve the S19 semantic,
+context, tier/cohort, event-privacy, and public-corpus separation contracts.

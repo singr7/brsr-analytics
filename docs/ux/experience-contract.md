@@ -1,6 +1,6 @@
 # BRSR Lens experience contract
 
-Status: S18 implementation contract (2026-08-15)
+Status: S19 implementation contract (2026-08-15)
 
 ## Navigation and route map
 
@@ -10,7 +10,7 @@ menu button on mobile.
 
 | Navigation label | Canonical destination | S18 behaviour |
 |---|---|---|
-| Explore insights | `/explore` | Guided-entry alias to the existing sector insight until S19 expands it |
+| Explore insights | `/explore` | Canonical guided-question hub; expert detail remains one action away |
 | Analyse my BRSR | `/analyse` | Public privacy/value promise; the upload pipeline arrives in S20 |
 | Filing Studio | `/studio` | Existing authenticated filing workspace |
 | Learn BRSR | `/learn` | Alias to the existing Learning Library until S22 expands it |
@@ -20,8 +20,28 @@ menu button on mobile.
 
 Existing `/sectors`, `/companies`, `/materiality`, `/assurance`, `/benchmarks`, `/ask`, `/library`,
 and `/studio` URLs remain valid. Query strings, including saved semantic query state, are preserved.
-The old detail routes stay indexable; aliases use a canonical link for their eventual canonical URL
+The old detail routes stay indexable; `/learn` uses a canonical link for its eventual canonical URL
 without forcing a navigation or discarding query state.
+
+## Guided Explore and contextual Ask
+
+The curated registry is `frontend/src/content/guided-questions.ts`, version `1.0.0`. Its stable IDs
+are `sector-completeness-fy25`, `substance-by-sector`, `core-readiness-gaps`,
+`materiality-evidence`, `assurance-trend`, `market-cap-quality`, `company-scope3`, and
+`boilerplate-watch`. Every entry owns its question, governed DSL, summary template, explanation,
+follow-ups, eligible tiers, and expert destination.
+
+`/explore?question=<id>&q=<encoded DSL>` reproduces the active question and refined query. Curated
+selection resets to that question's approved DSL; advanced filter changes update `q`. The default
+view shows a human-readable cohort, takeaway, limitation-aware explanation, sources, and explicit
+loading, empty, suppressed, locked, and error states. `Refine this view` and the full Ask workspace
+are each available in one keyboard action.
+
+Contextual follow-ups post `{ question, base_dsl }` to `/api/nlq`. These fields remain separate;
+the question is never rewritten to contain the DSL. Translation filters override base filters for
+the same dimension and all other base filters are inherited. The response `context` object reports
+`applied`, `inherited_filters`, and `overridden_filters`. The merged query always returns through
+the catalog validator, tier policy, cohort suppression, compiler, and lineage path.
 
 ## Shell behaviour
 
@@ -81,6 +101,10 @@ stable UI identifier such as `home_hero`, `home_intent_card`, or `home_guided_in
 - `guided_insight_viewed`: the real guided preview becomes visible.
 - `analyse_cta_selected`: an Analyse entry is selected.
 - `filing_cta_selected`: a Filing Studio entry is selected.
+- `guided_question_selected`: stable guided question ID plus auth/tier/surface.
+- `guided_filter_opened`: stable guided question ID and surface.
+- `guided_followup_selected`: stable question/follow-up IDs, surface, and safe question length.
+- `learn_explanation_opened`: stable guided question ID and surface.
 
 Report names/text, uploaded content, natural-language questions, semantic query text, company names,
 emails, and organisation names are prohibited in these event payloads.

@@ -28,3 +28,7 @@
   visual keyboard walk across `/`, `/sectors`, `/assurance`, `/studio`, and `/ask`. The browser
   runtime exposed no available browser; route, responsive-navigation, Escape/focus, auth/org,
   terminology, metadata, and privacy-safe event contracts passed automated tests.
+- Run the S19 desktop/mobile visual and keyboard walk across all eight `/explore` questions,
+  advanced controls, tier locks, suggested/custom follow-ups, error/suppression states, and URL
+  reloads. The browser runtime again exposed no available browser; live HTTP, component interaction,
+  responsive CSS, context-merge, privacy, production-build, and full verification checks passed.
