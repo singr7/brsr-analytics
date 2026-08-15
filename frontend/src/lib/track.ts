@@ -11,6 +11,7 @@ export type EventName =
   | 'studio_gap_report'
   | 'pricing_viewed'
   | 'deepdive_requested'
+  | 'expert_cta_viewed'
 
 function sessionId(): string {
   const current = sessionStorage.getItem(sessionKey)
@@ -21,6 +22,7 @@ function sessionId(): string {
 }
 
 export async function track(name: EventName, properties: Record<string, unknown> = {}): Promise<void> {
+  if (document.cookie.split(';').some(item => item.trim() === 'analytics_opt_out=1')) return
   const token = accessToken()
   await fetch(`${apiUrl}/api/events`, {
     method: 'POST', credentials: 'include', keepalive: true,
