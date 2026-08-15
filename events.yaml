@@ -46,3 +46,11 @@ events:
     description: A Research organisation exported the aggregate dataset.
   expert_cta_viewed:
     description: A clearly labelled expert help conversion surface was shown.
+  home_intent_selected:
+    description: A visitor selected an Explore, Analyse, or File journey from home.
+  guided_insight_viewed:
+    description: The governed guided insight preview was displayed on home.
+  analyse_cta_selected:
+    description: A visitor selected an entry to private BRSR analysis.
+  filing_cta_selected:
+    description: A visitor selected an entry to Filing Studio.

@@ -12,6 +12,10 @@ export type EventName =
   | 'pricing_viewed'
   | 'deepdive_requested'
   | 'expert_cta_viewed'
+  | 'home_intent_selected'
+  | 'guided_insight_viewed'
+  | 'analyse_cta_selected'
+  | 'filing_cta_selected'
 
 function sessionId(): string {
   const current = sessionStorage.getItem(sessionKey)
