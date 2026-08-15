@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.app.core.access import CurrentOrg, CurrentUser
+from api.app.core.access import CurrentOrg, CurrentUser, ensure_writable
 from api.app.core.config import Settings, get_settings
 from api.app.db.session import get_db_session
 from api.app.db.taxonomy import load_studio_schema
@@ -31,6 +31,7 @@ from api.app.schemas.studio import (
     ProposalDecision,
     StudioResponse,
 )
+from api.app.services.quotas import enforce_quota
 from api.app.services.storage import object_store
 from api.app.services.studio import (
     filing_answers,
@@ -44,7 +45,6 @@ from worker.studio.mapper import (
     Proposal,
     document_gap_report,
     propose_for_section,
-    within_token_quota,
 )
 from worker.studio.schema import schema_stats
 
@@ -105,6 +105,7 @@ async def list_filings(session: SessionDep, context: CurrentOrg) -> StudioRespon
 async def create_filing(
     payload: FilingCreate, session: SessionDep, context: CurrentOrg
 ) -> StudioResponse:
+    ensure_writable(context)
     studio_org = await _studio_org(session, context)
     existing = await session.scalar(
         select(StudioFiling).where(
@@ -157,6 +158,7 @@ async def put_answer(
     context: CurrentOrg,
     user: CurrentUser,
 ) -> StudioResponse:
+    ensure_writable(context)
     filing = await scoped_filing(session, filing_id, context.org.id)
     answer = await write_answer(session, filing, user, field_key, payload.value, payload.unit)
     await session.commit()
@@ -181,6 +183,7 @@ async def add_comment(
     context: CurrentOrg,
     user: CurrentUser,
 ) -> StudioResponse:
+    ensure_writable(context)
     await scoped_filing(session, filing_id, context.org.id)
     comment = StudioComment(
         studio_filing_id=filing_id, field_key=payload.field_key, user_id=user.id, body=payload.body
@@ -214,6 +217,7 @@ async def upload_document(
     settings: SettingsDep,
     filename: Annotated[str, Query(min_length=1, max_length=255)],
 ) -> StudioResponse:
+    ensure_writable(context)
     filing = await scoped_filing(session, filing_id, context.org.id)
     studio_org = await session.get(StudioOrg, filing.studio_org_id)
     assert studio_org is not None
@@ -251,13 +255,18 @@ async def map_section(
     context: CurrentOrg,
     settings: SettingsDep,
 ) -> StudioResponse:
+    ensure_writable(context)
     filing = await scoped_filing(session, filing_id, context.org.id)
+    month_start = datetime.now(UTC).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     used = await session.scalar(
         select(
             func.coalesce(
                 func.sum(StudioTokenUsage.input_tokens + StudioTokenUsage.output_tokens), 0
             )
-        ).where(StudioTokenUsage.studio_org_id == filing.studio_org_id)
+        ).where(
+            StudioTokenUsage.studio_org_id == filing.studio_org_id,
+            StudioTokenUsage.created_at >= month_start,
+        )
     )
     documents = list(
         await session.scalars(
@@ -265,8 +274,12 @@ async def map_section(
         )
     )
     estimated = sum(document.size_bytes for document in documents) // 4
-    if not within_token_quota(int(used or 0), estimated, settings.studio_monthly_token_limit):
-        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Studio token quota exceeded")
+    quota = enforce_quota(
+        context.org.plan_tier,
+        "studio_tokens_per_month",
+        int(used or 0),
+        estimated,
+    )
     answers, meta = await filing_answers(session, filing.id)
     source_docs = [
         {
@@ -305,7 +318,17 @@ async def map_section(
         )
     )
     await session.commit()
-    return StudioResponse(data={"items": [_proposal(item) for item in rows]})
+    return StudioResponse(
+        data={
+            "items": [_proposal(item) for item in rows],
+            "quota": {
+                "used": quota.used,
+                "limit": quota.limit,
+                "remaining": quota.remaining,
+                "warning": quota.warning,
+            },
+        }
+    )
 
 
 @router.patch("/filings/{filing_id}/proposals/{proposal_id}", response_model=StudioResponse)
@@ -317,6 +340,7 @@ async def decide_proposal(
     context: CurrentOrg,
     user: CurrentUser,
 ) -> StudioResponse:
+    ensure_writable(context)
     filing = await scoped_filing(session, filing_id, context.org.id)
     proposal = await session.scalar(
         select(StudioProposal).where(
@@ -350,6 +374,7 @@ async def bulk_accept(
     settings: SettingsDep,
     user: CurrentUser,
 ) -> StudioResponse:
+    ensure_writable(context)
     accepted = []
     for proposal_id in payload.proposal_ids:
         proposal = await session.scalar(
@@ -410,6 +435,7 @@ async def create_exports(
     context: CurrentOrg,
     settings: SettingsDep,
 ) -> StudioResponse:
+    ensure_writable(context)
     filing = await scoped_filing(session, filing_id, context.org.id)
     studio_org = await session.get(StudioOrg, filing.studio_org_id)
     assert studio_org is not None

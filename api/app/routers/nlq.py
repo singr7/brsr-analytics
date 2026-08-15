@@ -1,5 +1,4 @@
 import json
-from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -14,12 +13,13 @@ from api.app.routers.semantic import resolve_tier
 from api.app.schemas.nlq import NLQRequest, NLQResponse, NLQTranslation
 from api.app.schemas.semantic import SemanticResponse
 from api.app.services.llm import LLMError, get_llm
+from api.app.services.quotas import consume_redis_quota, period_key
 from api.app.services.semantic import SemanticError, execute_query, load_catalog
+from api.app.services.track import persist_events
 
 router = APIRouter(prefix="/api", tags=["nlq"])
 SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
 OUT_OF_SCOPE = ("stock tip", "share price", "buy stock", "sell stock", "weather", "cricket")
-QUOTAS = {"explore": 10, "pro": 500, "studio": 200, "research": 2000}
 
 
 @router.post("/nlq", response_model=NLQResponse)
@@ -34,15 +34,37 @@ async def natural_language_query(
     catalog = load_catalog()
     tier = await resolve_tier(session, user, x_org_id)
     identity = str(user.id) if user else request.client.host if request.client else "anonymous"
-    month = datetime.now(UTC).strftime("%Y-%m")
-    quota_key = f"nlq:{tier}:{identity}:{month}"
-    usage = int(await request.app.state.redis.incr(quota_key))
-    if usage == 1:
-        await request.app.state.redis.expire(quota_key, 2_678_400)
-    if usage > QUOTAS[tier]:
-        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "NLQ monthly quota exceeded")
+    quota = await consume_redis_quota(
+        request.app.state.redis,
+        tier=tier,
+        identity=identity,
+        name="nlq_per_day",
+    )
+    if quota.warning and user is not None:
+        period, ttl = period_key("nlq_per_day")
+        first_warning = await request.app.state.redis.set(
+            f"quota-warning:nlq:{user.id}:{period}", "1", ex=ttl, nx=True
+        )
+        if first_warning:
+            await persist_events(
+                session,
+                [
+                    {
+                        "name": "quota_headroom_viewed",
+                        "session_id": user.id,
+                        "properties": {
+                            "quota": "nlq_per_day",
+                            "tier": tier,
+                            "remaining": quota.remaining,
+                        },
+                    }
+                ],
+                anon_id=None,
+                user_id=user.id,
+            )
+            await session.commit()
     if any(term in payload.question.lower() for term in OUT_OF_SCOPE):
-        return NLQResponse(
+        response = NLQResponse(
             dsl=None,
             interpretation="This asks for advice or data outside the BRSR disclosure corpus.",
             confidence=1,
@@ -51,6 +73,7 @@ async def natural_language_query(
             suggested_refinements=["Ask about a BRSR metric, score, sector, company, or year."],
             refusal="I can analyse BRSR disclosures, but not provide stock tips or unrelated data.",
         )
+        return response
     context = json.dumps(
         {
             "measures": catalog.measures,
@@ -87,8 +110,13 @@ async def natural_language_query(
         applied_policy=policy,
         catalog_version=catalog.version,
     )
-    return NLQResponse(
+    response = NLQResponse(
         **translated.model_dump(),
         result=result,
         suggested_refinements=["Change the year", "Add a sector", "Compare another measure"],
     )
+    if quota.warning:
+        response.suggested_refinements.append(
+            f"Plan headroom: {quota.remaining} NLQ requests remain today."
+        )
+    return response
