@@ -16,6 +16,10 @@ export type EventName =
   | 'guided_insight_viewed'
   | 'analyse_cta_selected'
   | 'filing_cta_selected'
+  | 'guided_question_selected'
+  | 'guided_filter_opened'
+  | 'guided_followup_selected'
+  | 'learn_explanation_opened'
 
 function sessionId(): string {
   const current = sessionStorage.getItem(sessionKey)

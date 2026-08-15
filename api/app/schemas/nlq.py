@@ -5,6 +5,7 @@ from api.app.schemas.semantic import SemanticQuery, SemanticResponse
 
 class NLQRequest(BaseModel):
     question: str = Field(min_length=3, max_length=1000)
+    base_dsl: SemanticQuery | None = None
 
 
 class UnresolvedTerm(BaseModel):
@@ -19,6 +20,13 @@ class NLQTranslation(BaseModel):
     unresolved_terms: list[UnresolvedTerm] = Field(default_factory=list)
     refusal: str | None = None
 
+
+class ContextProvenance(BaseModel):
+    applied: bool = False
+    inherited_filters: list[str] = Field(default_factory=list)
+    overridden_filters: list[str] = Field(default_factory=list)
+
+
 class NLQResponse(BaseModel):
     dsl: SemanticQuery | None
     interpretation: str
@@ -27,3 +35,4 @@ class NLQResponse(BaseModel):
     result: SemanticResponse | None
     suggested_refinements: list[str]
     refusal: str | None = None
+    context: ContextProvenance = Field(default_factory=ContextProvenance)

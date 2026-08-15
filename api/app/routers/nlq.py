@@ -13,6 +13,7 @@ from api.app.routers.semantic import resolve_tier
 from api.app.schemas.nlq import NLQRequest, NLQResponse, NLQTranslation
 from api.app.schemas.semantic import SemanticResponse
 from api.app.services.llm import LLMError, get_llm
+from api.app.services.nlq import merge_context
 from api.app.services.quotas import consume_redis_quota, period_key
 from api.app.services.semantic import SemanticError, execute_query, load_catalog
 from api.app.services.track import persist_events
@@ -83,9 +84,21 @@ async def natural_language_query(
         },
         sort_keys=True,
     )
+    base_context = (
+        payload.base_dsl.model_dump_json(exclude_none=True)
+        if payload.base_dsl is not None
+        else "No inherited analytical context."
+    )
     try:
         translated = await get_llm(settings).complete(
-            "nlq", "v1", {"catalog_context": context, "question": payload.question}, NLQTranslation
+            "nlq",
+            "v1",
+            {
+                "catalog_context": context,
+                "base_context": base_context,
+                "question": payload.question,
+            },
+            NLQTranslation,
         )
     except (LLMError, ValueError) as exc:
         raise HTTPException(
@@ -97,8 +110,9 @@ async def natural_language_query(
             result=None,
             suggested_refinements=["Name a measure, grouping, and financial year."],
         )
+    merged_dsl, provenance = merge_context(payload.base_dsl, translated.dsl)
     try:
-        data, lineage, policy = await execute_query(session, translated.dsl, tier, catalog)
+        data, lineage, policy = await execute_query(session, merged_dsl, tier, catalog)
     except SemanticError as exc:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -111,9 +125,11 @@ async def natural_language_query(
         catalog_version=catalog.version,
     )
     response = NLQResponse(
-        **translated.model_dump(),
+        **translated.model_dump(exclude={"dsl"}),
+        dsl=merged_dsl,
         result=result,
         suggested_refinements=["Change the year", "Add a sector", "Compare another measure"],
+        context=provenance,
     )
     if quota.warning:
         response.suggested_refinements.append(

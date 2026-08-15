@@ -54,3 +54,11 @@ events:
     description: A visitor selected an entry to private BRSR analysis.
   filing_cta_selected:
     description: A visitor selected an entry to Filing Studio.
+  guided_question_selected:
+    description: A visitor selected a stable curated question ID.
+  guided_filter_opened:
+    description: A visitor opened advanced controls for a guided view.
+  guided_followup_selected:
+    description: A visitor selected or entered a contextual follow-up without recording its text.
+  learn_explanation_opened:
+    description: A visitor opened the methodology or explanation for a guided insight.
