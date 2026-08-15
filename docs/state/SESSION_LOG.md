@@ -151,3 +151,16 @@ Status: complete (domain sign-off required before real-company use).
   provenance and submission note, contextual assurance gap PDF, artifact history and staleness.
 - Phase 3 focused checks cover 15-error validation goldens, org isolation, quote tripwire,
   AI-review blocking, XBRL/XML, PDF/DOCX structure, Bioedge agenda, schema coverage and routes.
+
+## S16 — 2026-08-15
+
+Status: complete (visual/keyboard browser pass backlogged).
+
+- Added first-party funnel/feature/sector analytics, deterministic embedding-clustered NLQ themes,
+  the weekly team digest, 13-month raw retention and daily aggregates.
+- Added governed lead scoring, signal timelines, context-card email, HMAC webhook retries,
+  14-day organisation suppression, absolute opt-out and BD outcome quality reporting.
+- Added scoped deep-dive requests with the `new → scoped → quoted → delivered` admin workflow,
+  contextual expert CTAs, and a user-facing analytics preference surface.
+- Migration `0007` applied live; S16 API smoke checks passed. `make verify` passed 94 Python tests
+  (6 integration skips), strict Python/TypeScript lint and typing, plus 7 frontend tests.

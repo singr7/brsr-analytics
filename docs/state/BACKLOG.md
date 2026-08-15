@@ -18,3 +18,6 @@
   official current exchange taxonomy drop and run Arelle against it for production submission prep.
 - Replace the deterministic local Studio mapper with live accuracy runs after building a reviewed
   synthetic/consented five-document golden pack; offline CI intentionally remains provider-free.
+- Run a visual and keyboard pass on the S16 `/deep-dive`, `/privacy`, `/admin/analytics`, and
+  `/admin/leads` surfaces when the in-app browser host bridge is available. Component/type/lint
+  checks and live API smoke tests passed in S16; browser initialization remained unavailable.
