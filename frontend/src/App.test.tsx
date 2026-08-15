@@ -54,6 +54,7 @@ test('restores the authenticated organisation and plan shell', async () => {
 })
 
 test.each([
+  ['/explore', 'Start with a useful question.'],
   ['/sectors', 'Sector scorecards'],
   ['/assurance', 'Assurance trends'],
   ['/studio', 'Your reporting workspace starts here.'],
