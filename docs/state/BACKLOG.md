@@ -21,3 +21,6 @@
 - Run a visual and keyboard pass on the S16 `/deep-dive`, `/privacy`, `/admin/analytics`, and
   `/admin/leads` surfaces when the in-app browser host bridge is available. Component/type/lint
   checks and live API smoke tests passed in S16; browser initialization remained unavailable.
+- Run a visual and keyboard pass on the S17 config-driven `/pricing` and invoice `/billing`
+  surfaces. The in-app browser could not create a session; component tests, responsive CSS review,
+  TypeScript/ESLint and rebuilt-service route smoke checks passed instead.

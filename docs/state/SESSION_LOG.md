@@ -164,3 +164,19 @@ Status: complete (visual/keyboard browser pass backlogged).
   contextual expert CTAs, and a user-facing analytics preference surface.
 - Migration `0007` applied live; S16 API smoke checks passed. `make verify` passed 94 Python tests
   (6 integration skips), strict Python/TypeScript lint and typing, plus 7 frontend tests.
+
+## S17 — 2026-08-15
+
+Status: complete (pricing/billing browser pass backlogged).
+
+- Added data-defined plans, admin licence assignment with seats and terms, active/grace/read-only
+  enforcement, manual invoice requests and a deliberately non-charging Razorpay adapter boundary.
+- Unified NLQ/day, Studio token/month, seat and export/month enforcement with 80% headroom notices
+  and a registered first-party warning event.
+- Added Research-owner scoped API key issue/list/revoke, per-key limits, the public-measure-only
+  `/api/v1/query`, and cohort-safe CSV/Parquet aggregate exports with embedded licence metadata.
+- Added config-rendered pricing/FAQ and invoice-request UI, board-PDF theming, Studio PDF/DOCX
+  typography, and the manual full-corpus fulfilment runbook.
+- Migration `0008` applied live; rebuilt API returned all four plans and all five S17 route groups.
+  `make verify` passed 115 Python tests (6 integration skips), strict Python/TypeScript checks and
+  8 frontend tests.
