@@ -6,6 +6,9 @@ export interface OrgSummary {
   slug: string
   role: 'owner' | 'member'
   plan_tier: 'explore' | 'pro' | 'studio' | 'research'
+  licence_state: 'active' | 'grace' | 'read_only'
+  seat_limit: number
+  licence_expires_at?: string | null
 }
 
 export interface UserProfile {

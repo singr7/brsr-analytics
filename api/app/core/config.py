@@ -61,6 +61,8 @@ class Settings(BaseSettings):
     lead_webhook_url: str | None = None
     lead_webhook_secret: str | None = None
     analytics_digest_recipients: str = "team@brsrlens.local"
+    billing_ops_email: str = "ops@brsrlens.local"
+    razorpay_enabled: bool = False
 
     @property
     def llm_config_present(self) -> bool:

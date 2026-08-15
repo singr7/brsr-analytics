@@ -33,6 +33,7 @@ from api.app.services.auth import (
     send_email,
     verify_password,
 )
+from api.app.services.plans import licence_state
 from api.app.services.track import merge_anonymous_history, persist_events
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -207,6 +208,9 @@ async def me(user: CurrentUser, session: SessionDep) -> MeResponse:
                 slug=org.slug,
                 role=membership.role,
                 plan_tier=org.plan_tier,
+                licence_state=licence_state(org.licence_expires_at, org.licence_grace_until),
+                seat_limit=org.seat_limit,
+                licence_expires_at=org.licence_expires_at,
             )
             for org, membership in rows
         ],

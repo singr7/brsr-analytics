@@ -4,10 +4,10 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.app.core.access import CurrentOrg, CurrentUser
+from api.app.core.access import CurrentOrg, CurrentUser, ensure_writable
 from api.app.core.config import Settings, get_settings
 from api.app.db.session import get_db_session
 from api.app.models import Membership, Org, OrgInvite, Plan
@@ -62,6 +62,15 @@ async def invite_member(
 ) -> InviteResponse:
     if context.membership.role != "owner":
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Owner role required")
+    ensure_writable(context)
+    members = await session.scalar(
+        select(func.count(Membership.id)).where(Membership.org_id == context.org.id)
+    )
+    if int(members or 0) >= context.org.seat_limit:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={"code": "seat_limit", "limit": context.org.seat_limit},
+        )
     await enforce_rate_limit(
         request,
         settings,

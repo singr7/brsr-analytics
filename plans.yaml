@@ -1,0 +1,56 @@
+version: 1
+currency: INR
+licence_terms_url: /licence
+tiers:
+  explore:
+    name: Explore
+    price_label: Free
+    description: Public sector scorecards, materiality views and methodology.
+    seats: 1
+    quotas:
+      nlq_per_day: 10
+      studio_tokens_per_month: 0
+      exports_per_month: 0
+    features: [Public dashboards, Methodology and lineage, Learning Library teasers]
+    cta: Create free account
+  pro:
+    name: Pro
+    price_label: ₹36,000 / year
+    description: Company intelligence and governed board-ready exports.
+    seats: 5
+    quotas:
+      nlq_per_day: 100
+      studio_tokens_per_month: 0
+      exports_per_month: 25
+    features: [Company deep-dives, Peer benchmarking, Full Learning Library, Board PDF exports]
+    cta: Request an invoice
+  studio:
+    name: Studio
+    price_label: Annual licence
+    description: Guided BRSR preparation with evidence, review and filing drafts.
+    seats: 10
+    quotas:
+      nlq_per_day: 100
+      studio_tokens_per_month: 1000000
+      exports_per_month: 50
+    features: [Everything in Pro, Filing Studio, AI-assisted mapping, XBRL PDF and DOCX drafts]
+    cta: Request an invoice
+  research:
+    name: Research
+    price_label: Talk to us
+    description: Reproducible dataset and API access for research workflows.
+    seats: 10
+    quotas:
+      nlq_per_day: 500
+      studio_tokens_per_month: 0
+      exports_per_month: 100
+      api_queries_per_minute: 60
+    features: [Public aggregate dataset, Scoped API keys, Public-measure query API, Manual full-corpus fulfilment]
+    cta: Contact research licensing
+faq:
+  - question: Do paid plans change the underlying numbers?
+    answer: No. Every tier uses the same governed definitions, QA pins and suppression policy.
+  - question: Can I buy the full filing corpus online?
+    answer: Full-corpus licences are manually scoped so permitted use, delivery and retention terms are explicit.
+  - question: Is a payment card required?
+    answer: No. Paid access is activated against an agreed invoice and licence term.

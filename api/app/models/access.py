@@ -6,10 +6,12 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    Integer,
     String,
     Text,
     UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from api.app.models.base import Base, Timestamped, UUIDPrimaryKey
@@ -41,6 +43,10 @@ class Org(UUIDPrimaryKey, Timestamped, Base):
     name: Mapped[str] = mapped_column(String(255))
     slug: Mapped[str] = mapped_column(String(100), unique=True)
     plan_tier: Mapped[str] = mapped_column(ForeignKey("plans.tier"), default="explore")
+    seat_limit: Mapped[int] = mapped_column(Integer, default=1)
+    licence_starts_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    licence_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    licence_grace_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class Membership(UUIDPrimaryKey, Timestamped, Base):
@@ -60,7 +66,23 @@ class ApiKey(UUIDPrimaryKey, Timestamped, Base):
     name: Mapped[str] = mapped_column(String(100))
     key_prefix: Mapped[str] = mapped_column(String(16), index=True)
     key_hash: Mapped[str] = mapped_column(Text, unique=True)
+    scopes_json: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class InvoiceRequest(UUIDPrimaryKey, Timestamped, Base):
+    __tablename__ = "invoice_requests"
+    __table_args__ = (
+        CheckConstraint("status IN ('requested','sent','paid','cancelled')", name="status"),
+    )
+    org_id: Mapped[UUID] = mapped_column(ForeignKey("orgs.id", ondelete="CASCADE"), index=True)
+    requested_by_user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    requested_tier: Mapped[str] = mapped_column(ForeignKey("plans.tier"))
+    seats: Mapped[int] = mapped_column(Integer)
+    term_months: Mapped[int] = mapped_column(Integer)
+    billing_email: Mapped[str] = mapped_column(String(320))
+    status: Mapped[str] = mapped_column(String(24), default="requested")
 
 
 class RefreshToken(UUIDPrimaryKey, Timestamped, Base):

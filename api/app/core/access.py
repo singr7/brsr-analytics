@@ -11,6 +11,7 @@ from api.app.core.config import Settings, get_settings
 from api.app.db.session import get_db_session
 from api.app.models import Membership, Org, User
 from api.app.services.auth import TokenError, decode_token
+from api.app.services.plans import licence_state
 
 bearer = HTTPBearer(auto_error=False)
 SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
@@ -90,6 +91,23 @@ def require_plan(*tiers: str) -> object:
         return context
 
     return Depends(dependency)
+
+
+def ensure_writable(context: OrgContext) -> None:
+    if (
+        licence_state(
+            getattr(context.org, "licence_expires_at", None),
+            getattr(context.org, "licence_grace_until", None),
+        )
+        == "read_only"
+    ):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "licence_read_only",
+                "message": "Licence expired; reads remain available",
+            },
+        )
 
 
 def client_ip(request: Request) -> str:

@@ -1,6 +1,7 @@
 from api.app.models.access import (
     ApiKey,
     EmailVerification,
+    InvoiceRequest,
     Membership,
     Org,
     OrgInvite,
@@ -61,6 +62,7 @@ __all__ = [
     "FieldVersionPin",
     "Filing",
     "FilingPage",
+    "InvoiceRequest",
     "LLMUsage",
     "Lead",
     "LibraryExemplar",

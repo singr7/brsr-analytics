@@ -34,5 +34,15 @@ events:
     description: An expert deep-dive was requested.
   plan_changed_to_pro:
     description: An organisation moved to the Pro plan.
+  plan_changed:
+    description: An administrator changed an organisation licence.
+  invoice_requested:
+    description: An organisation owner requested a paid-plan invoice.
+  quota_headroom_viewed:
+    description: A user saw that a plan quota reached the 80 percent warning threshold.
+  api_key_issued:
+    description: A Research organisation owner issued a scoped API key.
+  dataset_exported:
+    description: A Research organisation exported the aggregate dataset.
   expert_cta_viewed:
     description: A clearly labelled expert help conversion surface was shown.

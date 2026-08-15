@@ -42,6 +42,9 @@ class OrgSummary(BaseModel):
     slug: str
     role: str
     plan_tier: str
+    licence_state: str = "active"
+    seat_limit: int = 1
+    licence_expires_at: datetime | None = None
 
 
 class MeResponse(BaseModel):
