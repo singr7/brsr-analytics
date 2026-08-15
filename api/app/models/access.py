@@ -33,6 +33,7 @@ class User(UUIDPrimaryKey, Timestamped, Base):
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     plan_tier: Mapped[str] = mapped_column(ForeignKey("plans.tier"), default="explore")
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    analytics_opt_out: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class Org(UUIDPrimaryKey, Timestamped, Base):

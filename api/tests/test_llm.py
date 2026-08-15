@@ -32,7 +32,13 @@ async def test_fake_llm_requires_committed_fixture() -> None:
 
 def test_live_client_is_disabled_by_default() -> None:
     with pytest.raises(LLMError, match="disabled"):
-        OpenAICompatibleLLM(Settings(llm_provider="live", llm_api_key="secret"))
+        OpenAICompatibleLLM(
+            Settings(
+                llm_provider="live",
+                llm_api_key="secret",
+                llm_network_enabled=False,
+            )
+        )
 
 
 def test_factory_selects_fake() -> None:

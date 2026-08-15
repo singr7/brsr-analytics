@@ -5,10 +5,11 @@ from typing import Any, Protocol
 from uuid import UUID, uuid4
 
 import yaml
-from sqlalchemy import insert, update
+from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.app.models import Event as EventRow
+from api.app.models import User
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -57,6 +58,10 @@ async def persist_events(
     anon_id: UUID | None,
     user_id: UUID | None,
 ) -> int:
+    if user_id is not None and await session.scalar(
+        select(User.analytics_opt_out).where(User.id == user_id)
+    ):
+        return 0
     registered = event_registry()
     unknown = {str(item["name"]) for item in events} - registered
     if unknown:

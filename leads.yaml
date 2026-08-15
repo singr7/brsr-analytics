@@ -1,0 +1,33 @@
+version: 1
+window_days: 30
+route_threshold: 50
+route_suppression_days: 14
+signals:
+  viewed_gap_panel:
+    weight: 10
+    max_occurrences: 3
+    label: Reviewed a company disclosure gap
+  studio_gap_report:
+    weight: 40
+    max_occurrences: 1
+    label: Generated a Studio gap report
+  studio_export_created:
+    weight: 25
+    max_occurrences: 1
+    label: Generated a Studio filing export
+  nlq_assurance_intent:
+    event: nlq_asked
+    property_contains:
+      question: [assurance, brsr core, deadline]
+    weight: 15
+    max_occurrences: 2
+    label: Asked about assurance or BRSR Core timing
+  pricing_viewed:
+    weight: 10
+    max_occurrences: 1
+    label: Reviewed access options
+  deepdive_requested:
+    weight: 50
+    max_occurrences: 1
+    instant_route: true
+    label: Requested an expert deep-dive

@@ -11,6 +11,7 @@ from api.app.core.config import Settings, get_settings
 from api.app.db.session import get_db_session
 from api.app.models import Event
 from api.app.schemas.auth import EventBatch, MessageResponse
+from api.app.schemas.engagement import PrivacyPreference
 from api.app.services.rate_limit import public_rate_limit
 from api.app.services.track import persist_events
 
@@ -27,8 +28,11 @@ async def ingest_events(
     settings: Annotated[Settings, Depends(get_settings)],
     user: Annotated[object | None, Depends(optional_user)],
     anon_id: Annotated[UUID | None, Cookie()] = None,
+    analytics_opt_out: Annotated[str | None, Cookie()] = None,
 ) -> dict[str, int]:
     await public_rate_limit(request, settings)
+    if analytics_opt_out == "1":
+        return {"accepted": 0}
     anonymous_id = anon_id or uuid4()
     try:
         accepted = await persist_events(
@@ -76,3 +80,26 @@ async def privacy_delete(user: CurrentUser, session: SessionDep) -> MessageRespo
     await session.commit()
     count = int(result.rowcount)  # type: ignore[attr-defined]
     return MessageResponse(message=f"Deleted {count} events")
+
+
+@router.put("/privacy/preference", response_model=PrivacyPreference)
+async def privacy_preference(
+    payload: PrivacyPreference,
+    response: Response,
+    user: CurrentUser,
+    session: SessionDep,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> PrivacyPreference:
+    user.analytics_opt_out = not payload.analytics_enabled
+    if user.analytics_opt_out:
+        await session.execute(delete(Event).where(Event.user_id == user.id))
+    await session.commit()
+    response.set_cookie(
+        "analytics_opt_out",
+        "0" if payload.analytics_enabled else "1",
+        max_age=int(timedelta(days=365).total_seconds()),
+        httponly=False,
+        samesite="lax",
+        secure=settings.app_env == "production",
+    )
+    return payload

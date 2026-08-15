@@ -1,8 +1,19 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Numeric, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -39,13 +50,35 @@ class Lead(UUIDPrimaryKey, Timestamped, Base):
     signals_json: Mapped[dict[str, object]] = mapped_column(JSONB)
     status: Mapped[str] = mapped_column(String(24), default="new")
     routed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    outcome: Mapped[str | None] = mapped_column(String(24))
+    outcome_note: Mapped[str | None] = mapped_column(Text)
+    route_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    route_error: Mapped[str | None] = mapped_column(Text)
 
 
 class DeepdiveRequest(UUIDPrimaryKey, Timestamped, Base):
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('new','scoped','quoted','delivered')", name="deepdive_status"
+        ),
+    )
     __tablename__ = "deepdive_requests"
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
     org_id: Mapped[UUID | None] = mapped_column(ForeignKey("orgs.id"))
-    company_id: Mapped[UUID] = mapped_column(ForeignKey("companies.id"))
+    company_id: Mapped[UUID | None] = mapped_column(ForeignKey("companies.id"))
     request_text: Mapped[str] = mapped_column(Text)
     context_json: Mapped[dict[str, object]] = mapped_column(JSONB)
     status: Mapped[str] = mapped_column(String(24), default="new")
+
+
+class EventDailyAggregate(UUIDPrimaryKey, Timestamped, Base):
+    __tablename__ = "event_daily_aggregates"
+    __table_args__ = (
+        UniqueConstraint("day", "name", "dimension", "dimension_value"),
+        Index("ix_event_daily_aggregates_day_name", "day", "name"),
+    )
+    day: Mapped[date] = mapped_column(Date)
+    name: Mapped[str] = mapped_column(String(100))
+    dimension: Mapped[str] = mapped_column(String(64), default="all")
+    dimension_value: Mapped[str] = mapped_column(String(255), default="all")
+    event_count: Mapped[int] = mapped_column(Integer, default=0)

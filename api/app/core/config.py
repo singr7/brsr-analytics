@@ -55,6 +55,12 @@ class Settings(BaseSettings):
     studio_document_max_bytes: int = Field(default=25_000_000, ge=1)
     studio_monthly_token_limit: int = Field(default=1_000_000, ge=1)
     studio_bulk_accept_confidence: float = Field(default=0.90, ge=0, le=1)
+    analytics_retention_months: int = Field(default=13, ge=1, le=60)
+    lead_routing_enabled: bool = False
+    lead_recipient_email: str = "bd@panaceabioedge.local"
+    lead_webhook_url: str | None = None
+    lead_webhook_secret: str | None = None
+    analytics_digest_recipients: str = "team@brsrlens.local"
 
     @property
     def llm_config_present(self) -> bool:

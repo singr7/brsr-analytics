@@ -25,7 +25,7 @@ from api.app.models.corpus import (
     Score,
     SharedPhrase,
 )
-from api.app.models.engagement import DeepdiveRequest, Event, Lead
+from api.app.models.engagement import DeepdiveRequest, Event, EventDailyAggregate, Lead
 from api.app.models.studio import (
     StudioAnswer,
     StudioComment,
@@ -55,6 +55,7 @@ __all__ = [
     "Embedding",
     "EmailVerification",
     "Event",
+    "EventDailyAggregate",
     "ExtractedField",
     "FieldDef",
     "FieldVersionPin",

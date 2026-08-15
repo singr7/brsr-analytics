@@ -133,6 +133,19 @@ async def change_plan(
     if await session.get(Plan, payload.tier) is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown plan")
     org.plan_tier = payload.tier
+    if payload.tier == "pro":
+        await persist_events(
+            session,
+            [
+                {
+                    "name": "plan_changed_to_pro",
+                    "session_id": user.id,
+                    "properties": {"org_id": str(org.id), "tier": payload.tier},
+                }
+            ],
+            anon_id=None,
+            user_id=user.id,
+        )
     await session.commit()
     return OrgSummary(
         id=org.id,
