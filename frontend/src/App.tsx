@@ -4,6 +4,7 @@ import { AuthPanel } from './components/AuthPanel'
 import { CookieDisclosure } from './components/CookieDisclosure'
 import { AdminAnalyticsPage, AdminLeadsPage, BillingPage, DeepDivePage, PrivacyPage } from './components/EngagementPages'
 import { HealthFooter } from './components/HealthFooter'
+import { GuidedExplorePage } from './components/GuidedExplorePage'
 import { AnalysePage } from './components/JourneyPages'
 import {
   AskPage, AssurancePage, BenchmarksPage, CompanyPage, HomePage, LibraryPage,
@@ -15,7 +16,7 @@ import { StudioPage } from './components/StudioPage'
 import { accessToken, fetchMe, logout, type OrgSummary, type UserProfile } from './lib/auth'
 import { trackPageview } from './lib/track'
 
-const pageMap: Record<string, () => JSX.Element> = { '/explore': SectorPage, '/sectors': SectorPage, '/companies': CompanyPage, '/benchmarks': BenchmarksPage, '/materiality': MaterialityPage, '/assurance': AssurancePage, '/ask': AskPage, '/library': LibraryPage, '/learn': LibraryPage, '/analyse': AnalysePage, '/methodology': MethodologyPage, '/pricing': PricingPage, '/styleguide': StyleguidePage }
+const pageMap: Record<string, () => JSX.Element> = { '/sectors': SectorPage, '/companies': CompanyPage, '/benchmarks': BenchmarksPage, '/materiality': MaterialityPage, '/assurance': AssurancePage, '/ask': AskPage, '/library': LibraryPage, '/learn': LibraryPage, '/analyse': AnalysePage, '/methodology': MethodologyPage, '/pricing': PricingPage, '/styleguide': StyleguidePage }
 const titles: Record<string, string> = { '/': 'BRSR Lens — understand, compare, and improve BRSR filings', '/explore': 'Explore BRSR insights — BRSR Lens', '/analyse': 'Analyse my BRSR — BRSR Lens', '/studio': 'Filing Studio — BRSR Lens', '/learn': 'Learn BRSR — BRSR Lens', '/assurance': 'Assurance trends — BRSR Lens', '/ask': 'Ask BRSR Lens' }
 
 function updateMetadata(path: string): void {
@@ -26,7 +27,7 @@ function updateMetadata(path: string): void {
     if (!element) { element = document.createElement('meta'); element.name = name; document.head.append(element) }
     element.content = content
   })
-  const canonicalPath = path === '/explore' ? '/sectors' : path === '/learn' ? '/library' : path
+  const canonicalPath = path === '/learn' ? '/library' : path
   let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
   if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.append(canonical) }
   canonical.href = `${window.location.origin}${canonicalPath}`
@@ -38,7 +39,7 @@ export default function App() {
   const path = window.location.pathname; const tier = org?.plan_tier ?? profile?.plan_tier ?? 'explore'
   useEffect(() => { updateMetadata(path); trackPageview(); if (accessToken()) void fetchMe().then(user => { setProfile(user); setOrg(user.orgs[0] ?? null) }).catch(logout).finally(() => setAuthReady(true)) }, [path])
   const Page = pageMap[path]
-  const content = path === '/' ? <HomePage authState={profile ? 'authenticated' : 'anonymous'} planTier={tier} trackView={authReady}/> : path === '/studio' ? <StudioPage orgId={org?.id}/> : path === '/deep-dive' ? <DeepDivePage profile={profile} org={org}/> : path === '/privacy' ? <PrivacyPage profile={profile}/> : path === '/billing' ? <BillingPage profile={profile} org={org}/> : path === '/admin/analytics' ? <AdminAnalyticsPage/> : path === '/admin/leads' ? <AdminLeadsPage/> : Page ? <Page/> : <HomePage authState={profile ? 'authenticated' : 'anonymous'} planTier={tier} trackView={authReady}/>
+  const content = path === '/' ? <HomePage authState={profile ? 'authenticated' : 'anonymous'} planTier={tier} trackView={authReady}/> : path === '/explore' ? <GuidedExplorePage planTier={tier} authState={profile ? 'authenticated' : 'anonymous'}/> : path === '/studio' ? <StudioPage orgId={org?.id}/> : path === '/deep-dive' ? <DeepDivePage profile={profile} org={org}/> : path === '/privacy' ? <PrivacyPage profile={profile}/> : path === '/billing' ? <BillingPage profile={profile} org={org}/> : path === '/admin/analytics' ? <AdminAnalyticsPage/> : path === '/admin/leads' ? <AdminLeadsPage/> : Page ? <Page/> : <HomePage authState={profile ? 'authenticated' : 'anonymous'} planTier={tier} trackView={authReady}/>
   return <div className="app-shell"><a className="skip-link" href="#main-content">Skip to main content</a>
     <SiteHeader path={path} tier={tier} profile={profile} org={org} onOrgChange={setOrg} onSignIn={() => setAuthOpen(true)} onSignOut={() => { logout(); setProfile(null); setOrg(null) }}/>
     <main id="main-content" className="page" tabIndex={-1}>{content}{profile?.is_admin && path === '/account' && <QualityReview/>}</main>
