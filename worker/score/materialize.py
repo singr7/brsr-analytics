@@ -25,12 +25,28 @@ from worker.score.metrics import (
     load_scoring,
     materialize_percentiles,
     phrase_frequencies,
+    screen_implausible,
     substance_score,
 )
 
 
 def _id(kind: str, *parts: object) -> UUID:
     return uuid5(NAMESPACE_URL, "brsrlens/" + "/".join([kind, *map(str, parts)]))
+
+
+def _resolve_sum(
+    values: dict[str, tuple[Decimal | None, UUID]], keys: list[str]
+) -> tuple[Decimal, list[UUID]] | None:
+    """Sum the named fields, returning every contributing pin, or None if any is absent."""
+    total = Decimal(0)
+    contributing: list[UUID] = []
+    for key in keys:
+        item = values.get(key)
+        if item is None or item[0] is None:
+            return None
+        total += item[0]
+        contributing.append(item[1])
+    return total, contributing
 
 
 async def rebuild_metrics(session: AsyncSession) -> tuple[int, int]:
@@ -71,14 +87,38 @@ async def rebuild_metrics(session: AsyncSession) -> tuple[int, int]:
     for filing_rows in by_filing.values():
         company, filing, _, _ = filing_rows[0]
         values = {field.field_key: (field.value_num, pin.id) for _, _, pin, field in filing_rows}
-        for derived in config["derived_metrics"]:
-            numerator = values.get(str(derived["numerator"]))
-            denominator = values.get(str(derived["denominator"]))
-            if not numerator or not denominator or denominator[0] in {None, Decimal(0)}:
+
+        for additive in config.get("additive_metrics", []):
+            resolved = _resolve_sum(values, [str(key) for key in additive["addends"]])
+            if resolved is None:
                 continue
-            numerator_value, numerator_pin = numerator
-            denominator_value, _ = denominator
-            if numerator_value is None or denominator_value is None:
+            value, addend_pins = resolved
+            metric_key = str(additive["metric_key"])
+            candidates.append(
+                MetricCandidate(
+                    str(company.id),
+                    filing.fy,
+                    company.sector,
+                    metric_key,
+                    value,
+                    str(addend_pins[0]),
+                    tuple(str(pin) for pin in addend_pins),
+                )
+            )
+            values[metric_key] = (value, addend_pins[0])
+        for derived in config["derived_metrics"]:
+            numerator_keys = (
+                [str(derived["numerator"])]
+                if "numerator" in derived
+                else [str(key) for key in derived["numerators"]]
+            )
+            resolved = _resolve_sum(values, numerator_keys)
+            denominator = values.get(str(derived["denominator"]))
+            if resolved is None or not denominator or denominator[0] in {None, Decimal(0)}:
+                continue
+            numerator_value, numerator_pins = resolved
+            denominator_value, denominator_pin = denominator
+            if denominator_value is None:
                 continue
             value = numerator_value / denominator_value * Decimal(str(derived["denominator_scale"]))
             candidates.append(
@@ -88,9 +128,12 @@ async def rebuild_metrics(session: AsyncSession) -> tuple[int, int]:
                     company.sector,
                     str(derived["metric_key"]),
                     value,
-                    str(numerator_pin),
+                    str(numerator_pins[0]),
+                    tuple(str(pin) for pin in [*numerator_pins, denominator_pin]),
                 )
             )
+
+    candidates, implausible = screen_implausible(candidates, config)
 
     await session.execute(delete(Metric))
     await session.execute(delete(Score).where(Score.method_version == method_version))
@@ -111,6 +154,7 @@ async def rebuild_metrics(session: AsyncSession) -> tuple[int, int]:
                 percentile_all=metric_row.percentile_all,
                 yoy_delta=metric_row.yoy_delta,
                 field_version_pin_id=UUID(item.pin_id),
+                contributing_pin_ids=list(item.contributing_pin_ids or (item.pin_id,)),
             )
         )
 

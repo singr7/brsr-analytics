@@ -1,5 +1,5 @@
-version: "1.0.0"
-minimum_cohort_size: 8
+version: "1.1.0-provisional-nse"
+minimum_cohort_size: 5
 measures:
   completeness:
     label: Disclosure completeness
@@ -33,6 +33,18 @@ measures:
     tiers: [explore, pro, studio, research]
   p6.e3.scope1_tco2e:
     label: Scope 1 emissions
+    source: metric
+    unit: tCO2e
+    format: ",.0f"
+    tiers: [explore, pro, studio, research]
+  p6.e3.scope2_tco2e:
+    label: Scope 2 emissions
+    source: metric
+    unit: tCO2e
+    format: ",.0f"
+    tiers: [explore, pro, studio, research]
+  p6.e3.scope12_total_tco2e:
+    label: Scope 1+2 emissions
     source: metric
     unit: tCO2e
     format: ",.0f"

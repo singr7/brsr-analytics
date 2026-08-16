@@ -54,6 +54,7 @@ make seed
 make ingest-nse-initial NSE_FY=2025
 make ingest-nse-next NSE_FY=2025 NSE_LIMIT=10
 make ingest-nse-refresh NSE_FY=2025
+make publish-nse NSE_FY=2025
 ```
 
 Docker equivalent (include the local compose override when ports differ):
@@ -61,9 +62,9 @@ Docker equivalent (include the local compose override when ports differ):
 ```sh
 docker compose exec api python -m alembic upgrade head
 docker compose exec api python -m api.app.db.seed
-docker compose exec api python -m worker.acquire.cli initial --fy 2025 --limit 25 --replace-synthetic
-docker compose exec api python -m worker.acquire.cli next --fy 2025 --limit 10
-docker compose exec api python -m worker.acquire.cli refresh --fy 2025 --limit 10
+docker compose exec api python -m worker.acquire.cli initial --fy 2025 --limit 25 --replace-synthetic --publish
+docker compose exec api python -m worker.acquire.cli next --fy 2025 --limit 10 --publish
+docker compose exec api python -m worker.acquire.cli refresh --fy 2025 --limit 10 --publish
 ```
 
 `initial --replace-synthetic` removes only the 20 legacy fictional ticker records. It does not
@@ -102,8 +103,13 @@ missing and error counts. A failed company does not abort the remaining batch.
 - `ingestion_runs`: auditable manual and scheduled run outcomes.
 
 The checked-in semantic taxonomy began as a placeholder and does not map all live NSE concepts.
-Raw facts are therefore retained even when `mapped_field_count` is zero. Public metrics must
-still pass mapping, QA and pinning before publication; ingestion never auto-publishes numbers.
+Raw facts are retained even when `mapped_field_count` is zero. Only mappings declared in the
+versioned provisional registry can be pinned by `--publish`; all other facts remain unpublished.
+
+The FY25 mapping/review layer is documented in
+`docs/operations/NSE_METRIC_MAPPING_REVIEW.md`. It publishes a deliberately small set of explicit
+common-unit and turnover-normalized metrics with Admin-visible assumptions; it does not imply
+domain approval.
 
 ## Admin dashboard
 

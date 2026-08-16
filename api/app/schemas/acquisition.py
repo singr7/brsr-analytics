@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class FilingUploadResponse(BaseModel):
@@ -72,6 +72,27 @@ class FilingInventoryItem(BaseModel):
     source_url: str | None
 
 
+class ConceptMappingItem(BaseModel):
+    id: UUID
+    source_concept: str
+    field_key: str
+    target_unit: str | None
+    selection_strategy: str
+    unit_rules: dict[str, object]
+    confidence: float
+    rationale: str
+    assumption: str
+    evidence_url: str
+    review_status: str
+    reviewer_notes: str | None
+    reviewed_at: datetime | None
+
+
+class ConceptMappingReviewRequest(BaseModel):
+    review_status: str = Field(pattern=r"^(provisional|needs_review|accepted|rejected)$")
+    reviewer_notes: str | None = Field(default=None, max_length=4000)
+
+
 class IngestionInventoryResponse(BaseModel):
     config: IngestionConfigSummary
     companies: int
@@ -80,3 +101,4 @@ class IngestionInventoryResponse(BaseModel):
     raw_facts: int
     items: list[FilingInventoryItem]
     recent_runs: list[IngestionRunSummary]
+    concept_mappings: list[ConceptMappingItem]

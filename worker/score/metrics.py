@@ -21,6 +21,7 @@ class MetricCandidate:
     metric_key: str
     value: Decimal
     pin_id: str
+    contributing_pin_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +39,113 @@ def load_scoring(path: Path | None = None) -> dict[str, Any]:
     return document
 
 
+@dataclass(frozen=True, slots=True)
+class ScreenFailure:
+    company_id: str
+    fy: int
+    screen: str
+    metric_key: str
+    detail: str
+
+
+def _dependents(config: dict[str, Any]) -> dict[str, set[str]]:
+    """Map each source metric key to the metric keys computed from it."""
+    dependents: dict[str, set[str]] = defaultdict(set)
+    for additive in config.get("additive_metrics", []):
+        for key in additive["addends"]:
+            dependents[str(key)].add(str(additive["metric_key"]))
+    for derived in config.get("derived_metrics", []):
+        sources = (
+            [str(derived["numerator"])]
+            if "numerator" in derived
+            else [str(key) for key in derived["numerators"]]
+        )
+        sources.append(str(derived["denominator"]))
+        for key in sources:
+            dependents[key].add(str(derived["metric_key"]))
+    return dependents
+
+
+def _closure(keys: set[str], dependents: dict[str, set[str]]) -> set[str]:
+    """Expand a set of withheld keys to everything computed from them."""
+    resolved = set(keys)
+    pending = list(keys)
+    while pending:
+        for dependent in dependents.get(pending.pop(), set()):
+            if dependent not in resolved:
+                resolved.add(dependent)
+                pending.append(dependent)
+    return resolved
+
+
+def screen_implausible(
+    candidates: list[MetricCandidate], config: dict[str, Any]
+) -> tuple[list[MetricCandidate], list[ScreenFailure]]:
+    """Withhold metrics that break an arithmetic identity asserted by the disclosure itself.
+
+    A component reported at a different scale from its total is the failure mode that unit
+    and scale mistakes actually produce, and it breaks these identities. Deliberately no
+    physical-ratio bands: Scope 1 legitimately includes non-energy fugitive and process
+    emissions, so an emissions-per-energy band would encode a rule that is not true.
+    """
+    screens = config.get("plausibility_screens") or {}
+    identities = screens.get("identities") or []
+    non_negative = {str(key) for key in screens.get("non_negative") or []}
+    if not identities and not non_negative:
+        return candidates, []
+    tolerance = Decimal(str(screens.get("tolerance", "0.01")))
+    dependents = _dependents(config)
+
+    by_filing: dict[tuple[str, int], dict[str, Decimal]] = defaultdict(dict)
+    for candidate in candidates:
+        by_filing[(candidate.company_id, candidate.fy)][candidate.metric_key] = candidate.value
+
+    failures: list[ScreenFailure] = []
+    withheld: dict[tuple[str, int], set[str]] = defaultdict(set)
+    for (company_id, fy), values in by_filing.items():
+        for identity in identities:
+            total_key = str(identity["total"])
+            part_keys = [str(key) for key in identity["parts"]]
+            if total_key not in values or any(key not in values for key in part_keys):
+                continue
+            total = values[total_key]
+            parts_sum = sum((values[key] for key in part_keys), Decimal(0))
+            if abs(total - parts_sum) > tolerance * max(abs(total), Decimal(1)):
+                withheld[(company_id, fy)].add(total_key)
+                failures.append(
+                    ScreenFailure(
+                        company_id=company_id,
+                        fy=fy,
+                        screen="identity",
+                        metric_key=total_key,
+                        detail=f"{total_key}={total} but components sum to {parts_sum}",
+                    )
+                )
+        for key in non_negative & values.keys():
+            if values[key] < 0:
+                withheld[(company_id, fy)].add(key)
+                failures.append(
+                    ScreenFailure(
+                        company_id=company_id,
+                        fy=fy,
+                        screen="non_negative",
+                        metric_key=key,
+                        detail=f"{key}={values[key]} is negative",
+                    )
+                )
+
+    blocked = {
+        filing_key: _closure(keys, dependents) for filing_key, keys in withheld.items()
+    }
+    kept = [
+        candidate
+        for candidate in candidates
+        if candidate.metric_key
+        not in blocked.get((candidate.company_id, candidate.fy), set())
+    ]
+    return kept, failures
+
+
 def _percentile(value: Decimal, cohort: list[Decimal]) -> Decimal:
     if len(cohort) <= 1:
         return Decimal(100)
@@ -48,7 +156,7 @@ def _percentile(value: Decimal, cohort: list[Decimal]) -> Decimal:
 
 
 def materialize_percentiles(
-    candidates: list[MetricCandidate], *, minimum_sector_size: int = 8
+    candidates: list[MetricCandidate], *, minimum_sector_size: int = 5
 ) -> list[MaterializedMetric]:
     all_cohorts: dict[tuple[int, str], list[Decimal]] = defaultdict(list)
     sector_cohorts: dict[tuple[int, str, str], list[Decimal]] = defaultdict(list)

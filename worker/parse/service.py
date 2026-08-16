@@ -65,6 +65,7 @@ async def parse_filing(
                     period_end=raw_fact.period_end,
                     dimensions_json=raw_fact.dimensions,
                     ordinal=raw_fact.ordinal,
+                    decimals=raw_fact.decimals,
                 )
             )
         company = await session.get(Company, filing.company_id)

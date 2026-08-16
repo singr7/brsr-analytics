@@ -67,4 +67,6 @@ configurable in `.env` when those defaults are already occupied.
 company or filing data. For the governed NSE BRSR corpus, follow
 [`docs/operations/NSE_BRSR_INGESTION.md`](docs/operations/NSE_BRSR_INGESTION.md). The initial
 25-company command is `make ingest-nse-initial NSE_FY=2025`, and the resumable next cohort is
-`make ingest-nse-next NSE_FY=2025 NSE_LIMIT=10`.
+`make ingest-nse-next NSE_FY=2025 NSE_LIMIT=10`. Both acquisition commands publish the explicit
+provisional mapping layer and rebuild Explorer; use `make publish-nse NSE_FY=2025` to rematerialize
+already-ingested facts after domain review.

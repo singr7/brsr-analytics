@@ -4,10 +4,24 @@ import asyncio
 
 import redis.asyncio as redis
 
-from api.app.core.config import get_settings
+from api.app.core.config import Settings, get_settings
 from api.app.db.session import create_engine, create_session_factory
 from worker.celery_app import celery_app
 from worker.score.materialize import rebuild_metrics
+
+
+async def invalidate_semantic_cache(settings: Settings) -> None:
+    client = redis.from_url(settings.redis_url)  # type: ignore[no-untyped-call]
+    try:
+        cursor = 0
+        while True:
+            cursor, keys = await client.scan(cursor, match="semantic:v*:*", count=250)
+            if keys:
+                await client.delete(*keys)
+            if cursor == 0:
+                break
+    finally:
+        await client.aclose()
 
 
 async def run_rebuild() -> tuple[int, int]:
@@ -17,17 +31,7 @@ async def run_rebuild() -> tuple[int, int]:
     try:
         async with factory() as session:
             result = await rebuild_metrics(session)
-        client = redis.from_url(settings.redis_url)  # type: ignore[no-untyped-call]
-        try:
-            cursor = 0
-            while True:
-                cursor, keys = await client.scan(cursor, match="semantic:v*:*", count=250)
-                if keys:
-                    await client.delete(*keys)
-                if cursor == 0:
-                    break
-        finally:
-            await client.aclose()
+        await invalidate_semantic_cache(settings)
         return result
     finally:
         await engine.dispose()

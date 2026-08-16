@@ -18,9 +18,9 @@ beforeEach(() => {
   }))
 })
 
-test('eight valid curated questions lead with a result and preserve URL state', async () => {
+test('curated questions lead with a result and preserve URL state', async () => {
   render(<QueryClientProvider client={new QueryClient()}><GuidedExplorePage planTier="explore" authState="anonymous"/></QueryClientProvider>)
-  expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(7)
+  expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(12)
   expect(screen.getByRole('button', { pressed: true })).toHaveTextContent(guidedQuestions[0].question)
   expect(await screen.findByText('Energy has the highest average completeness in the eligible FY25 cohort.')).toBeInTheDocument()
   expect(window.location.search).toContain('question=sector-completeness-fy25')

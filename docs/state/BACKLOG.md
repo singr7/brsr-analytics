@@ -32,3 +32,88 @@
   advanced controls, tier locks, suggested/custom follow-ups, error/suppression states, and URL
   reloads. The browser runtime again exposed no available browser; live HTTP, component interaction,
   responsive CSS, context-merge, privacy, production-build, and full verification checks passed.
+
+## Pre-production review (2026-08-16)
+
+All P0, P1 and P2 items raised by this review were actioned in the same pass. What remains is
+listed under "Still open" below; everything else is resolved and covered by tests.
+
+### Resolved
+
+- **Turnover scale is no longer inferred from magnitude.** `infer_nifty_turnover_scale` published
+  Coal India 10x low (reported `143368.92` is INR crore, about INR 1.43 lakh crore; the million
+  branch published about INR 14,337 crore), which put it second-worst on energy intensity at
+  1,331.68. Dr. Reddy's `231154` sits in the same band and there million *is* correct, so no
+  threshold could separate them. Replaced with the reviewed `turnover_scale` registry in
+  `taxonomy/nse_concept_mappings.yaml`: above 1e9 the value is unambiguously absolute, below it an
+  explicit per-issuer entry is required, and an unregistered issuer is **withheld, not guessed**
+  (reported as `withheld=<n>`). Coal India now publishes INR 1,43,369 crore and an energy
+  intensity of 133.17, mid-cohort.
+- **`decimals` is retained on raw facts** (`xbrl_facts.decimals`, migration `0011`), closing the
+  gap against the "losslessly persisted" claim. It is recorded in extraction lineage and is
+  explicitly *not* used for scale: FY25 shows Coal India `decimals="2"` (crore), Dr. Reddy's
+  `decimals="0"` (million) and Infosys `decimals="2"` (absolute), so precision and scale are
+  independent.
+- **Production config guards extended.** `production_secrets_are_safe` now rejects
+  `AUTH_EXPOSE_VERIFICATION_TOKEN=true` and `LLM_PROVIDER=fake` when `APP_ENV=production`,
+  alongside the existing JWT check. Previously a production deploy that forgot the flag would
+  return verification and org-invite tokens in API responses.
+- **Plausibility screens added** (`scoring.yaml`, `screen_implausible`). These assert arithmetic
+  identities the disclosure makes about itself — energy total equals renewable plus
+  non-renewable, water withdrawal equals the sum of its sources — at 1% tolerance, plus
+  non-negativity. A failing metric is withheld along with everything derived from it. Deliberately
+  no emissions-per-energy band: Scope 1 legitimately includes non-energy fugitive and process
+  emissions, so such a band would encode a false rule. All 25 FY25 filings pass.
+- **Multi-source metrics carry full lineage.** `metrics.contributing_pin_ids` (migration `0011`)
+  records every contributing pin, so Scope 1+2 carries both scope pins and an intensity carries
+  its numerator and denominator pins, instead of anchoring to the first component only.
+- **Launch gate files created** under `docs/gates/` (`legal.md`, `editorial.md`, `ux.md`, plus an
+  index), which DEPLOYMENT.md §5 makes a hard prerequisite. All three are explicitly UNSIGNED.
+  The editorial gate carries the open decision on migration `0010` narrowing the published-number
+  rule to allow provisional NSE pins on public surfaces.
+- **`/explore` banner rewritten for its actual audience.** It previously showed anonymous
+  visitors an internal instruction to review mappings under Admin. It now explains provisional
+  status and links to methodology, and shows the Admin pointer only to admins.
+- **Compose/runtime parity fixes.** `mailhog` host ports parameterized
+  (`MAILHOG_SMTP_PORT`/`MAILHOG_UI_PORT`) so the stack no longer collides with a sibling project;
+  `taxonomy/`, `scoring.yaml` and `plans.yaml` mounted so api and worker stop running stale baked
+  config (the live catalog was serving `1.0.0` with none of the new measures); `./worker` mounted
+  into `api` so the documented `docker compose exec api python -m worker...` commands run current
+  code.
+- **`test_production_rejects_default_jwt_secret` no longer reads the developer's `.env`**, so the
+  guard is actually exercised. `make verify` was red locally before this.
+- `docs/operations/NSE_METRIC_MAPPING_REVIEW.md` corrected: it previously cited Coal India as
+  evidence the heuristic produced plausible magnitudes.
+
+### Cohort suppression minimum lowered from 8 to 5
+
+Requested during the review: run the analysis rather than suppress it when a cohort has at least
+five companies. `minimum_sector_size` (`scoring.yaml`) and `minimum_cohort_size`
+(`taxonomy/semantic.yaml`) are now `5`, along with the `materialize_percentiles` default and the
+two places the old number appeared in UI copy. The generated methodology page tracks the config
+automatically.
+
+Effect on the current 25-company FY25 cohort: Financial Services (n=6) now receives sector
+percentiles where it previously received none. Every other sector is still below five and stays
+suppressed, so widening coverage further depends on ingesting more companies
+(`make ingest-nse-next`), not on lowering the threshold again.
+
+Note for the editorial gate: this threshold is the anti-reidentification guard. At n=5 a company
+is one of five in its sector cell, so sector-relative positioning is correspondingly easier to
+attribute. The change is deliberate and recorded here rather than assumed.
+
+### Still open
+
+- **Re-ingest to populate `decimals` on existing facts.** The column and parser are in place, but
+  the 25 FY25 filings already in the database were parsed before it existed, so their
+  `xbrl_facts.decimals` is null and lineage records `reported_decimals: null`. A re-ingest of the
+  cohort backfills it. No published number depends on this.
+- **Single-file bind mounts pin an inode**, so editing `scoring.yaml` or `plans.yaml` while the
+  stack runs does not propagate until the service restarts. Noted in `docker-compose.yml`.
+  Moving root config into a mounted directory would remove the footgun.
+- **`compose.prod.yml` (DEPLOYMENT.md §1) does not exist** and `infra/{terraform,cloudinit,deploy}`
+  are empty, so the §4 release flow is not yet executable. This is infrastructure build-out rather
+  than a defect in the application, and is the largest remaining gap before a production turn-up.
+- **`MtCO2e` remains provisionally read as metric tonnes** (confidence 0.80) and is still the
+  first domain-review priority in `/admin/ingestion`.
+

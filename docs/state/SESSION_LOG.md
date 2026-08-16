@@ -228,3 +228,56 @@ Status: complete.
 - Live FY 2024–25 import completed 25/25 companies with zero missing/errors and 55,105 raw facts.
 - Verification: Ruff and strict mypy passed; 122 Python tests passed (6 skipped); TypeScript,
   ESLint, and 22 frontend tests passed.
+
+## Provisional NSE Explorer publication — 2026-08-16
+
+Status: complete in source/database; one Docker image refresh remains environment-blocked.
+
+- Added migration `0010`, a versioned 16-row NSE concept mapping registry, explicit assumptions,
+  confidence and an Admin accept/needs-review/reject workflow with reviewer notes and timestamps.
+- Converted MJ/GJ/TJ to GJ, kL to kL, and emissions to tCO2e; documented the provisional `MtCO2e`
+  interpretation. Added NIFTY-cohort turnover scale inference for absolute INR normalization.
+- Published 400 provisional extracted fields/pins and materialized 425 metrics plus 75 scores for
+  25 FY25 companies. Live API checks returned 25 rows with lineage for energy, water, Scope 1 and
+  all three per-INR-crore intensities.
+- Added Scope 1+2 totals, five real-data guided Explorer questions, an on-screen provisional notice,
+  `--publish` ingestion mode and automatic scheduled rematerialization.
+- Verification: 124 Python tests passed (6 skipped); Ruff, strict mypy, TypeScript and ESLint passed;
+  22 frontend tests passed. Admin review update/restore passed live. No browser instance was
+  available. Docker rebuild approval was blocked by the environment usage limit.
+
+## Pre-production review and remediation — 2026-08-16
+
+Status: complete. `make verify` green; all findings actioned in the same pass.
+
+- Found `make verify` red, not green as the previous handoff recorded: a prior run had masked the
+  exit code behind a pipe. `test_production_rejects_default_jwt_secret` was reading the developer's
+  `.env`, so the production guard passed without ever being exercised. Pinned to `_env_file=None`.
+- Replaced the magnitude-based turnover scale heuristic, which published Coal India ten times low
+  (reported `143368.92` is INR crore, about INR 1.43 lakh crore) and ranked it second-worst on
+  energy intensity at 1,331.68. Dr. Reddy's `231154` falls in the same numeric band but is
+  genuinely INR million, so no threshold could separate the two. Scale now comes from a reviewed
+  per-issuer registry in `taxonomy/nse_concept_mappings.yaml`; unregistered issuers below the
+  absolute threshold are withheld rather than guessed. Coal India now publishes INR 1,43,369 crore
+  and an energy intensity of 133.17.
+- Established that the XBRL `decimals` attribute cannot recover reporting scale (Coal India
+  `decimals="2"` crore, Dr. Reddy's `decimals="0"` million, Infosys `decimals="2"` absolute). It is
+  now retained on `xbrl_facts.decimals` for provenance and explicitly excluded from scale
+  inference.
+- Extended production settings validation to reject `AUTH_EXPOSE_VERIFICATION_TOKEN=true` and
+  `LLM_PROVIDER=fake` when `APP_ENV=production`. The former returned verification and org-invite
+  tokens in API responses.
+- Added identity-based plausibility screens (energy parts sum to total, water sources sum to
+  withdrawal, non-negativity) that withhold a failing metric and everything derived from it.
+  Deliberately no emissions-per-energy band, since Scope 1 legitimately includes non-energy
+  fugitive and process emissions. All 25 FY25 filings pass.
+- Added `metrics.contributing_pin_ids` so additive and multi-numerator metrics carry every
+  contributing pin instead of anchoring lineage to the first component.
+- Fixed dev/prod parity in compose: parameterized mailhog host ports, mounted `taxonomy/`,
+  `scoring.yaml`, `plans.yaml` and `./worker` so api and worker stop running stale baked config.
+  The live catalog had been serving `1.0.0` with none of the session's new measures.
+- Created the three mandatory launch gate files under `docs/gates/`, all explicitly unsigned.
+- Lowered the cohort suppression minimum from 8 to 5 on request. Financial Services (n=6) now
+  receives sector percentiles; all other sectors remain below five.
+- Verification: Ruff, strict mypy, 134 Python tests (6 skipped), TypeScript, ESLint and 22 frontend
+  tests passed. Migration `0011` applied and the FY25 cohort republished and rematerialized live.

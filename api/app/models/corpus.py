@@ -114,6 +114,33 @@ class XbrlFact(UUIDPrimaryKey, Base):
     period_end: Mapped[date | None] = mapped_column(Date)
     dimensions_json: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
     ordinal: Mapped[int] = mapped_column(Integer)
+    # Reported XBRL precision. Retained for provenance; it does not encode reporting scale.
+    decimals: Mapped[int | None] = mapped_column(Integer)
+
+
+class NseConceptMapping(UUIDPrimaryKey, Timestamped, Base):
+    __tablename__ = "nse_concept_mappings"
+    __table_args__ = (
+        UniqueConstraint("source_concept", "field_key"),
+        CheckConstraint(
+            "review_status IN ('provisional','needs_review','accepted','rejected')",
+            name="review_status",
+        ),
+        CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence"),
+    )
+    source_concept: Mapped[str] = mapped_column(String(512), index=True)
+    field_key: Mapped[str] = mapped_column(ForeignKey("field_defs.field_key"), index=True)
+    target_unit: Mapped[str | None] = mapped_column(String(32))
+    selection_strategy: Mapped[str] = mapped_column(String(64))
+    unit_rules_json: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+    confidence: Mapped[Decimal] = mapped_column(Numeric(5, 4))
+    rationale: Mapped[str] = mapped_column(Text)
+    assumption: Mapped[str] = mapped_column(Text)
+    evidence_url: Mapped[str] = mapped_column(Text)
+    review_status: Mapped[str] = mapped_column(String(24), default="provisional", index=True)
+    reviewer_notes: Mapped[str | None] = mapped_column(Text)
+    reviewed_by_user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class FilingPage(UUIDPrimaryKey, Base):
@@ -151,7 +178,10 @@ class ExtractedField(UUIDPrimaryKey, Timestamped, Base):
     __table_args__ = (
         UniqueConstraint("filing_id", "field_key", "version"),
         CheckConstraint("method IN ('xbrl','llm','human')", name="method"),
-        CheckConstraint("qa_status IN ('unreviewed','sampled_ok','corrected')", name="qa_status"),
+        CheckConstraint(
+            "qa_status IN ('unreviewed','provisional','sampled_ok','corrected')",
+            name="qa_status",
+        ),
         CheckConstraint("qa_status = 'sampled_ok' OR confidence IS NOT NULL", name="qa_confidence"),
         CheckConstraint(
             "confidence IS NULL OR (confidence >= 0 AND confidence <= 1)", name="confidence"
@@ -204,6 +234,10 @@ class Metric(UUIDPrimaryKey, Base):
     percentile_all: Mapped[Decimal | None] = mapped_column(Numeric(7, 4))
     yoy_delta: Mapped[Decimal | None] = mapped_column(Numeric(24, 6))
     field_version_pin_id: Mapped[UUID] = mapped_column(ForeignKey("field_version_pins.id"))
+    # Every pin that contributed to `value`. A single-source metric repeats
+    # `field_version_pin_id`; additive and multi-numerator metrics list all addends so the
+    # lineage rule covers the whole number shown, not just its first component.
+    contributing_pin_ids: Mapped[list[str]] = mapped_column(JSONB, default=list)
 
 
 class Score(UUIDPrimaryKey, Base):

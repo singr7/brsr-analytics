@@ -72,5 +72,37 @@ def test_opaque_tokens_are_random_and_stored_as_hashes() -> None:
 
 
 def test_production_rejects_default_jwt_secret() -> None:
+    # _env_file=None keeps the guard under test independent of a developer's local .env,
+    # which would otherwise supply a strong secret and silently pass the assertion.
     with pytest.raises(ValidationError, match="JWT_SECRET"):
-        Settings(app_env="production")
+        Settings(app_env="production", _env_file=None)
+
+
+def test_production_rejects_short_jwt_secret() -> None:
+    with pytest.raises(ValidationError, match="JWT_SECRET"):
+        Settings(app_env="production", jwt_secret="too-short", _env_file=None)
+
+
+def _production_settings(**overrides: object) -> Settings:
+    base: dict[str, object] = {
+        "app_env": "production",
+        "jwt_secret": "x" * 32,
+        "auth_expose_verification_token": False,
+        "llm_provider": "openai",
+        "_env_file": None,
+    }
+    return Settings(**(base | overrides))  # type: ignore[arg-type]
+
+
+def test_production_rejects_exposed_verification_token() -> None:
+    with pytest.raises(ValidationError, match="AUTH_EXPOSE_VERIFICATION_TOKEN"):
+        _production_settings(auth_expose_verification_token=True)
+
+
+def test_production_rejects_fake_llm_provider() -> None:
+    with pytest.raises(ValidationError, match="LLM_PROVIDER"):
+        _production_settings(llm_provider="fake")
+
+
+def test_production_accepts_a_fully_configured_deployment() -> None:
+    assert _production_settings().app_env == "production"

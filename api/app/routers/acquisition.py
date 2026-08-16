@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -5,8 +6,10 @@ from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, stat
 
 from api.app.core.access import CurrentUser, SessionDep
 from api.app.core.config import Settings, get_settings
-from api.app.models import Company
+from api.app.models import Company, NseConceptMapping
 from api.app.schemas.acquisition import (
+    ConceptMappingItem,
+    ConceptMappingReviewRequest,
     CoverageResponse,
     FilingUploadResponse,
     IngestionInventoryResponse,
@@ -92,3 +95,40 @@ async def get_ingestion_inventory(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> IngestionInventoryResponse:
     return await ingestion_inventory(session, settings)
+
+
+@router.patch(
+    "/ingestion/mappings/{mapping_id}",
+    response_model=ConceptMappingItem,
+    dependencies=[Depends(require_platform_admin)],
+)
+async def review_concept_mapping(
+    mapping_id: UUID,
+    payload: ConceptMappingReviewRequest,
+    session: SessionDep,
+    user: CurrentUser,
+) -> ConceptMappingItem:
+    mapping = await session.get(NseConceptMapping, mapping_id)
+    if mapping is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Concept mapping not found")
+    mapping.review_status = payload.review_status
+    mapping.reviewer_notes = payload.reviewer_notes
+    mapping.reviewed_by_user_id = user.id
+    mapping.reviewed_at = datetime.now(UTC)
+    await session.commit()
+    await session.refresh(mapping)
+    return ConceptMappingItem(
+        id=mapping.id,
+        source_concept=mapping.source_concept,
+        field_key=mapping.field_key,
+        target_unit=mapping.target_unit,
+        selection_strategy=mapping.selection_strategy,
+        unit_rules=mapping.unit_rules_json,
+        confidence=float(mapping.confidence),
+        rationale=mapping.rationale,
+        assumption=mapping.assumption,
+        evidence_url=mapping.evidence_url,
+        review_status=mapping.review_status,
+        reviewer_notes=mapping.reviewer_notes,
+        reviewed_at=mapping.reviewed_at,
+    )

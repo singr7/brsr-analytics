@@ -32,7 +32,15 @@ services:
     env_file: .env
     volumes:
       - ./api:/app/api
+      # The documented publish/rebuild commands run `python -m worker...` in this container,
+      # so it needs current worker code rather than the copy baked into the image.
+      - ./worker:/app/worker
       - ./prompts:/app/prompts:ro
+      - ./taxonomy:/app/taxonomy:ro
+      # Single-file bind mounts pin an inode, so an editor that replaces the file will not
+      # propagate. Restart the service after editing these two.
+      - ./scoring.yaml:/app/scoring.yaml:ro
+      - ./plans.yaml:/app/plans.yaml:ro
       - ./events.yaml:/app/events.yaml:ro
       - ./.data:/app/.data
     ports:
@@ -53,6 +61,9 @@ services:
       - ./api:/app/api
       - ./worker:/app/worker
       - ./prompts:/app/prompts:ro
+      - ./taxonomy:/app/taxonomy:ro
+      - ./scoring.yaml:/app/scoring.yaml:ro
+      - ./plans.yaml:/app/plans.yaml:ro
       - ./events.yaml:/app/events.yaml:ro
       - ./.data:/app/.data
     depends_on:
@@ -71,6 +82,9 @@ services:
       - ./api:/app/api
       - ./worker:/app/worker
       - ./prompts:/app/prompts:ro
+      - ./taxonomy:/app/taxonomy:ro
+      - ./scoring.yaml:/app/scoring.yaml:ro
+      - ./plans.yaml:/app/plans.yaml:ro
       - ./events.yaml:/app/events.yaml:ro
       - ./.data:/app/.data
     depends_on:
@@ -96,8 +110,8 @@ services:
   mailhog:
     image: mailhog/mailhog:v1.0.1
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
 
 volumes:
   postgres_data:

@@ -1,8 +1,21 @@
-# HANDOFF — NSE BRSR corpus ingestion (2026-08-16)
+# HANDOFF — pre-production review and remediation (2026-08-16)
 
-## Repo state: `main` · real NSE corpus seeded locally · migrations head `0009`
+## Repo state: `main` · provisional NSE Explorer seeded locally · migrations head `0011` · `make verify` green
 
-## Delivered this session
+## Delivered by the review pass
+
+- Replaced magnitude-based turnover scale inference with a reviewed fail-closed per-issuer
+  registry, correcting Coal India from INR 14,337 crore to INR 1,43,369 crore and its energy
+  intensity from 1,331.68 (second-worst) to 133.17 (mid-cohort).
+- Retained XBRL `decimals` on raw facts and established that it cannot recover reporting scale.
+- Production settings now reject `AUTH_EXPOSE_VERIFICATION_TOKEN=true` and `LLM_PROVIDER=fake`.
+- Added identity-based plausibility screens and full multi-pin metric lineage.
+- Fixed compose dev/prod parity: mailhog ports, and `taxonomy`/`scoring.yaml`/`plans.yaml`/`worker`
+  mounts that had left api and worker serving stale baked config.
+- Created the three mandatory unsigned launch gates under `docs/gates/`.
+- Lowered the cohort suppression minimum from 8 to 5.
+
+## Delivered by the preceding ingestion session
 
 - Replaced the fictional 20-company seed corpus with a fail-closed official NSE BRSR importer.
 - Seeded 25 NIFTY 50 companies for FY 2024–25: 25/25 filings parsed, zero missing/errors,
@@ -11,6 +24,12 @@
 - Added configurable Celery Beat refresh and a platform-admin inventory at `/admin/ingestion`.
 - Documented source policy, commands, exact seeded tickers, scheduler controls and persistence in
   `docs/operations/NSE_BRSR_INGESTION.md`.
+- Published 400 explicitly provisional mapped fields across 25 FY25 filings, producing 425 metrics
+  and 75 method-versioned scores with source-fact lineage.
+- Added common-unit energy/water/emissions conversions, registry-resolved turnover scale,
+  Scope 1+2 totals, and three per-INR-crore intensities.
+- Added five real-data Explorer questions and an Admin mapping review workflow with assumptions,
+  confidence, accept/needs-review/reject status and reviewer notes.
 
 ## Existing S19 contracts
 
@@ -29,9 +48,12 @@
 
 ## Contracts next session relies on
 
-- Registry version: `1.0.0`; IDs: `sector-completeness-fy25`, `substance-by-sector`,
+- Registry version: `1.0.0`; 13 questions. Original IDs: `sector-completeness-fy25`, `substance-by-sector`,
   `core-readiness-gaps`, `materiality-evidence`, `assurance-trend`, `market-cap-quality`,
   `company-scope3`, `boilerplate-watch`.
+- FY25 NSE IDs: `company-energy-fy25`, `company-water-fy25`,
+  `company-energy-intensity-fy25`, `company-water-intensity-fy25`, and
+  `company-emissions-intensity-fy25`.
 - `/api/nlq` request: `{ question: string, base_dsl?: SemanticQuery }`.
 - `/api/nlq` response adds `context: { applied, inherited_filters, overridden_filters }`.
 - Merge precedence: translated filters replace base filters with the same `dimension`; remaining
@@ -42,22 +64,35 @@
 
 ## Sharp edges
 
-- The assurance guided question uses the governed `assurance_readiness` timeseries as an explicitly
-  labelled proxy; public assurance adoption detail remains on `/assurance`. Do not conflate them.
-- The current `SmartFilters` exposes FY and market-cap band; registry DSL and full expert pages retain
-  the broader query surface until later guided-control expansion.
-- Existing ECharts component mocks print ref warnings and Vitest prints the root tsconfig warning;
-  both predate S19 and checks pass.
-- The browser runtime exposed no browser instance. Live HTTP, responsive CSS, component interaction,
-  URL, keyboard-native control, and production-build checks passed; visual inspection is backlogged.
+- Turnover scale is resolved from the reviewed `turnover_scale.issuers` registry in
+  `taxonomy/nse_concept_mappings.yaml`, never inferred from magnitude. Any new issuer reporting
+  below the 1e9 absolute threshold needs a registry entry with evidence, or its turnover and all
+  turnover-normalized intensities are withheld. `publish` reports these as `withheld=<n>`.
+- The XBRL `decimals` attribute is precision, not scale, and must never be used to infer scale.
+- Migration `0010` narrows the published-number rule to allow provisional NSE pins on public
+  surfaces. This is an open decision in `docs/gates/editorial.md`.
+- `MtCO2e` is still provisionally read as metric tonnes (confidence 0.80); first review priority.
+- Cohort suppression minimum is now 5, not 8. Only Financial Services (n=6) clears it today.
+- `scoring.yaml` and `plans.yaml` are single-file bind mounts, which pin an inode: restart the
+  api/worker/scheduler services after editing them or the containers keep the old content.
+- Existing `xbrl_facts` rows predate the `decimals` column, so their value is null until the
+  cohort is re-ingested. No published number depends on it.
+- The assurance guided question uses the governed `assurance_readiness` timeseries as an
+  explicitly labelled proxy; public assurance adoption detail remains on `/assurance`.
+- The browser runtime still exposes no browser instance, so the visual/keyboard passes listed in
+  `docs/state/BACKLOG.md` remain outstanding and `docs/gates/ux.md` cannot be signed.
 
 ## Env/config added
 
 - `SOURCE_NSE_BRSR_ENABLED` (fail-closed; default `false`)
 - `NSE_BRSR_CONTACT`, portal/registry URLs, default FY and batch size
 - `NSE_BRSR_SCHEDULE_ENABLED` and `NSE_BRSR_REFRESH_HOURS`
+- `MAILHOG_SMTP_PORT` and `MAILHOG_UI_PORT` (host-side only; default 1025/8025)
+- No new secrets. `AUTH_EXPOSE_VERIFICATION_TOKEN` and `LLM_PROVIDER` are now production-validated.
 
 ## Next
 
-Map the live NSE taxonomy concepts into governed `field_defs`, run QA/pinning, and rebuild public
-metrics. Raw facts exist now, but ingestion intentionally does not auto-publish unmapped values.
+Sign or reject the three gates in `docs/gates/`. The editorial gate carries two open decisions:
+provisional NSE pins on public surfaces, and the cohort minimum of 5. Then have domain owners
+review the 16 mappings in `/admin/ingestion`, starting with `MtCO2e`. `compose.prod.yml` and the
+empty `infra/{terraform,cloudinit,deploy}` trees are the largest remaining gap before turn-up.

@@ -7,8 +7,17 @@ from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.app.core.config import Settings
-from api.app.models import Company, ExtractedField, Filing, IngestionRun, IngestionState, XbrlFact
+from api.app.models import (
+    Company,
+    FieldVersionPin,
+    Filing,
+    IngestionRun,
+    IngestionState,
+    NseConceptMapping,
+    XbrlFact,
+)
 from api.app.schemas.acquisition import (
+    ConceptMappingItem,
     CoverageGroup,
     CoverageResponse,
     FilingInventoryItem,
@@ -121,8 +130,8 @@ async def ingestion_inventory(
         .scalar_subquery()
     )
     mapped_count = (
-        select(func.count(ExtractedField.id))
-        .where(ExtractedField.filing_id == Filing.id)
+        select(func.count(FieldVersionPin.id))
+        .where(FieldVersionPin.filing_id == Filing.id)
         .correlate(Filing)
         .scalar_subquery()
     )
@@ -139,6 +148,13 @@ async def ingestion_inventory(
             select(IngestionRun).order_by(IngestionRun.started_at.desc()).limit(10)
         )
     ).all()
+    mappings = list(
+        await session.scalars(
+            select(NseConceptMapping).order_by(
+                NseConceptMapping.review_status, NseConceptMapping.field_key
+            )
+        )
+    )
     items = [
         FilingInventoryItem(
             company_id=company.id,
@@ -187,5 +203,23 @@ async def ingestion_inventory(
                 completed_at=run.completed_at,
             )
             for run in recent
+        ],
+        concept_mappings=[
+            ConceptMappingItem(
+                id=mapping.id,
+                source_concept=mapping.source_concept,
+                field_key=mapping.field_key,
+                target_unit=mapping.target_unit,
+                selection_strategy=mapping.selection_strategy,
+                unit_rules=mapping.unit_rules_json,
+                confidence=float(mapping.confidence),
+                rationale=mapping.rationale,
+                assumption=mapping.assumption,
+                evidence_url=mapping.evidence_url,
+                review_status=mapping.review_status,
+                reviewer_notes=mapping.reviewer_notes,
+                reviewed_at=mapping.reviewed_at,
+            )
+            for mapping in mappings
         ],
     )

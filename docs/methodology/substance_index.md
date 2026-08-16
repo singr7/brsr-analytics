@@ -2,7 +2,7 @@
 
 > Auto-generated from `scoring.yaml`; edit the configuration, not this file.
 
-Method version: **1.0.0**
+Method version: **1.1.0-provisional-nse**
 
 ## Completeness
 
@@ -28,6 +28,6 @@ lineage contributes 25%.
 
 ## Cohorts and reproducibility
 
-Sector percentiles are suppressed below **8** companies.
+Sector percentiles are suppressed below **5** companies.
 Every score stores its method version, component values, configuration hash, and a pinned
 field-version anchor. `make rebuild-metrics` is a deterministic full rebuild.

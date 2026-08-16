@@ -14,9 +14,11 @@ from worker.acquire.adapters import (
     ExchangeXbrlAdapter,
     SourceAdapter,
 )
+from worker.acquire.mappings import publish_provisional_mappings
 from worker.acquire.nse import ingest_nse_batch
 from worker.acquire.service import acquire_one
 from worker.celery_app import celery_app
+from worker.score.tasks import run_rebuild
 
 
 def configured_adapters(settings: Settings) -> dict[str, SourceAdapter]:
@@ -85,7 +87,12 @@ async def run_nse_refresh() -> str:
                 target_fy=settings.nse_brsr_default_fy,
                 limit=settings.nse_brsr_default_batch_size,
             )
-            return str(run.id)
+            await publish_provisional_mappings(
+                session, target_fy=settings.nse_brsr_default_fy
+            )
+            run_id = str(run.id)
+        await run_rebuild()
+        return run_id
     finally:
         await engine.dispose()
 

@@ -6,7 +6,10 @@ import asyncio
 from api.app.core.config import get_settings
 from api.app.db.session import create_engine, create_session_factory
 from api.app.services.storage import object_store
+from worker.acquire.mappings import publish_provisional_mappings
 from worker.acquire.nse import ingest_nse_batch
+from worker.score.materialize import rebuild_metrics
+from worker.score.tasks import invalidate_semantic_cache
 
 
 def parser() -> argparse.ArgumentParser:
@@ -17,8 +20,13 @@ def parser() -> argparse.ArgumentParser:
         item.add_argument("--fy", type=int)
         item.add_argument("--limit", type=int, default=default_limit)
         item.add_argument("--start", type=int)
+        item.add_argument(
+            "--publish", action="store_true", help="Map, pin and rebuild Explorer after ingestion"
+        )
         if mode == "initial":
             item.add_argument("--replace-synthetic", action="store_true")
+    publish = subcommands.add_parser("publish", help="Map and pin provisional NSE metrics")
+    publish.add_argument("--fy", type=int)
     return command
 
 
@@ -28,6 +36,15 @@ async def run(args: argparse.Namespace) -> None:
     factory = create_session_factory(engine)
     try:
         async with factory() as session:
+            if args.mode == "publish":
+                published = await publish_provisional_mappings(
+                    session, target_fy=args.fy or settings.nse_brsr_default_fy
+                )
+                print(
+                    f"created={published.created} pinned={published.pinned} "
+                    f"missing={published.missing} withheld={published.withheld}"
+                )
+                return
             result = await ingest_nse_batch(
                 session,
                 object_store(settings),
@@ -45,6 +62,17 @@ async def run(args: argparse.Namespace) -> None:
             )
             if result.error_summary:
                 print(result.error_summary)
+            if args.publish:
+                published = await publish_provisional_mappings(
+                    session, target_fy=args.fy or settings.nse_brsr_default_fy
+                )
+                metrics, scores = await rebuild_metrics(session)
+                await invalidate_semantic_cache(settings)
+                print(
+                    f"published={published.created} pinned={published.pinned} "
+                    f"mapping_missing={published.missing} withheld={published.withheld} "
+                    f"metrics={metrics} scores={scores}"
+                )
     finally:
         await engine.dispose()
 

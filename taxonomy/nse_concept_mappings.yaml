@@ -1,0 +1,154 @@
+version: "0.2.0-provisional"
+source: nse_brsr
+evidence_url: https://www.nseindia.com/static/companies-listing/xbrl-information
+selection_strategy: current_fy_dcy_main
+
+# Turnover reporting scale.
+#
+# NSE BRSR instances report `Turnover` against the single `INR` unit token at inconsistent
+# scales. The reporting scale CANNOT be recovered from the instance document:
+#   - the unit token is `INR` for every issuer regardless of scale;
+#   - the XBRL `decimals` attribute is a precision claim, not a scale factor. Observed FY25:
+#     Coal India decimals="2" value 143368.92 (crore), Dr. Reddy's decimals="0" value 231154
+#     (million), Infosys decimals="2" value 1289330074464.23 (absolute INR). Precision and
+#     scale are independent, so `decimals` cannot disambiguate.
+#
+# An earlier build inferred scale from magnitude. That is unsound: Coal India (crore) and
+# Dr. Reddy's (million) both fall in the 100,000–1,000,000,000 band, so no threshold separates
+# them, and Coal India's turnover was published 10x low. Scale is therefore resolved from an
+# explicit per-issuer registry. Issuers in the ambiguous band without a registry entry are NOT
+# published: turnover is skipped and every turnover-normalized intensity is withheld for them.
+turnover_scale:
+  # At or above this value, a crore or million reading would imply an economically impossible
+  # turnover, so the figure is unambiguously already absolute INR.
+  absolute_threshold: 1000000000
+  factors: {inr: 1, lakh: 100000, million: 1000000, crore: 10000000}
+  issuers:
+    COALINDIA:
+      scale: crore
+      confidence: 0.90
+      evidence: FY25 reported value 143368.92 corresponds to revenue from operations of about INR 1.43 lakh crore; the million reading would imply about INR 14,337 crore, an order of magnitude below the filed financials.
+    DRREDDY:
+      scale: million
+      confidence: 0.85
+      evidence: FY25 reported value 231154 corresponds to about INR 23,115 crore; the crore reading would imply about INR 2.31 lakh crore, far above the filed financials.
+    EICHERMOT:
+      scale: crore
+      confidence: 0.90
+      evidence: FY25 reported value 18451.46 corresponds to about INR 18,451 crore, consistent with the filed financials; the million reading would imply about INR 1,845 crore.
+    HINDUNILVR:
+      scale: crore
+      confidence: 0.90
+      evidence: FY25 reported value 61517 corresponds to about INR 61,517 crore, consistent with the filed financials; the million reading would imply about INR 6,152 crore.
+
+mappings:
+  - source_concept: Turnover
+    field_key: a.basics.turnover_inr
+    target_unit: INR
+    confidence: 0.75
+    value_strategy: registered_turnover_scale
+    unit_rules: {INR: 1}
+    rationale: Turnover is required for comparable intensity metrics; the current NSE cohort mixes absolute INR with crore- and million-scaled values under the same INR token.
+    assumption: Values at or above the absolute threshold are already absolute INR. Below it, scale comes from the reviewed per-issuer `turnover_scale.issuers` registry; an unregistered issuer is withheld rather than guessed, so its turnover-normalized intensities do not publish.
+  - source_concept: TotalEnergyConsumedFromRenewableAndNonRenewableSources
+    field_key: p6.e1.energy_total_gj
+    target_unit: GJ
+    confidence: 0.95
+    unit_rules: {MJ: 0.001, GJ: 1, TJ: 1000}
+    rationale: Exact total-energy concept; standard SI conversion puts reported MJ/GJ/TJ values on GJ.
+    assumption: DCYMain is the issuer's current-year entity-wide context and unitRef expresses the reported energy scale.
+  - source_concept: TotalEnergyConsumedFromRenewableSources
+    field_key: p6.e1.energy_renewable_gj
+    target_unit: GJ
+    confidence: 0.95
+    unit_rules: {MJ: 0.001, GJ: 1, TJ: 1000}
+    rationale: Exact renewable-energy concept with standard SI conversion.
+    assumption: DCYMain represents the consolidated current-year reporting boundary.
+  - source_concept: TotalEnergyConsumedFromNonRenewableSources
+    field_key: p6.e1.energy_nonrenewable_gj
+    target_unit: GJ
+    confidence: 0.95
+    unit_rules: {MJ: 0.001, GJ: 1, TJ: 1000}
+    rationale: Exact non-renewable-energy concept with standard SI conversion.
+    assumption: DCYMain represents the consolidated current-year reporting boundary.
+  - source_concept: TotalVolumeOfWaterWithdrawal
+    field_key: p6.e2.water_total_kl
+    target_unit: kL
+    confidence: 0.98
+    unit_rules: {kl: 1}
+    rationale: Exact total-water-withdrawal concept; NSE instances report kL.
+    assumption: DCYMain excludes dimensional facility/area breakdown contexts and is the entity-wide total.
+  - source_concept: TotalVolumeOfWaterConsumption
+    field_key: p6.e2.water_consumption_kl
+    target_unit: kL
+    confidence: 0.98
+    unit_rules: {kl: 1}
+    rationale: Exact total-water-consumption concept; NSE instances report kL.
+    assumption: DCYMain excludes dimensional facility/area breakdown contexts and is the entity-wide total.
+  - source_concept: WaterWithdrawalBySurfaceWater
+    field_key: p6.e2.water_surface_kl
+    target_unit: kL
+    confidence: 0.98
+    unit_rules: {kl: 1}
+    rationale: Exact source-category concept reported in kL.
+    assumption: DCYMain is the entity-wide current-year total.
+  - source_concept: WaterWithdrawalByGroundwater
+    field_key: p6.e2.water_ground_kl
+    target_unit: kL
+    confidence: 0.98
+    unit_rules: {kl: 1}
+    rationale: Exact source-category concept reported in kL.
+    assumption: DCYMain is the entity-wide current-year total.
+  - source_concept: WaterWithdrawalByThirdPartyWater
+    field_key: p6.e2.water_third_party_kl
+    target_unit: kL
+    confidence: 0.98
+    unit_rules: {kl: 1}
+    rationale: Exact source-category concept reported in kL.
+    assumption: DCYMain is the entity-wide current-year total.
+  - source_concept: WaterWithdrawalBySeawaterOrDesalinatedWater
+    field_key: p6.e2.water_seawater_kl
+    target_unit: kL
+    confidence: 0.98
+    unit_rules: {kl: 1}
+    rationale: Exact source-category concept reported in kL.
+    assumption: DCYMain is the entity-wide current-year total.
+  - source_concept: WaterWithdrawalByOthers
+    field_key: p6.e2.water_other_kl
+    target_unit: kL
+    confidence: 0.98
+    unit_rules: {kl: 1}
+    rationale: Exact residual source-category concept reported in kL.
+    assumption: DCYMain is the entity-wide current-year total.
+  - source_concept: TotalScope1Emissions
+    field_key: p6.e3.scope1_tco2e
+    target_unit: tCO2e
+    confidence: 0.80
+    unit_rules: {tCO2e: 1, MtCO2e: 1, ktCO2e: 1000}
+    rationale: Exact Scope 1 concept; tCO2e is direct and ktCO2e is converted to tonnes.
+    assumption: NSE's MtCO2e token is treated as metric-tonnes CO2e, not megatonnes, because issuer magnitudes (for example thousands for IT companies) would otherwise be physically implausible.
+  - source_concept: TotalScope2Emissions
+    field_key: p6.e3.scope2_tco2e
+    target_unit: tCO2e
+    confidence: 0.80
+    unit_rules: {tCO2e: 1, MtCO2e: 1, ktCO2e: 1000}
+    rationale: Exact Scope 2 concept; tCO2e is direct and ktCO2e is converted to tonnes.
+    assumption: NSE's MtCO2e token is treated as metric-tonnes CO2e, not megatonnes; domain review is required.
+  - source_concept: WhetherDetailsOfTotalEnergyConsumptionInJoulesOrMultiplesAndEnergyIntensityIsAssuredByAssurer
+    field_key: p6.e1.energy_assured
+    confidence: 0.90
+    unit_rules: {}
+    rationale: Direct boolean assurance flag for the energy disclosure block.
+    assumption: A true XBRL value means the disclosed energy block was included in the assurer's stated scope; it does not establish assurance level or quality.
+  - source_concept: WhetherDetailsOfTheDisclosuresRelatedToWaterWithdrawalIsAssuredByAssurer
+    field_key: p6.e2.water_assured
+    confidence: 0.90
+    unit_rules: {}
+    rationale: Direct boolean assurance flag for the water-withdrawal disclosure block.
+    assumption: A true value indicates stated scope only, not the level or quality of assurance.
+  - source_concept: WhetherDetailsOfGreenHouseGasEmissionsAndItsIntensityIsAssuredByAssurer
+    field_key: p6.e3.ghg_assured
+    confidence: 0.90
+    unit_rules: {}
+    rationale: Direct boolean assurance flag for the GHG disclosure block.
+    assumption: A true value indicates stated scope only, not the level or quality of assurance.

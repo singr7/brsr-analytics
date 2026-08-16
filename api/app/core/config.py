@@ -86,10 +86,18 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def production_secrets_are_safe(self) -> "Settings":
-        if self.app_env == "production" and (
-            self.jwt_secret == "development-only-change-me" or len(self.jwt_secret) < 32
-        ):
+        if self.app_env != "production":
+            return self
+        if self.jwt_secret == "development-only-change-me" or len(self.jwt_secret) < 32:
             raise ValueError("JWT_SECRET must be a unique value of at least 32 characters")
+        if self.auth_expose_verification_token:
+            # This flag returns verification and org-invite tokens in API responses, which in
+            # production would allow verifying an arbitrary address and self-joining an org.
+            raise ValueError("AUTH_EXPOSE_VERIFICATION_TOKEN must be false in production")
+        if self.llm_provider == "fake":
+            # The fake client serves committed fixture responses; in production that would
+            # publish fixture text as if it were extracted from a real filing.
+            raise ValueError("LLM_PROVIDER must not be 'fake' in production")
         return self
 
 

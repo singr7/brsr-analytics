@@ -53,6 +53,7 @@ def test_relational_spine_is_complete() -> None:
         "ingestion_runs",
         "ingestion_state",
         "xbrl_facts",
+        "nse_concept_mappings",
     }
     assert set(Base.metadata.tables) == expected
 

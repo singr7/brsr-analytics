@@ -1,4 +1,4 @@
-.PHONY: bootstrap up down verify test-api test-worker test-fe migrate seed ingest-nse-initial ingest-nse-next ingest-nse-refresh rebuild-metrics fetch-testdata bench-extraction lint-schema fmt
+.PHONY: bootstrap up down verify test-api test-worker test-fe migrate seed ingest-nse-initial ingest-nse-next ingest-nse-refresh publish-nse rebuild-metrics fetch-testdata bench-extraction lint-schema fmt
 
 PYTHON := .venv/bin/python
 RUFF := .venv/bin/ruff
@@ -49,13 +49,17 @@ NSE_FY ?= 2025
 NSE_LIMIT ?= 10
 
 ingest-nse-initial:
-	$(PYTHON) -m worker.acquire.cli initial --fy $(NSE_FY) --limit 25 --replace-synthetic
+	$(PYTHON) -m worker.acquire.cli initial --fy $(NSE_FY) --limit 25 --replace-synthetic --publish
 
 ingest-nse-next:
-	$(PYTHON) -m worker.acquire.cli next --fy $(NSE_FY) --limit $(NSE_LIMIT)
+	$(PYTHON) -m worker.acquire.cli next --fy $(NSE_FY) --limit $(NSE_LIMIT) --publish
 
 ingest-nse-refresh:
-	$(PYTHON) -m worker.acquire.cli refresh --fy $(NSE_FY) --limit $(NSE_LIMIT)
+	$(PYTHON) -m worker.acquire.cli refresh --fy $(NSE_FY) --limit $(NSE_LIMIT) --publish
+
+publish-nse:
+	$(PYTHON) -m worker.acquire.cli publish --fy $(NSE_FY)
+	$(PYTHON) -m worker.score.cli
 
 rebuild-metrics:
 	$(PYTHON) -m worker.score.cli

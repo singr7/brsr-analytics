@@ -1,5 +1,5 @@
-method_version: "1.0.0"
-minimum_sector_size: 8
+method_version: "1.1.0-provisional-nse"
+minimum_sector_size: 5
 
 completeness:
   # Core indicators carry twice the weight because they are the SEBI BRSR Core baseline.
@@ -22,6 +22,36 @@ assurance_readiness:
   core_coverage_weight: 0.35
   lineage_quality_weight: 0.25
 
+# Arithmetic identities the disclosure asserts about itself. A component reported at a
+# different scale from its total breaks these, which is the failure mode that unit and scale
+# mistakes actually produce. A metric that fails is withheld from materialization, along with
+# everything derived from it, rather than published.
+#
+# Intentionally no emissions-per-energy band: Scope 1 legitimately includes non-energy
+# fugitive and process emissions, so such a band would encode a rule that is not true.
+plausibility_screens:
+  tolerance: 0.01
+  identities:
+    - total: p6.e1.energy_total_gj
+      parts: [p6.e1.energy_renewable_gj, p6.e1.energy_nonrenewable_gj]
+    - total: p6.e2.water_total_kl
+      parts:
+        - p6.e2.water_surface_kl
+        - p6.e2.water_ground_kl
+        - p6.e2.water_third_party_kl
+        - p6.e2.water_seawater_kl
+        - p6.e2.water_other_kl
+  non_negative:
+    - a.basics.turnover_inr
+    - p6.e1.energy_total_gj
+    - p6.e2.water_total_kl
+    - p6.e3.scope1_tco2e
+    - p6.e3.scope2_tco2e
+
+additive_metrics:
+  - metric_key: p6.e3.scope12_total_tco2e
+    addends: [p6.e3.scope1_tco2e, p6.e3.scope2_tco2e]
+
 derived_metrics:
   - metric_key: normalized.energy_gj_per_inr_crore
     numerator: p6.e1.energy_total_gj
@@ -32,6 +62,6 @@ derived_metrics:
     denominator: a.basics.turnover_inr
     denominator_scale: 10000000
   - metric_key: normalized.scope12_tco2e_per_inr_crore
-    numerator: p6.e3.scope12_total_tco2e
+    numerators: [p6.e3.scope1_tco2e, p6.e3.scope2_tco2e]
     denominator: a.basics.turnover_inr
     denominator_scale: 10000000

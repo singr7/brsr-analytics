@@ -10,6 +10,7 @@ from worker.score.metrics import (
     load_scoring,
     materialize_percentiles,
     phrase_frequencies,
+    screen_implausible,
     substance_score,
 )
 from worker.score.substance import llm_substance_verdict
@@ -86,3 +87,62 @@ async def test_substance_llm_verdict_is_offline_fixture_backed() -> None:
     )
     assert verdict.quantified_target and verdict.dated_commitment
     assert verdict.named_methodology and verdict.confidence == 0.99
+
+
+def _screen_config() -> dict[str, object]:
+    return {
+        "plausibility_screens": {
+            "tolerance": 0.01,
+            "identities": [{"total": "energy_total", "parts": ["renewable", "nonrenewable"]}],
+            "non_negative": ["turnover"],
+        },
+        "additive_metrics": [],
+        "derived_metrics": [
+            {
+                "metric_key": "energy_intensity",
+                "numerator": "energy_total",
+                "denominator": "turnover",
+                "denominator_scale": 1,
+            }
+        ],
+    }
+
+
+def test_screen_keeps_metrics_whose_components_sum_to_their_total() -> None:
+    rows = [
+        MetricCandidate("a", 2025, "Energy", "energy_total", Decimal(100), "p1"),
+        MetricCandidate("a", 2025, "Energy", "renewable", Decimal(40), "p2"),
+        MetricCandidate("a", 2025, "Energy", "nonrenewable", Decimal(60), "p3"),
+    ]
+    kept, failures = screen_implausible(rows, _screen_config())
+    assert failures == []
+    assert len(kept) == 3
+
+
+def test_screen_withholds_a_broken_identity_and_everything_derived_from_it() -> None:
+    rows = [
+        # A component reported at a different scale from its total breaks the identity.
+        MetricCandidate("a", 2025, "Energy", "energy_total", Decimal(100), "p1"),
+        MetricCandidate("a", 2025, "Energy", "renewable", Decimal(40000), "p2"),
+        MetricCandidate("a", 2025, "Energy", "nonrenewable", Decimal(60), "p3"),
+        MetricCandidate("a", 2025, "Energy", "turnover", Decimal(10), "p4"),
+        MetricCandidate("a", 2025, "Energy", "energy_intensity", Decimal(10), "p1"),
+        # A different filing stays untouched.
+        MetricCandidate("b", 2025, "Energy", "energy_total", Decimal(100), "p5"),
+        MetricCandidate("b", 2025, "Energy", "renewable", Decimal(40), "p6"),
+        MetricCandidate("b", 2025, "Energy", "nonrenewable", Decimal(60), "p7"),
+    ]
+    kept, failures = screen_implausible(rows, _screen_config())
+    assert [failure.metric_key for failure in failures] == ["energy_total"]
+    withheld = {(row.company_id, row.metric_key) for row in rows} - {
+        (row.company_id, row.metric_key) for row in kept
+    }
+    # The broken total and the intensity computed from it both go; company b is unaffected.
+    assert withheld == {("a", "energy_total"), ("a", "energy_intensity")}
+
+
+def test_screen_withholds_negative_values() -> None:
+    rows = [MetricCandidate("a", 2025, "Energy", "turnover", Decimal(-5), "p1")]
+    kept, failures = screen_implausible(rows, _screen_config())
+    assert kept == []
+    assert failures[0].screen == "non_negative"

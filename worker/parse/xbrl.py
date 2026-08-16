@@ -32,6 +32,10 @@ class RawXbrlFact:
     context_id: str | None
     dimensions: dict[str, str]
     ordinal: int
+    # XBRL `decimals` is a precision claim, not a scale factor. It is retained for lossless
+    # provenance only; see taxonomy/nse_concept_mappings.yaml for why it cannot disambiguate
+    # the INR reporting scale of a NSE BRSR filing.
+    decimals: int | None = None
 
 
 def _local_name(tag: str) -> str:
@@ -156,6 +160,7 @@ def parse_raw_xbrl_facts(content: bytes) -> list[RawXbrlFact]:
         period_start, period_end, dimensions = contexts.get(
             context_id, (None, None, {})
         )
+        decimals_raw = element.attrib.get("decimals")
         facts.append(
             RawXbrlFact(
                 concept=_local_name(element.tag),
@@ -167,6 +172,11 @@ def parse_raw_xbrl_facts(content: bytes) -> list[RawXbrlFact]:
                 context_id=context_id,
                 dimensions=dimensions,
                 ordinal=ordinal,
+                decimals=(
+                    int(decimals_raw)
+                    if decimals_raw and decimals_raw.lstrip("-").isdigit()
+                    else None
+                ),
             )
         )
     return facts

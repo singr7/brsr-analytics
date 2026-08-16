@@ -18,7 +18,7 @@ brsrlens/
 ```
 
 ## 2. The verbs
-`make up|down` · `make verify` (ruff+mypy+tsc+eslint+all offline tests — the DoD gate) · `make test-api|test-worker|test-fe` · `make migrate` · `make seed` (access fixtures + taxonomy only; never corpus data) · `make ingest-nse-initial|ingest-nse-next|ingest-nse-refresh` (governed real-corpus acquisition) · `make rebuild-metrics` (recompute metrics/scores from extracted_fields — the analytics `reindex` guarantee) · `make fetch-testdata` · `make bench-extraction` ◆ (offline benchmark vs golden set) · `make fmt`
+`make up|down` · `make verify` (ruff+mypy+tsc+eslint+all offline tests — the DoD gate) · `make test-api|test-worker|test-fe` · `make migrate` · `make seed` (access fixtures + taxonomy only; never corpus data) · `make ingest-nse-initial|ingest-nse-next|ingest-nse-refresh|publish-nse` (governed real-corpus acquisition and provisional Explorer publication) · `make rebuild-metrics` (recompute metrics/scores from extracted_fields — the analytics `reindex` guarantee) · `make fetch-testdata` · `make bench-extraction` ◆ (offline benchmark vs golden set) · `make fmt`
 
 ## 3. Code standards (deltas from sibling ◆)
 Python ruff/mypy-strict on services+worker; TS strict; every endpoint has response model + success/failure tests; config via pydantic-settings only.
