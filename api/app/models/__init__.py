@@ -19,12 +19,15 @@ from api.app.models.corpus import (
     FieldVersionPin,
     Filing,
     FilingPage,
+    IngestionRun,
+    IngestionState,
     LLMUsage,
     Metric,
     QAReview,
     QualityStat,
     Score,
     SharedPhrase,
+    XbrlFact,
 )
 from api.app.models.engagement import DeepdiveRequest, Event, EventDailyAggregate, Lead
 from api.app.models.studio import (
@@ -62,6 +65,8 @@ __all__ = [
     "FieldVersionPin",
     "Filing",
     "FilingPage",
+    "IngestionRun",
+    "IngestionState",
     "InvoiceRequest",
     "LLMUsage",
     "Lead",
@@ -77,6 +82,7 @@ __all__ = [
     "QualityStat",
     "Score",
     "SharedPhrase",
+    "XbrlFact",
     "StudioAnswer",
     "StudioComment",
     "StudioDoc",

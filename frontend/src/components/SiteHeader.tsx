@@ -94,6 +94,7 @@ export function SiteHeader({ path, tier, profile, org, onOrgChange, onSignIn, on
     </header>
     <div className="tier-rail" aria-label="Account access">
       <span>{tier} access{licence}</span>
+      {profile?.is_admin && <a href="/admin/ingestion" aria-current={path === '/admin/ingestion' ? 'page' : undefined}>Ingestion inventory</a>}
       {profile && <a href="/benchmarks" aria-current={path === '/benchmarks' ? 'page' : undefined}>Peer benchmarks {tier === 'explore' && '· Pro'}</a>}
       <a href="/sectors">Browse detail views</a>
     </div>

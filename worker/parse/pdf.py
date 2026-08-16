@@ -136,7 +136,7 @@ def detect_table_regions(
 
 def parse_pdf(content: bytes) -> tuple[list[ParsedPage], SectionLocation]:
     try:
-        import fitz  # type: ignore[import-not-found]
+        import fitz  # type: ignore[import-untyped]
     except ImportError as exc:  # pragma: no cover - dependency failure is operational
         raise RuntimeError("PyMuPDF is required to parse PDF filings") from exc
     document = fitz.open(stream=content, filetype="pdf")

@@ -21,6 +21,19 @@ class XbrlField:
     context_id: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class RawXbrlFact:
+    concept: str
+    value_raw: str
+    value_num: Decimal | None
+    unit: str | None
+    period_start: date | None
+    period_end: date | None
+    context_id: str | None
+    dimensions: dict[str, str]
+    ordinal: int
+
+
 def _local_name(tag: str) -> str:
     return tag.rsplit("}", 1)[-1].split(":")[-1]
 
@@ -93,3 +106,67 @@ def parse_xbrl(
             XbrlField(field_key, raw, number, unit, period[0], period[1], decimals, context_id)
         )
     return output
+
+
+def parse_raw_xbrl_facts(content: bytes) -> list[RawXbrlFact]:
+    """Return every reported XBRL fact without depending on a local taxonomy mapping."""
+    root = ElementTree.fromstring(content)
+    contexts: dict[str, tuple[date | None, date | None, dict[str, str]]] = {}
+    units: dict[str, str] = {}
+    for element in root.iter():
+        name = _local_name(element.tag)
+        element_id = element.attrib.get("id")
+        if name == "context" and element_id:
+            start = next(
+                (child.text for child in element.iter() if _local_name(child.tag) == "startDate"),
+                None,
+            )
+            end = next(
+                (
+                    child.text
+                    for child in element.iter()
+                    if _local_name(child.tag) in {"endDate", "instant"}
+                ),
+                None,
+            )
+            dimensions = {
+                child.attrib.get("dimension", _local_name(child.tag)): (child.text or "").strip()
+                for child in element.iter()
+                if _local_name(child.tag) in {"explicitMember", "typedMember"}
+            }
+            contexts[element_id] = (_parse_date(start), _parse_date(end), dimensions)
+        elif name == "unit" and element_id:
+            measures = [
+                (child.text or "").split(":")[-1]
+                for child in element.iter()
+                if _local_name(child.tag) == "measure" and child.text
+            ]
+            if measures:
+                units[element_id] = "/".join(measures)
+
+    facts: list[RawXbrlFact] = []
+    for ordinal, element in enumerate(root.iter()):
+        context_id = element.attrib.get("contextRef")
+        raw = (element.text or "").strip()
+        if not context_id or not raw or list(element):
+            continue
+        number: Decimal | None = None
+        with contextlib.suppress(InvalidOperation):
+            number = Decimal(raw.replace(",", ""))
+        period_start, period_end, dimensions = contexts.get(
+            context_id, (None, None, {})
+        )
+        facts.append(
+            RawXbrlFact(
+                concept=_local_name(element.tag),
+                value_raw=raw,
+                value_num=number,
+                unit=units.get(element.attrib.get("unitRef", "")),
+                period_start=period_start,
+                period_end=period_end,
+                context_id=context_id,
+                dimensions=dimensions,
+                ordinal=ordinal,
+            )
+        )
+    return facts

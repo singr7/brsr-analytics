@@ -9,11 +9,19 @@ from uuid import UUID
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.app.models import Embedding, ExtractedField, FieldDef, Filing, FilingPage
+from api.app.models import (
+    Company,
+    Embedding,
+    ExtractedField,
+    FieldDef,
+    Filing,
+    FilingPage,
+    XbrlFact,
+)
 from api.app.services.storage import ObjectStore
 from worker.parse.embeddings import hash_embedding
 from worker.parse.pdf import parse_pdf
-from worker.parse.xbrl import parse_xbrl
+from worker.parse.xbrl import parse_raw_xbrl_facts, parse_xbrl
 
 
 async def parse_filing(
@@ -42,6 +50,35 @@ async def parse_filing(
     filing.section_confidence = None
 
     if is_xbrl:
+        raw_facts = parse_raw_xbrl_facts(content)
+        await session.execute(delete(XbrlFact).where(XbrlFact.filing_id == filing.id))
+        for raw_fact in raw_facts:
+            session.add(
+                XbrlFact(
+                    filing_id=filing.id,
+                    concept=raw_fact.concept,
+                    value_raw=raw_fact.value_raw,
+                    value_num=raw_fact.value_num,
+                    unit=raw_fact.unit,
+                    context_id=raw_fact.context_id,
+                    period_start=raw_fact.period_start,
+                    period_end=raw_fact.period_end,
+                    dimensions_json=raw_fact.dimensions,
+                    ordinal=raw_fact.ordinal,
+                )
+            )
+        company = await session.get(Company, filing.company_id)
+        corporate_identity_number = next(
+            (
+                raw_fact.value_raw
+                for raw_fact in raw_facts
+                if raw_fact.concept == "CorporateIdentityNumber"
+                and len(raw_fact.value_raw) <= 21
+            ),
+            None,
+        )
+        if company is not None and corporate_identity_number:
+            company.cin = corporate_identity_number
         definitions = (await session.scalars(select(FieldDef))).all()
         mapping = {
             definition.xbrl_concept: (definition.field_key, definition.unit)
@@ -60,31 +97,33 @@ async def parse_filing(
             or 0
         )
         version = max_version + 1
-        for fact in facts:
+        for mapped_fact in facts:
             session.add(
                 ExtractedField(
                     filing_id=filing.id,
-                    field_key=fact.field_key,
-                    value_raw=fact.value_raw,
-                    value_num=fact.value_num,
-                    unit=fact.unit,
+                    field_key=mapped_fact.field_key,
+                    value_raw=mapped_fact.value_raw,
+                    value_num=mapped_fact.value_num,
+                    unit=mapped_fact.unit,
                     confidence=Decimal("1.0"),
                     method="xbrl",
                     source_page=None,
                     source_span={
-                        "context_id": fact.context_id,
-                        "period_start": fact.period_start.isoformat()
-                        if fact.period_start
+                        "context_id": mapped_fact.context_id,
+                        "period_start": mapped_fact.period_start.isoformat()
+                        if mapped_fact.period_start
                         else None,
-                        "period_end": fact.period_end.isoformat() if fact.period_end else None,
-                        "decimals": fact.decimals,
+                        "period_end": mapped_fact.period_end.isoformat()
+                        if mapped_fact.period_end
+                        else None,
+                        "decimals": mapped_fact.decimals,
                         "parse_version": parse_version,
                     },
                     qa_status="unreviewed",
                     version=version,
                 )
             )
-        filing.xbrl_fact_count = len(facts)
+        filing.xbrl_fact_count = len(raw_facts)
     else:
         old_page_ids = list(
             await session.scalars(select(FilingPage.id).where(FilingPage.filing_id == filing.id))

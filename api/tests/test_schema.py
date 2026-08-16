@@ -50,6 +50,9 @@ def test_relational_spine_is_complete() -> None:
         "library_patterns",
         "library_exemplars",
         "company_annotations",
+        "ingestion_runs",
+        "ingestion_state",
+        "xbrl_facts",
     }
     assert set(Base.metadata.tables) == expected
 

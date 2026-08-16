@@ -23,6 +23,11 @@ celery_app.conf.beat_schedule = {
         "schedule": 31 * 24 * 60 * 60,
     },
 }
+if settings.nse_brsr_schedule_enabled:
+    celery_app.conf.beat_schedule["nse-brsr-configured-refresh"] = {
+        "task": "worker.acquire.nse_refresh",
+        "schedule": settings.nse_brsr_refresh_hours * 60 * 60,
+    }
 celery_app.autodiscover_tasks(
     ["worker.acquire", "worker.parse", "worker.extract", "worker.score", "worker.engagement"]
 )

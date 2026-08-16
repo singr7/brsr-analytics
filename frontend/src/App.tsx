@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { AuthPanel } from './components/AuthPanel'
+import { AdminIngestionPage } from './components/AdminIngestionPage'
 import { CookieDisclosure } from './components/CookieDisclosure'
 import { AdminAnalyticsPage, AdminLeadsPage, BillingPage, DeepDivePage, PrivacyPage } from './components/EngagementPages'
 import { HealthFooter } from './components/HealthFooter'
@@ -39,7 +40,7 @@ export default function App() {
   const path = window.location.pathname; const tier = org?.plan_tier ?? profile?.plan_tier ?? 'explore'
   useEffect(() => { updateMetadata(path); trackPageview(); if (accessToken()) void fetchMe().then(user => { setProfile(user); setOrg(user.orgs[0] ?? null) }).catch(logout).finally(() => setAuthReady(true)) }, [path])
   const Page = pageMap[path]
-  const content = path === '/' ? <HomePage authState={profile ? 'authenticated' : 'anonymous'} planTier={tier} trackView={authReady}/> : path === '/explore' ? <GuidedExplorePage planTier={tier} authState={profile ? 'authenticated' : 'anonymous'}/> : path === '/studio' ? <StudioPage orgId={org?.id}/> : path === '/deep-dive' ? <DeepDivePage profile={profile} org={org}/> : path === '/privacy' ? <PrivacyPage profile={profile}/> : path === '/billing' ? <BillingPage profile={profile} org={org}/> : path === '/admin/analytics' ? <AdminAnalyticsPage/> : path === '/admin/leads' ? <AdminLeadsPage/> : Page ? <Page/> : <HomePage authState={profile ? 'authenticated' : 'anonymous'} planTier={tier} trackView={authReady}/>
+  const content = path === '/' ? <HomePage authState={profile ? 'authenticated' : 'anonymous'} planTier={tier} trackView={authReady}/> : path === '/explore' ? <GuidedExplorePage planTier={tier} authState={profile ? 'authenticated' : 'anonymous'}/> : path === '/studio' ? <StudioPage orgId={org?.id}/> : path === '/deep-dive' ? <DeepDivePage profile={profile} org={org}/> : path === '/privacy' ? <PrivacyPage profile={profile}/> : path === '/billing' ? <BillingPage profile={profile} org={org}/> : path === '/admin/ingestion' ? <AdminIngestionPage/> : path === '/admin/analytics' ? <AdminAnalyticsPage/> : path === '/admin/leads' ? <AdminLeadsPage/> : Page ? <Page/> : <HomePage authState={profile ? 'authenticated' : 'anonymous'} planTier={tier} trackView={authReady}/>
   return <div className="app-shell"><a className="skip-link" href="#main-content">Skip to main content</a>
     <SiteHeader path={path} tier={tier} profile={profile} org={org} onOrgChange={setOrg} onSignIn={() => setAuthOpen(true)} onSignOut={() => { logout(); setProfile(null); setOrg(null) }}/>
     <main id="main-content" className="page" tabIndex={-1}>{content}{profile?.is_admin && path === '/account' && <QualityReview/>}</main>

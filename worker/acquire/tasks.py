@@ -14,6 +14,7 @@ from worker.acquire.adapters import (
     ExchangeXbrlAdapter,
     SourceAdapter,
 )
+from worker.acquire.nse import ingest_nse_batch
 from worker.acquire.service import acquire_one
 from worker.celery_app import celery_app
 
@@ -68,3 +69,27 @@ def acquire_company_fy(self: Any, company_id: str, fy: int, source_adapter: str)
             countdown=min(300, 2 ** (self.request.retries + 1)),
             max_retries=settings.acquisition_max_attempts - 1,
         ) from exc
+
+
+async def run_nse_refresh() -> str:
+    settings = get_settings()
+    engine = create_engine(settings)
+    factory = create_session_factory(engine)
+    try:
+        async with factory() as session:
+            run = await ingest_nse_batch(
+                session,
+                object_store(settings),
+                settings,
+                mode="refresh",
+                target_fy=settings.nse_brsr_default_fy,
+                limit=settings.nse_brsr_default_batch_size,
+            )
+            return str(run.id)
+    finally:
+        await engine.dispose()
+
+
+@celery_app.task(name="worker.acquire.nse_refresh")  # type: ignore[untyped-decorator]
+def nse_refresh() -> str:
+    return asyncio.run(run_nse_refresh())

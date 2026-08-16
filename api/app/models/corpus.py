@@ -54,6 +54,8 @@ class Filing(UUIDPrimaryKey, Timestamped, Base):
     checksum_sha256: Mapped[str | None] = mapped_column(String(64), index=True)
     acquisition_attempts: Mapped[int] = mapped_column(Integer, default=0)
     acquisition_error: Mapped[str | None] = mapped_column(Text)
+    submission_date: Mapped[date | None] = mapped_column(Date)
+    revision_date: Mapped[date | None] = mapped_column(Date)
     parse_version: Mapped[int] = mapped_column(Integer, default=0)
     parsed_pages: Mapped[int] = mapped_column(Integer, default=0)
     sections_found: Mapped[int] = mapped_column(Integer, default=0)
@@ -69,6 +71,49 @@ class AcquisitionCursor(UUIDPrimaryKey, Timestamped, Base):
     company_id: Mapped[UUID] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"))
     fy: Mapped[int] = mapped_column(Integer)
     cursor_json: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+
+
+class IngestionRun(UUIDPrimaryKey, Timestamped, Base):
+    __tablename__ = "ingestion_runs"
+    source: Mapped[str] = mapped_column(String(64), index=True)
+    mode: Mapped[str] = mapped_column(String(24))
+    status: Mapped[str] = mapped_column(String(24), index=True)
+    target_fy: Mapped[int] = mapped_column(Integer)
+    batch_start: Mapped[int] = mapped_column(Integer, default=0)
+    requested_count: Mapped[int] = mapped_column(Integer)
+    discovered_count: Mapped[int] = mapped_column(Integer, default=0)
+    fetched_count: Mapped[int] = mapped_column(Integer, default=0)
+    parsed_count: Mapped[int] = mapped_column(Integer, default=0)
+    missing_count: Mapped[int] = mapped_column(Integer, default=0)
+    error_count: Mapped[int] = mapped_column(Integer, default=0)
+    error_summary: Mapped[str | None] = mapped_column(Text)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class IngestionState(Timestamped, Base):
+    __tablename__ = "ingestion_state"
+    source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    next_offset: Mapped[int] = mapped_column(Integer, default=0)
+    state_json: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+
+
+class XbrlFact(UUIDPrimaryKey, Base):
+    __tablename__ = "xbrl_facts"
+    __table_args__ = (
+        UniqueConstraint("filing_id", "concept", "context_id", "ordinal"),
+        Index("ix_xbrl_facts_filing_concept", "filing_id", "concept"),
+    )
+    filing_id: Mapped[UUID] = mapped_column(ForeignKey("filings.id", ondelete="CASCADE"))
+    concept: Mapped[str] = mapped_column(String(512))
+    value_raw: Mapped[str] = mapped_column(Text)
+    value_num: Mapped[Decimal | None] = mapped_column(Numeric(30, 8))
+    unit: Mapped[str | None] = mapped_column(String(128))
+    context_id: Mapped[str | None] = mapped_column(String(255))
+    period_start: Mapped[date | None] = mapped_column(Date)
+    period_end: Mapped[date | None] = mapped_column(Date)
+    dimensions_json: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+    ordinal: Mapped[int] = mapped_column(Integer)
 
 
 class FilingPage(UUIDPrimaryKey, Base):

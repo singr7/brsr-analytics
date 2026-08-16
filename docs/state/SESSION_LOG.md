@@ -214,3 +214,17 @@ Status: complete (visual browser pass backlogged).
   TypeScript/ESLint, and 22 frontend tests. The browser runtime exposed no browser instance; live
   HTTP, responsive CSS, component interaction, keyboard-native control, and production-build checks
   passed as the fallback.
+
+## NSE BRSR ingestion — 2026-08-16
+
+Status: complete.
+
+- Added official NIFTY 50 registry and NSE BRSR portal discovery, revision selection, polite
+  fail-closed retrieval, checksum-based raw storage, and lossless XBRL fact persistence.
+- Removed the legacy fictional corpus and changed `make seed` to create access/taxonomy records
+  only. Added migration `0009`, ingestion run/state audit tables, and filing source dates.
+- Added deterministic `initial`, cursor-based `next`, and refresh CLI modes; configurable scheduled
+  refresh; and an admin source/run/company/FY/sector inventory dashboard.
+- Live FY 2024–25 import completed 25/25 companies with zero missing/errors and 55,105 raw facts.
+- Verification: Ruff and strict mypy passed; 122 Python tests passed (6 skipped); TypeScript,
+  ESLint, and 22 frontend tests passed.

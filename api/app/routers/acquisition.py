@@ -6,8 +6,12 @@ from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, stat
 from api.app.core.access import CurrentUser, SessionDep
 from api.app.core.config import Settings, get_settings
 from api.app.models import Company
-from api.app.schemas.acquisition import CoverageResponse, FilingUploadResponse
-from api.app.services.acquisition import coverage, store_filing
+from api.app.schemas.acquisition import (
+    CoverageResponse,
+    FilingUploadResponse,
+    IngestionInventoryResponse,
+)
+from api.app.services.acquisition import coverage, ingestion_inventory, store_filing
 from api.app.services.storage import object_store
 
 router = APIRouter(prefix="/api/admin", tags=["acquisition"])
@@ -76,3 +80,15 @@ async def get_coverage(
     fy: Annotated[int, Query(ge=2000, le=2200)],
 ) -> CoverageResponse:
     return await coverage(session, fy)
+
+
+@router.get(
+    "/ingestion",
+    response_model=IngestionInventoryResponse,
+    dependencies=[Depends(require_platform_admin)],
+)
+async def get_ingestion_inventory(
+    session: SessionDep,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> IngestionInventoryResponse:
+    return await ingestion_inventory(session, settings)

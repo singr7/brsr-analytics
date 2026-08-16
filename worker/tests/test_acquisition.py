@@ -41,10 +41,11 @@ def response(url: str, body: bytes, etag: str = '"v1"') -> httpx.Response:
 
 
 def test_all_automated_sources_default_disabled() -> None:
-    settings = Settings()
+    settings = Settings(source_nse_brsr_enabled=False)
     assert not settings.source_exchange_xbrl_enabled
     assert not settings.source_exchange_announcements_enabled
     assert not settings.source_company_ir_enabled
+    assert not settings.source_nse_brsr_enabled
     adapter = ExchangeXbrlAdapter(
         enabled=settings.source_exchange_xbrl_enabled,
         rate_per_second=1,

@@ -62,3 +62,9 @@ make seed
 The app is served at `http://localhost:5173`, the API at
 `http://localhost:8000`, and MailHog at `http://localhost:8025`. Host ports are
 configurable in `.env` when those defaults are already occupied.
+
+`make seed` creates access fixtures and taxonomy definitions only; it does not create fictional
+company or filing data. For the governed NSE BRSR corpus, follow
+[`docs/operations/NSE_BRSR_INGESTION.md`](docs/operations/NSE_BRSR_INGESTION.md). The initial
+25-company command is `make ingest-nse-initial NSE_FY=2025`, and the resumable next cohort is
+`make ingest-nse-next NSE_FY=2025 NSE_LIMIT=10`.

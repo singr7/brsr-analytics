@@ -41,6 +41,22 @@ class Settings(BaseSettings):
     source_company_ir_enabled: bool = False
     source_exchange_xbrl_url_template: str = ""
     source_exchange_announcements_url_template: str = ""
+    source_nse_brsr_enabled: bool = False
+    nse_brsr_portal_url: str = (
+        "https://www.nseindia.com/api/corporate-bussiness-sustainabilitiy"
+    )
+    nse_nifty50_registry_url: str = (
+        "https://nsearchives.nseindia.com/content/indices/ind_nifty50list.csv"
+    )
+    nse_brsr_default_fy: int = Field(default=2025, ge=2022, le=2200)
+    nse_brsr_default_batch_size: int = Field(default=10, ge=1, le=50)
+    nse_brsr_schedule_enabled: bool = False
+    nse_brsr_refresh_hours: float = Field(default=168, ge=1, le=8760)
+    nse_brsr_user_agent: str = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+    )
+    nse_brsr_contact: str = "legal-contact@brsrlens.local"
     llm_provider: str = "fake"
     llm_api_key: str | None = None
     llm_base_url: str = "https://api.openai.com/v1"
