@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     nse_nifty50_registry_url: str = (
         "https://nsearchives.nseindia.com/content/indices/ind_nifty50list.csv"
     )
+    nse_niftynext50_registry_url: str = (
+        "https://nsearchives.nseindia.com/content/indices/ind_niftynext50list.csv"
+    )
     nse_brsr_default_fy: int = Field(default=2025, ge=2022, le=2200)
     nse_brsr_default_batch_size: int = Field(default=10, ge=1, le=50)
     nse_brsr_schedule_enabled: bool = False

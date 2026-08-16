@@ -163,7 +163,27 @@ class NseBRSRClient:
         return response
 
     def registry(self) -> list[RegistryCompany]:
-        return parse_registry_csv(self._request(self.settings.nse_nifty50_registry_url).text)
+        """Official cohort order: NIFTY 50 rows first, then NIFTY Next 50.
+
+        The registries are concatenated rather than merged so that offsets 0-49 keep
+        addressing the same companies as before; the persisted cursor therefore continues
+        into rows 51-100 without re-ingesting the first cohort. A symbol promoted between
+        the two indices is kept at its first (higher) position only.
+        """
+        urls = [
+            self.settings.nse_nifty50_registry_url,
+            self.settings.nse_niftynext50_registry_url,
+        ]
+        companies: list[RegistryCompany] = []
+        seen: set[str] = set()
+        for url in urls:
+            if not url:
+                continue
+            for company in parse_registry_csv(self._request(url).text):
+                if company.symbol not in seen:
+                    seen.add(company.symbol)
+                    companies.append(company)
+        return companies
 
     def discover(self, symbol: str, target_fy: int) -> NseBRSRFiling | None:
         from_date = date(target_fy, 4, 1).strftime("%d-%m-%Y")

@@ -37,6 +37,16 @@ class MappingSpec:
     evidence_url: str
 
 
+class UnresolvedUnitError(ValueError):
+    """Raised when a fact's reported unit token has no declared conversion rule.
+
+    Some issuers file a token that names no usable scale — FY25 has three filing energy
+    totals under a bare `J` whose magnitudes are mutually inconsistent (one means GJ,
+    another means millions of GJ). Like an unresolved turnover scale, this must withhold
+    the single value rather than guess a factor or abort the whole publish pass.
+    """
+
+
 class UnresolvedScaleError(ValueError):
     """Raised when an issuer's reporting scale is not established by the reviewed registry.
 
@@ -192,7 +202,7 @@ def convert_numeric_value(
         return resolve_turnover_inr(value, issuer=issuer, registry=registry)
     factor = rules.get(unit or "")
     if factor is None:
-        raise ValueError(f"No conversion for unit {unit or '(none)'}")
+        raise UnresolvedUnitError(f"No conversion for unit {unit or '(none)'}")
     return value * Decimal(str(factor)), unit or ""
 
 
@@ -207,7 +217,7 @@ def _converted_value(
         return convert_numeric_value(
             fact.value_num, fact.unit, mapping.unit_rules_json, issuer=issuer, registry=registry
         )
-    except UnresolvedScaleError:
+    except (UnresolvedScaleError, UnresolvedUnitError):
         raise
     except ValueError as exc:
         raise ValueError(f"{mapping.source_concept}: {exc}") from exc
@@ -274,9 +284,10 @@ async def publish_provisional_mappings(
                 resolved = _converted_value(
                     fact, mapping, issuer=company.ticker, registry=scales
                 )
-            except UnresolvedScaleError:
+            except (UnresolvedScaleError, UnresolvedUnitError):
                 # Fail closed: withhold the value and drop any pin from an earlier run so a
-                # previously guessed number cannot keep serving.
+                # previously guessed number cannot keep serving. One unresolvable fact
+                # withholds only itself; the rest of the cohort still publishes.
                 await session.execute(
                     delete(FieldVersionPin).where(
                         FieldVersionPin.filing_id == filing.id,
