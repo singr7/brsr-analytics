@@ -5,7 +5,13 @@
 The production corpus uses two official NSE-published sources:
 
 - NIFTY 50 registry CSV: `https://nsearchives.nseindia.com/content/indices/ind_nifty50list.csv`
+- NIFTY Next 50 registry CSV:
+  `https://nsearchives.nseindia.com/content/indices/ind_niftynext50list.csv`
 - BRSR portal index: `https://www.nseindia.com/api/corporate-bussiness-sustainabilitiy`
+
+The two registry CSVs are concatenated in that order, deduplicated by symbol, giving a 100-row
+cohort. NIFTY 50 stays at offsets 0–49, so a persisted cursor keeps addressing the same companies
+it did before Next 50 was added.
 
 The registry supplies company name, NSE symbol, industry and ISIN. The BRSR index supplies
 the financial-year range, original submission date, revision date, PDF evidence URL and XBRL
@@ -17,10 +23,28 @@ The initial cohort is the first 25 rows in NSE's official NIFTY 50 CSV order. Th
 `ingestion_state.next_offset` cursor then makes `next --limit 10` select rows 26–35. This is a
 deterministic coverage policy, not a claim that the rows are ordered by current market cap.
 
-## Seeded local corpus (2026-08-16)
+## Seeded local corpus (2026-08-16, NIFTY 100 cohort)
 
-FY 2024–25 (`fyTo=2025`) now covers **50 companies and 50 filings** with 109,789 persisted raw
-XBRL facts, imported in two batches against the official NIFTY 50 registry order.
+FY 2024–25 (`fyTo=2025`) now covers the full **100-company registry: 93 parsed filings and 7
+missing**, with 204,880 persisted raw XBRL facts, 1,255 pinned fields across 92 filings, 1,527
+materialized metrics and 351 scores.
+
+Rows 51–100 (NIFTY Next 50) were imported after rows 1–50, with zero fetch or parse errors. The
+seven companies with no FY25 BRSR published at the portal under their symbol are `ABB`, `ENRIN`
+(Siemens Energy India), `LTM`, `SIEMENS`, `TATACAP`, `TMCV` and `TMPV` — recorded as `missing`
+rather than guessed. Several are calendar/September year-end filers or post-demerger and
+recently listed entities.
+
+The publish pass reported `created=543 pinned=1180 missing=404 withheld=16`. The 16 withheld
+values are 7 unresolved turnover scales (`BAJAJHLDNG`, `GAIL`, `INDHOTEL`, `JINDALSTEL`,
+`TORNTPHARM`, `TVSMOTOR`, `UNITDSPR`) and 9 energy facts filed under a bare `J` unit
+(`BAJAJHLDNG`, `JINDALSTEL`, `TVSMOTOR`). Both categories are pending domain review; see
+"Unresolvable units" below.
+
+### Prior state (first 50 companies)
+
+FY25 previously covered **50 companies and 50 filings** with 109,789 raw XBRL facts, imported in
+two batches against the official NIFTY 50 registry order.
 
 Batch 1 (`initial --limit 25`): 25 discovered, fetched and parsed, zero missing or errors.
 
@@ -47,6 +71,18 @@ until that cohort is re-ingested.
 This list describes the checked local database state, not a portable data fixture: raw NSE
 artifacts and database rows are deliberately not committed to Git. Re-running the initial command
 reconstructs the corpus from the official sources.
+
+## Unresolvable units
+
+A reported unit token that has no declared conversion rule withholds that single value; it does
+not abort the publish pass and no factor is invented for it. FY25 has three issuers filing energy
+totals under a bare `J` at mutually inconsistent magnitudes — `TVSMOTOR` at 676,660 and
+`JINDALSTEL` at 239.51 cannot both be the same unit — so the token establishes no scale and the
+values stay unpublished until reviewed. This mirrors the `turnover_scale` policy: withhold rather
+than guess, because a wrongly scaled figure silently corrupts every intensity derived from it.
+
+Resolving either category means adding a reviewed registry entry with evidence and a confidence,
+exactly as for `JIOFIN`, then republishing.
 
 ## Legal and source gate
 

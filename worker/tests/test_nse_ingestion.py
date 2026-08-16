@@ -8,6 +8,7 @@ from api.app.core.config import Settings
 from worker.acquire.adapters import AcquisitionDisabledError
 from worker.acquire.mappings import (
     UnresolvedScaleError,
+    UnresolvedUnitError,
     convert_numeric_value,
     load_mapping_specs,
     load_turnover_scales,
@@ -72,6 +73,23 @@ def test_nse_client_rejects_non_archive_download_host() -> None:
     response = httpx.Response(200, text=REGISTRY, request=httpx.Request("GET", "https://x.test"))
     client = NseBRSRClient(settings, transport=lambda _url: response)
     assert len(client.registry()) == 2
+
+
+def test_registry_appends_next50_after_nifty50_without_shifting_offsets() -> None:
+    next50 = """Company Name,Industry,Symbol,Series,ISIN Code
+Vedanta Ltd.,Metals & Mining,VEDL,EQ,INE205A01025
+HDFC Bank Ltd.,Financial Services,HDFCBANK,EQ,INE040A01034
+"""
+    settings = Settings(source_nse_brsr_enabled=True)
+
+    def transport(url: str) -> httpx.Response:
+        body = next50 if url == settings.nse_niftynext50_registry_url else REGISTRY
+        return httpx.Response(200, text=body, request=httpx.Request("GET", url))
+
+    symbols = [item.symbol for item in NseBRSRClient(settings, transport=transport).registry()]
+    # NIFTY 50 order is preserved ahead of Next 50, and the duplicate keeps its first slot
+    # only, so a persisted offset still addresses the company it addressed before.
+    assert symbols == ["ADANIENT", "HDFCBANK", "VEDL"]
 
 
 def test_raw_xbrl_parser_persists_unmapped_concepts() -> None:
@@ -149,6 +167,13 @@ def test_turnover_scale_comes_from_the_reviewed_registry() -> None:
         Decimal("231154000000"),
         "million",
     )
+
+
+def test_unit_without_a_declared_conversion_is_withheld_not_guessed() -> None:
+    # FY25 issuers file energy totals under a bare `J` at mutually inconsistent magnitudes,
+    # so the token establishes no scale and no factor may be invented for it.
+    with pytest.raises(UnresolvedUnitError):
+        convert_numeric_value(Decimal("676660"), "J", {"MJ": "0.001", "GJ": "1", "TJ": "1000"})
 
 
 def test_unregistered_issuer_in_the_ambiguous_band_is_withheld_not_guessed() -> None:
