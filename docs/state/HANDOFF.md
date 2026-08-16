@@ -1,6 +1,6 @@
 # HANDOFF — pre-production review and remediation (2026-08-16)
 
-## Repo state: `main` · provisional NSE Explorer seeded locally · migrations head `0011` · `make verify` green
+## Repo state: `main` · 50 FY25 NSE companies seeded locally · migrations head `0011` · `make verify` green
 
 ## Delivered by the review pass
 
@@ -72,11 +72,15 @@
 - Migration `0010` narrows the published-number rule to allow provisional NSE pins on public
   surfaces. This is an open decision in `docs/gates/editorial.md`.
 - `MtCO2e` is still provisionally read as metric tonnes (confidence 0.80); first review priority.
-- Cohort suppression minimum is now 5, not 8. Only Financial Services (n=6) clears it today.
+- Cohort minimum is 5, and thin cohorts are shown with a footnote rather than blanked. 12 of 15
+  sector cohorts are below 5, some at n=1 where the aggregate is that company's own value.
+  Sector percentiles are still withheld below the minimum. Open in `docs/gates/editorial.md`.
 - `scoring.yaml` and `plans.yaml` are single-file bind mounts, which pin an inode: restart the
   api/worker/scheduler services after editing them or the containers keep the old content.
-- Existing `xbrl_facts` rows predate the `decimals` column, so their value is null until the
-  cohort is re-ingested. No published number depends on it.
+- Batch 1 `xbrl_facts` rows predate the `decimals` column and are null until re-ingested; batch 2
+  rows carry it. No published number depends on it.
+- Any new issuer reporting turnover below 1e9 needs a `turnover_scale` registry entry or it is
+  withheld. `JIOFIN` is registered at confidence 0.70 and wants domain review.
 - The assurance guided question uses the governed `assurance_readiness` timeseries as an
   explicitly labelled proxy; public assurance adoption detail remains on `/assurance`.
 - The browser runtime still exposes no browser instance, so the visual/keyboard passes listed in

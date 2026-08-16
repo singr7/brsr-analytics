@@ -19,13 +19,30 @@ deterministic coverage policy, not a claim that the rows are ordered by current 
 
 ## Seeded local corpus (2026-08-16)
 
-The initial FY 2024–25 (`fyTo=2025`) import completed with 25 discovered, fetched and parsed
-filings, zero missing/error results, and 55,105 persisted raw XBRL facts. The companies are:
+FY 2024–25 (`fyTo=2025`) now covers **50 companies and 50 filings** with 109,789 persisted raw
+XBRL facts, imported in two batches against the official NIFTY 50 registry order.
+
+Batch 1 (`initial --limit 25`): 25 discovered, fetched and parsed, zero missing or errors.
 
 `ADANIENT`, `ADANIPORTS`, `APOLLOHOSP`, `ASIANPAINT`, `AXISBANK`, `BAJAJ-AUTO`,
 `BAJAJFINSV`, `BAJFINANCE`, `BEL`, `BHARTIARTL`, `CIPLA`, `COALINDIA`, `DRREDDY`,
 `EICHERMOT`, `ETERNAL`, `GRASIM`, `HCLTECH`, `HDFCBANK`, `HDFCLIFE`, `HINDALCO`,
 `HINDUNILVR`, `ICICIBANK`, `INDIGO`, `INFY`, and `ITC`.
+
+Batch 2 (`next --limit 25 --publish`): 25 discovered, 24 fetched and parsed, 1 missing (no FY25
+filing published at the portal for that symbol), zero errors.
+
+`JIOFIN`, `JSWSTEEL`, `KOTAKBANK`, `LT`, `M&M`, `MARUTI`, `MAXHEALTH`, `NESTLEIND`, `NTPC`,
+`ONGC`, `POWERGRID`, `RELIANCE`, `SBILIFE`, `SBIN`, `SHRIRAMFIN`, `SUNPHARMA`, `TATACONSUM`,
+`TATASTEEL`, `TCS`, `TECHM`, `TITAN`, `TMPV`, `TRENT`, `ULTRACEMCO`, and `WIPRO`.
+
+Batch 2 reported `withheld=1`: `JIOFIN` reports turnover below the absolute threshold and had no
+entry in the reviewed `turnover_scale` registry, so it was correctly withheld rather than guessed.
+A reviewed entry was then added at confidence 0.70 and the batch republished at `withheld=0`. This
+is the expected workflow for every new issuer that reports below the threshold.
+
+Only filings parsed after migration `0011` carry `xbrl_facts.decimals`; batch 1 rows remain null
+until that cohort is re-ingested.
 
 This list describes the checked local database state, not a portable data fixture: raw NSE
 artifacts and database rows are deliberately not committed to Git. Re-running the initial command

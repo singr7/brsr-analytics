@@ -281,3 +281,29 @@ Status: complete. `make verify` green; all findings actioned in the same pass.
   receives sector percentiles; all other sectors remain below five.
 - Verification: Ruff, strict mypy, 134 Python tests (6 skipped), TypeScript, ESLint and 22 frontend
   tests passed. Migration `0011` applied and the FY25 cohort republished and rematerialized live.
+
+## Corpus expansion to 50 companies and thin-cohort display — 2026-08-16
+
+Status: complete. `make verify` green.
+
+- Ingested the next 25 NIFTY registry companies for FY25: 25 discovered, 24 fetched and parsed,
+  1 missing at the portal, zero errors. The corpus is now 50 companies, 50 filings and 109,789
+  raw XBRL facts, producing 833 metrics and 147 scores.
+- The fail-closed turnover registry did its job on first contact with new data: `JIOFIN` reports
+  below the absolute threshold with no registry entry and was withheld (`withheld=1`) rather than
+  guessed. Added a reviewed entry at confidence 0.70 and republished at `withheld=0`.
+- Confirmed the expanded corpus behaves: energy intensity extremes are now sector-coherent, with
+  NTPC, UltraTech, JSW Steel, Tata Steel and Hindalco at the top and insurers and NBFCs at the
+  bottom. Both plausibility identities hold across all 50 filings with zero violations, including
+  pre-screen, so the guard has not needed to fire.
+- Replaced cohort blanking with disclosure plus a footnote. Rows below the minimum now carry
+  `thin_cohort` and the query returns "N of these results cover fewer than 5 companies (n=…) …
+  too thin for incisive comparison." Charts render the data instead of the "Cohort protected"
+  blocking state. All 15 sectors now return values; 12 are flagged.
+- Sector percentiles remain withheld below the minimum: publishing an aggregate over three
+  companies with a caveat is defensible, ranking a company against two peers is not.
+- Extracted `thin_cohort_notice` as a pure function and covered it with three tests.
+- Recorded the reidentification trade-off in `docs/gates/editorial.md`, including that a sector
+  aggregate at n=1 is that company's own value.
+- Verification: Ruff, strict mypy, 137 Python tests (6 skipped), TypeScript, ESLint and 22
+  frontend tests passed.

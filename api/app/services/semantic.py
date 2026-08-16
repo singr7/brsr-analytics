@@ -193,6 +193,26 @@ async def source_refs(session: AsyncSession, pin_ids: set[str]) -> dict[str, lis
     }
 
 
+def thin_cohort_notice(cohort_sizes: list[int], minimum: int) -> PolicyNotice | None:
+    """Describe results that are shown but rest on fewer companies than the minimum.
+
+    These rows are no longer blanked. Readers see whatever has been ingested so far, with an
+    explicit note that the cohort is too thin to support a comparative reading.
+    """
+    if not cohort_sizes:
+        return None
+    observed = sorted(set(cohort_sizes))
+    range_label = str(observed[0]) if len(observed) == 1 else f"{observed[0]}–{observed[-1]}"
+    return PolicyNotice(
+        code="minimum_cohort",
+        message=(
+            f"{len(cohort_sizes)} of these results cover fewer than {minimum} companies "
+            f"(n={range_label}). They are shown with what has been ingested so far, but the "
+            "cohort is too thin for incisive comparison."
+        ),
+    )
+
+
 async def execute_query(
     session: AsyncSession, query: SemanticQuery, tier: str, catalog: SemanticCatalog
 ) -> tuple[list[dict[str, object]], dict[str, list[LineageRef]], list[PolicyNotice]]:
@@ -218,24 +238,14 @@ async def execute_query(
                 item["lineage_key"] = pin
             cohort_n = row.get("cohort_n")
             if cohort_n is not None and int(cohort_n) < catalog.minimum_cohort_size:
-                item["value"] = None
+                # Thin cohorts are shown rather than blanked, flagged per row so a reader can
+                # see which figures rest on too few companies to be read comparatively.
+                item["thin_cohort"] = True
                 suppressed_cohorts.append(int(cohort_n))
             data.append(item)
-    if suppressed_cohorts:
-        observed = sorted(set(suppressed_cohorts))
-        range_label = str(observed[0])
-        if len(observed) > 1:
-            range_label = f"{observed[0]}–{observed[-1]}"
-        notices.append(
-            PolicyNotice(
-                code="minimum_cohort",
-                message=(
-                    f"{len(suppressed_cohorts)} cohort results are hidden because fewer than "
-                    f"{catalog.minimum_cohort_size} companies were available "
-                    f"(observed n={range_label})."
-                ),
-            )
-        )
+    thin_notice = thin_cohort_notice(suppressed_cohorts, catalog.minimum_cohort_size)
+    if thin_notice is not None:
+        notices.append(thin_notice)
     # The critique-by-cohort rule is enforced after ordering and before serialization.
     bottom_requested = bool(query.sort and query.sort.direction == "asc") or any(
         item.operator == "bottom_n" for item in query.filters

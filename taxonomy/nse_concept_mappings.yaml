@@ -40,6 +40,10 @@ turnover_scale:
       scale: crore
       confidence: 0.90
       evidence: FY25 reported value 61517 corresponds to about INR 61,517 crore, consistent with the filed financials; the million reading would imply about INR 6,152 crore.
+    JIOFIN:
+      scale: crore
+      confidence: 0.70
+      evidence: FY25 reported value 805.56 read as crore gives about INR 806 crore, the only reading consistent with a listed NBFC of this size; the million reading would imply about INR 81 crore and the lakh reading less still. Lower confidence than the rest of this registry because the figure is small enough that standalone-versus-consolidated boundary also matters — flag for domain review before citing JIOFIN intensities.
 
 mappings:
   - source_concept: Turnover

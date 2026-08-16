@@ -35,12 +35,22 @@ Supporting context:
   domain-review priority.
 - `/explore` carries a visible provisional caveat while this gate is unsigned.
 
-## Open item: cohort suppression minimum lowered from 8 to 5
+## Open item: thin cohorts are shown, and the minimum is 5
 
-`minimum_sector_size` and `minimum_cohort_size` are now `5`, so sector aggregates publish at five
-companies instead of eight. This is the anti-reidentification guard: at n=5 a company is one of
-five in its sector cell, making sector-relative positioning easier to attribute to a specific
-filer. On the current cohort it newly exposes Financial Services (n=6). Confirm the threshold.
+Two changes to the anti-reidentification guard, both requested and both needing confirmation.
+
+1. `minimum_sector_size` and `minimum_cohort_size` are now `5`, not `8`.
+2. Cohorts below the minimum are no longer blanked. Their values are returned and rendered,
+   flagged `thin_cohort` and carrying a footnote that the cohort is too thin for incisive
+   comparison.
+
+Consequence to weigh: on the current 50-company corpus, 12 of 15 sector cohorts fall below five,
+including several at n=1. **A sector aggregate at n=1 is that single company's own value**, so
+for those sectors the guard no longer protects anything. Sector percentiles remain withheld below
+the minimum, which limits comparative inference but not disclosure of the level itself.
+
+Confirm both the threshold and the show-with-footnote behaviour, or require blanking to return at
+some floor (for example n=1 and n=2).
 
 ## Sign-off
 

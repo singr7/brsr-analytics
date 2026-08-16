@@ -85,22 +85,27 @@ listed under "Still open" below; everything else is resolved and covered by test
 - `docs/operations/NSE_METRIC_MAPPING_REVIEW.md` corrected: it previously cited Coal India as
   evidence the heuristic produced plausible magnitudes.
 
-### Cohort suppression minimum lowered from 8 to 5
+### Thin cohorts are now shown with a footnote, and the minimum is 5
 
-Requested during the review: run the analysis rather than suppress it when a cohort has at least
-five companies. `minimum_sector_size` (`scoring.yaml`) and `minimum_cohort_size`
-(`taxonomy/semantic.yaml`) are now `5`, along with the `materialize_percentiles` default and the
-two places the old number appeared in UI copy. The generated methodology page tracks the config
-automatically.
+Two related changes, both requested.
 
-Effect on the current 25-company FY25 cohort: Financial Services (n=6) now receives sector
-percentiles where it previously received none. Every other sector is still below five and stays
-suppressed, so widening coverage further depends on ingesting more companies
-(`make ingest-nse-next`), not on lowering the threshold again.
+`minimum_sector_size` (`scoring.yaml`) and `minimum_cohort_size` (`taxonomy/semantic.yaml`) are
+now `5`, along with the `materialize_percentiles` default and the UI copy.
 
-Note for the editorial gate: this threshold is the anti-reidentification guard. At n=5 a company
-is one of five in its sector cell, so sector-relative positioning is correspondingly easier to
-attribute. The change is deliberate and recorded here rather than assumed.
+Results below the minimum are no longer blanked. Rows carry `thin_cohort: true` and the query
+returns a footnote — "N of these results cover fewer than 5 companies (n=…). They are shown with
+what has been ingested so far, but the cohort is too thin for incisive comparison." The charts
+render the data instead of the old "Cohort protected" blocking state. On the 50-company corpus,
+all 15 sectors return values and 12 are flagged.
+
+Sector *percentiles* (`percentile_sector`) are still withheld below the minimum. Showing an
+aggregate computed from three companies is defensible with a caveat; ranking a company against
+two peers is not, so that split is deliberate.
+
+Note for the editorial gate: the cohort minimum is the anti-reidentification guard, and showing
+thin cohorts rather than hiding them reduces its protection. With n=1 sectors now visible, a
+single-company sector aggregate is that company's own value. This is recorded rather than
+assumed — see `docs/gates/editorial.md`.
 
 ### Still open
 
