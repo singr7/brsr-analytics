@@ -32,8 +32,16 @@ export async function runSemanticQuery(dsl: SemanticDSL): Promise<SemanticRespon
   return response.json() as Promise<SemanticResponse>
 }
 
-export function useSemanticQuery(dsl: SemanticDSL) {
-  return useQuery({ queryKey: ['semantic', dsl], queryFn: () => runSemanticQuery(dsl), staleTime: 300_000 })
+export function useSemanticQuery(dsl: SemanticDSL, enabled = true) {
+  return useQuery({
+    queryKey: ['semantic', dsl],
+    queryFn: () => runSemanticQuery(dsl),
+    staleTime: 300_000,
+    enabled,
+    // Refining a filter holds the previous result on screen at reduced opacity
+    // rather than collapsing the layout into a skeleton.
+    placeholderData: previous => previous,
+  })
 }
 
 export function consolidatePolicyNotices(notices: PolicyNotice[] = []): PolicyNotice[] {

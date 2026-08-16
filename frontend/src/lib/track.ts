@@ -20,6 +20,10 @@ export type EventName =
   | 'guided_filter_opened'
   | 'guided_followup_selected'
   | 'learn_explanation_opened'
+  | 'explore_drilldown_opened'
+  | 'explore_measure_changed'
+  | 'explore_view_exported'
+  | 'explore_lineage_opened'
 
 function sessionId(): string {
   const current = sessionStorage.getItem(sessionKey)

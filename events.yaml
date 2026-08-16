@@ -62,3 +62,11 @@ events:
     description: A visitor selected or entered a contextual follow-up without recording its text.
   learn_explanation_opened:
     description: A visitor opened the methodology or explanation for a guided insight.
+  explore_drilldown_opened:
+    description: A visitor drilled from an aggregate cohort into the records inside it.
+  explore_measure_changed:
+    description: A visitor switched the governed measure plotted in the explore workbench.
+  explore_view_exported:
+    description: A visitor opened the table twin or downloaded a chart as PNG or CSV.
+  explore_lineage_opened:
+    description: A visitor opened the source lineage for a plotted value.
