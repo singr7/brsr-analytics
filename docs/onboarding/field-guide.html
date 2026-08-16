@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BRSR Lens Field Guide</title>
+<style>
+:root{
+  --ground:#F4F6F5; --surface:#FFFFFF; --surface-2:#EAEFEE; --surface-3:#E1E8E6;
+  --ink:#0F1A1C; --ink-2:#465659; --ink-3:#6E8084;
+  --line:#D3DDDA; --line-2:#BFCCC9;
+  --accent:#0E6E66; --accent-2:#0A544E; --accent-soft:#DFEDEA;
+  --ochre:#8E6410; --ochre-soft:#F6EEDC;
+  --brick:#A2331E; --brick-soft:#F8E7E2;
+  --good:#2C6A45; --good-soft:#E1EFE6;
+  --shadow:0 1px 2px rgba(15,26,28,.06), 0 8px 24px -16px rgba(15,26,28,.28);
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0A1113; --surface:#111A1C; --surface-2:#172326; --surface-3:#1D2C2F;
+    --ink:#E9F0EE; --ink-2:#A2B3B4; --ink-3:#7B8D8F;
+    --line:#243336; --line-2:#2F4247;
+    --accent:#4FC0AF; --accent-2:#79D4C4; --accent-soft:#10312E;
+    --ochre:#D8A64A; --ochre-soft:#2C2415;
+    --brick:#E28369; --brick-soft:#2F1A15;
+    --good:#63C08C; --good-soft:#13291D;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0A1113; --surface:#111A1C; --surface-2:#172326; --surface-3:#1D2C2F;
+  --ink:#E9F0EE; --ink-2:#A2B3B4; --ink-3:#7B8D8F;
+  --line:#243336; --line-2:#2F4247;
+  --accent:#4FC0AF; --accent-2:#79D4C4; --accent-soft:#10312E;
+  --ochre:#D8A64A; --ochre-soft:#2C2415;
+  --brick:#E28369; --brick-soft:#2F1A15;
+  --good:#63C08C; --good-soft:#13291D;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent); text-decoration:none; border-bottom:1px solid color-mix(in srgb, var(--accent) 35%, transparent)}
+a:hover{border-bottom-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+h1,h2,h3,h4{font-family:var(--display); font-weight:600; text-wrap:balance; margin:0; line-height:1.2}
+p{margin:0}
+code,kbd{font-family:var(--mono); font-size:.86em}
+
+/* ---------- shell ---------- */
+.shell{display:grid; grid-template-columns:260px minmax(0,1fr); gap:0; min-height:100vh}
+.rail{
+  position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+  border-right:1px solid var(--line); background:var(--surface);
+  padding:28px 20px 40px; display:flex; flex-direction:column; gap:22px;
+}
+.mark{display:flex; align-items:baseline; gap:9px; font-family:var(--display)}
+.mark .glyph{
+  width:22px;height:22px;border-radius:3px;background:var(--accent);
+  position:relative; flex:none; align-self:center;
+}
+.mark .glyph::after{content:"";position:absolute;inset:6px 6px auto 6px;height:2px;background:var(--surface);box-shadow:0 5px 0 var(--surface)}
+.mark b{font-weight:600;font-size:17px;letter-spacing:-.01em}
+.mark span{font-size:17px;color:var(--ink-2)}
+.railnav{display:flex;flex-direction:column;gap:2px}
+.railgroup{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); margin:16px 0 6px; padding-left:10px;
+}
+.railnav a{
+  display:block; padding:6px 10px; border-radius:5px; border:0;
+  color:var(--ink-2); font-size:14px; line-height:1.35;
+}
+.railnav a:hover{background:var(--surface-2); color:var(--ink)}
+.railnav a.on{background:var(--accent-soft); color:var(--accent); font-weight:600}
+.railfoot{margin-top:auto; padding-top:20px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-3); line-height:1.5}
+
+.main{padding:0 0 120px; min-width:0}
+.wrap{max-width:820px; margin:0 auto; padding:0 40px}
+section{padding:56px 0; border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:10px; display:block;
+}
+h2{font-size:30px; letter-spacing:-.015em; margin-bottom:14px}
+h3{font-size:19px; margin:30px 0 10px}
+h4{font-size:15.5px; font-family:var(--body); font-weight:650; margin:20px 0 6px}
+.lede{font-size:18px; color:var(--ink-2); line-height:1.65; max-width:64ch}
+section p{max-width:66ch; color:var(--ink-2); margin-top:12px}
+section p strong{color:var(--ink); font-weight:600}
+
+/* ---------- hero ---------- */
+.hero{padding:76px 0 48px; border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(38px,5vw,54px); letter-spacing:-.025em; margin-bottom:18px}
+.hero .lede{font-size:20px; max-width:60ch}
+.stamp{
+  display:inline-flex; align-items:center; gap:8px; font-family:var(--mono);
+  font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ochre); background:var(--ochre-soft); border:1px solid color-mix(in srgb,var(--ochre) 30%, transparent);
+  padding:5px 10px; border-radius:3px; margin-bottom:24px;
+}
+
+/* ---------- stat tiles ---------- */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-top:32px}
+.tile{background:var(--surface); padding:18px 16px}
+.tile .n{font-family:var(--display); font-size:29px; font-weight:600; letter-spacing:-.02em; font-variant-numeric:tabular-nums; line-height:1.1}
+.tile .l{font-size:12.5px; color:var(--ink-3); margin-top:5px; line-height:1.35}
+.tile.flag .n{color:var(--ochre)}
+.tile.stop .n{color:var(--brick)}
+
+/* ---------- cards ---------- */
+.cards{display:grid; gap:14px; margin-top:24px}
+.cards.two{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.cards.three{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:18px}
+.card h4{margin:0 0 6px}
+.card p{font-size:14px; margin-top:0; color:var(--ink-2)}
+.card .who{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:8px}
+
+/* ---------- tabs (click-through) ---------- */
+.tabs{margin-top:26px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface)}
+.tabbar{display:flex; flex-wrap:wrap; gap:0; border-bottom:1px solid var(--line); background:var(--surface-2)}
+.tabbar button{
+  flex:1 1 auto; min-width:120px; appearance:none; background:transparent; border:0; cursor:pointer;
+  padding:13px 14px; font-family:var(--body); font-size:13.5px; font-weight:600; color:var(--ink-3);
+  border-bottom:2px solid transparent; text-align:left;
+}
+.tabbar button:hover{color:var(--ink); background:color-mix(in srgb,var(--accent) 6%, transparent)}
+.tabbar button[aria-selected="true"]{color:var(--accent); background:var(--surface); border-bottom-color:var(--accent)}
+.tabbar button small{display:block; font-weight:400; font-size:11px; color:var(--ink-3); margin-top:2px; font-family:var(--mono)}
+.tabpanel{padding:24px}
+.tabpanel[hidden]{display:none}
+.tabpanel > p:first-child{margin-top:0}
+
+/* ---------- fake screen ---------- */
+.screen{border:1px solid var(--line-2); border-radius:8px; overflow:hidden; background:var(--surface); margin-top:18px}
+.screen .chrome{
+  display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--surface-2);
+  border-bottom:1px solid var(--line); font-family:var(--mono); font-size:11px; color:var(--ink-3);
+}
+.screen .chrome i{width:8px;height:8px;border-radius:50%;background:var(--line-2);flex:none}
+.screen .chrome .url{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:2px 8px; margin-left:6px}
+.screen .body{padding:18px}
+.screen .body > *:first-child{margin-top:0}
+.srow{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.stitle{font-family:var(--display); font-size:18px; font-weight:600}
+.ssub{font-size:13px; color:var(--ink-3); margin-top:4px}
+
+/* ---------- bar chart ---------- */
+.chart{margin-top:16px; display:flex; flex-direction:column; gap:7px}
+.bar{display:grid; grid-template-columns:132px minmax(0,1fr) 64px; align-items:center; gap:10px; font-size:13px}
+.bar .k{color:var(--ink-2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar .t{height:15px; background:var(--surface-3); border-radius:3px; overflow:hidden; position:relative}
+.bar .f{height:100%; background:var(--accent); border-radius:0 3px 3px 0; min-width:2px; transition:width .5s cubic-bezier(.2,.7,.3,1)}
+.bar.warn .f{background:var(--ochre)}
+.bar .v{font-family:var(--mono); font-size:12px; font-variant-numeric:tabular-nums; color:var(--ink); text-align:right}
+.axnote{font-size:11.5px; color:var(--ink-3); margin-top:10px; font-family:var(--mono)}
+
+/* ---------- pipeline stepper ---------- */
+.pipe{display:flex; flex-wrap:wrap; gap:6px; margin-top:24px}
+.pipe button{
+  appearance:none; cursor:pointer; font-family:var(--mono); font-size:11.5px; letter-spacing:.04em;
+  background:var(--surface); border:1px solid var(--line); color:var(--ink-2);
+  padding:9px 12px; border-radius:6px; display:flex; align-items:center; gap:8px;
+}
+.pipe button:hover{border-color:var(--accent); color:var(--ink)}
+.pipe button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--surface)}
+.pipe .arrow{color:var(--ink-3); align-self:center; font-size:13px}
+.pipedetail{
+  margin-top:16px; background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
+  border-radius:0 8px 8px 0; padding:18px;
+}
+.pipedetail h4{margin-top:0}
+.pipedetail p{margin-top:6px; font-size:14.5px}
+.pipedetail .meta{font-family:var(--mono); font-size:11.5px; color:var(--ink-3); margin-top:12px; display:flex; flex-wrap:wrap; gap:6px}
+.pipedetail .meta span{background:var(--surface-2); border:1px solid var(--line); padding:3px 7px; border-radius:4px}
+
+/* ---------- lineage chain ---------- */
+.chain{margin-top:22px; display:flex; flex-direction:column; gap:0}
+.link{display:grid; grid-template-columns:26px minmax(0,1fr); gap:14px}
+.link .spine{display:flex; flex-direction:column; align-items:center}
+.link .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);margin-top:6px;flex:none}
+.link .rod{width:1px; flex:1; background:var(--line-2); margin:4px 0}
+.link:last-child .rod{display:none}
+.link .content{padding-bottom:20px; min-width:0}
+.link .lab{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.link .val{font-family:var(--mono); font-size:13px; margin-top:5px; word-break:break-all; color:var(--ink)}
+.link .say{font-size:14px; color:var(--ink-2); margin-top:6px}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto; margin-top:20px; border:1px solid var(--line); border-radius:8px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:560px}
+th{
+  text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:500; padding:11px 14px; background:var(--surface-2); border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+td{padding:11px 14px; border-bottom:1px solid var(--line); color:var(--ink-2); vertical-align:top}
+tr:last-child td{border-bottom:0}
+td code{color:var(--ink); background:var(--surface-2); padding:1px 5px; border-radius:3px; white-space:nowrap}
+td strong{color:var(--ink); font-weight:600}
+
+/* ---------- pills ---------- */
+.pill{
+  display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:10.5px;
+  letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border-radius:3px; white-space:nowrap;
+  border:1px solid;
+}
+.pill.pub{color:var(--good); background:var(--good-soft); border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.pill.prov{color:var(--ochre); background:var(--ochre-soft); border-color:color-mix(in srgb,var(--ochre) 30%,transparent)}
+.pill.held{color:var(--brick); background:var(--brick-soft); border-color:color-mix(in srgb,var(--brick) 30%,transparent)}
+.pill.tier{color:var(--accent); background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 30%,transparent)}
+
+/* ---------- details ---------- */
+details.hood{margin-top:14px; border:1px solid var(--line); border-radius:8px; background:var(--surface); overflow:hidden}
+details.hood > summary{
+  cursor:pointer; list-style:none; padding:12px 16px; font-family:var(--mono); font-size:11.5px;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); display:flex; align-items:center; gap:9px;
+  background:var(--surface-2);
+}
+details.hood > summary::-webkit-details-marker{display:none}
+details.hood > summary::before{content:"▸"; font-size:11px; transition:transform .18s; color:var(--accent)}
+details.hood[open] > summary::before{transform:rotate(90deg)}
+details.hood > summary:hover{color:var(--ink)}
+.hoodbody{padding:16px; border-top:1px solid var(--line)}
+.hoodbody > *:first-child{margin-top:0}
+.hoodbody p{font-size:14px; margin-top:10px}
+.hoodbody ul{margin:10px 0 0; padding-left:20px; font-size:14px; color:var(--ink-2)}
+.hoodbody li{margin-bottom:7px}
+.hoodbody li strong{color:var(--ink)}
+
+/* ---------- callout ---------- */
+.note{
+  margin-top:22px; padding:16px 18px; border-radius:8px; background:var(--surface);
+  border:1px solid var(--line); border-left:3px solid var(--ochre);
+}
+.note.stop{border-left-color:var(--brick)}
+.note.go{border-left-color:var(--good)}
+.note h4{margin:0 0 6px; font-size:14.5px}
+.note p{font-size:14px; margin-top:6px}
+
+/* ---------- code block ---------- */
+pre{
+  margin:16px 0 0; padding:15px 16px; background:var(--surface); border:1px solid var(--line);
+  border-radius:8px; overflow-x:auto; font-family:var(--mono); font-size:12.5px; line-height:1.7;
+  color:var(--ink-2);
+}
+pre .c{color:var(--ink-3)}
+pre .k{color:var(--accent); font-weight:600}
+
+ul.plain{margin:14px 0 0; padding-left:20px; color:var(--ink-2); font-size:15px; max-width:66ch}
+ul.plain li{margin-bottom:9px}
+ul.plain li strong{color:var(--ink); font-weight:600}
+
+.kv{display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 16px; margin-top:14px; font-size:13.5px}
+.kv dt{font-family:var(--mono); font-size:11.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; padding-top:3px}
+.kv dd{margin:0; color:var(--ink-2)}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:static; height:auto; border-right:0; border-bottom:1px solid var(--line)}
+  .railnav{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+  .railgroup{grid-column:1/-1; margin-top:10px}
+  .railfoot{margin-top:20px}
+  .wrap{padding:0 22px}
+  .bar{grid-template-columns:100px minmax(0,1fr) 56px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="rail" aria-label="Guide contents">
+  <div class="mark"><i class="glyph"></i><b>BRSR</b><span>Lens</span></div>
+  <div class="railnav" id="railnav">
+    <div class="railgroup">Orientation</div>
+    <a href="#what">What this is</a>
+    <a href="#audience">Who it serves</a>
+    <a href="#corpus">The corpus today</a>
+    <div class="railgroup">The product</div>
+    <a href="#journeys">Three journeys</a>
+    <a href="#routes">Every screen</a>
+    <a href="#tiers">Access tiers</a>
+    <div class="railgroup">How it works</div>
+    <a href="#pipeline">Filing to number</a>
+    <a href="#lineage">Evidence lineage</a>
+    <a href="#governance">Publishing rules</a>
+    <a href="#stack">Stack &amp; services</a>
+    <div class="railgroup">Running it</div>
+    <a href="#operate">Operator commands</a>
+    <a href="#admin">Admin cockpit</a>
+    <a href="#limits">Known limits</a>
+    <a href="#glossary">Glossary</a>
+  </div>
+  <div class="railfoot">
+    Field guide for incoming PMs and the maintaining team.<br>
+    Figures below are read from the live FY&nbsp;2024–25 database, 16&nbsp;Aug&nbsp;2026.
+  </div>
+</nav>
+
+<div class="main">
+<div class="wrap">
+
+<header class="hero">
+  <span class="stamp">FY 2024–25 corpus · provisional</span>
+  <h1>BRSR Lens, explained end to end</h1>
+  <p class="lede">A portal that reads every listed company's sustainability filing, turns it into comparable numbers, and keeps the original evidence attached to each one. This guide walks the product screen by screen, then opens the hood for the team that will run it.</p>
+</header>
+
+<section id="what">
+  <span class="eyebrow">Orientation</span>
+  <h2>What this is</h2>
+  <p>Every large listed Indian company must file a <strong>Business Responsibility and Sustainability Report</strong> with SEBI each year. The filings are public, structured as XBRL, and effectively unreadable at scale — hundreds of documents, thousands of tagged facts each, inconsistent units, and no comparison layer.</p>
+  <p>BRSR Lens ingests those filings from the official NSE source, maps the tagged facts into a governed set of definitions, converts them to common units, and publishes comparable metrics and scores. The distinguishing commitment is the one below.</p>
+  <div class="note go">
+    <h4>The product promise in one line</h4>
+    <p>Every published number can be clicked back to the exact fact, in the exact filing, with the exact checksum it came from — and anything that cannot be resolved honestly is withheld rather than guessed.</p>
+  </div>
+  <p>That promise is why the platform is built the way it is: pinned field versions, versioned scoring methods, per-issuer unit registries, cohort suppression, and three human sign-off gates. Those are not compliance decoration. They are the reason a sustainability lead or an analyst can cite a figure from this portal.</p>
+
+  <h3>Three pillars, one platform</h3>
+  <div class="cards three">
+    <div class="card"><div class="who">Pillar 1</div><h4>Insights</h4><p>Analytics across the filed corpus — sector scorecards, company deep-dives, peer benchmarking, materiality and assurance views, plus natural-language querying, all with click-through lineage.</p></div>
+    <div class="card"><div class="who">Pillar 2</div><h4>Filing Studio</h4><p>A guided preparation workspace: a company uploads its own documents and the system drafts its BRSR — section questionnaire, AI-assisted field mapping with confidence and human review, validations, and SEBI-format exports.</p></div>
+    <div class="card"><div class="who">Pillar 3</div><h4>Engagement engine</h4><p>First-party product analytics, lead scoring and conversion paths. High-intent behaviour — peer-gap views, gap reports, deep-dive requests — routes to the business development team with context.</p></div>
+  </div>
+</section>
+
+<section id="audience">
+  <span class="eyebrow">Orientation</span>
+  <h2>Who it serves, and what each person wants</h2>
+  <p>Four audiences use this portal, and the interface deliberately does not fork by persona. Everyone sees the same journeys; depth is one action away rather than behind an onboarding wizard.</p>
+  <div class="cards two">
+    <div class="card">
+      <div class="who">Primary</div><h4>The sustainability lead</h4>
+      <p>Knows BRSR. Wants to know where their company stands against peers, which disclosures are thin, and what the credible sector benchmark actually is. Enters at <strong>Explore</strong>, ends at <strong>Peer benchmarks</strong> or a gap report.</p>
+    </div>
+    <div class="card">
+      <div class="who">Primary</div><h4>The reporting / finance team</h4>
+      <p>Has to produce next year's filing. Wants the drafting burden reduced without losing control of what gets said. Lives in <strong>Filing Studio</strong>, cares about validations and exports.</p>
+    </div>
+    <div class="card">
+      <div class="who">Secondary</div><h4>The analyst or investor</h4>
+      <p>Wants comparable, citable environmental numbers and a stated methodology. Lives in <strong>Ask</strong> and the dataset/API surfaces on the Research tier.</p>
+    </div>
+    <div class="card">
+      <div class="who">Secondary</div><h4>The business sponsor</h4>
+      <p>Wants the one-slide version: how many companies, how trustworthy, what it lets us say that nobody else can. Served by the home page, the sector scorecards, and the demo walkthrough.</p>
+    </div>
+  </div>
+</section>
+
+<section id="corpus">
+  <span class="eyebrow">Orientation</span>
+  <h2>The corpus today</h2>
+  <p>The live database holds the NIFTY 100 cohort for financial year 2024–25, imported from NSE's official registry CSVs and BRSR filing index.</p>
+  <div class="tiles">
+    <div class="tile"><div class="n">100</div><div class="l">Companies in the registry cohort</div></div>
+    <div class="tile"><div class="n">93</div><div class="l">Filings fetched and parsed</div></div>
+    <div class="tile stop"><div class="n">7</div><div class="l">No FY25 filing published — recorded as missing, never inferred</div></div>
+    <div class="tile"><div class="n">204,880</div><div class="l">Raw XBRL facts persisted losslessly</div></div>
+    <div class="tile"><div class="n">1,255</div><div class="l">Field versions pinned across 92 filings</div></div>
+    <div class="tile"><div class="n">1,527</div><div class="l">Materialised metrics</div></div>
+    <div class="tile"><div class="n">351</div><div class="l">Method-versioned scores</div></div>
+    <div class="tile flag"><div class="n">16</div><div class="l">Values withheld pending unit review</div></div>
+  </div>
+  <p>Seventeen sectors are represented, weighted the way the index is: Financial Services is 23 of 100 companies, and eleven sectors have four or fewer. That skew matters for every cross-sector comparison the product shows, and the suppression rules in <a href="#governance">publishing rules</a> exist because of it.</p>
+  <details class="hood"><summary>Under the hood — where these counts live</summary>
+  <div class="hoodbody">
+    <ul>
+      <li><code>companies</code> — one row per issuer: official name, NSE symbol, sector, industry, CIN (replaces the temporary ISIN once the XBRL <code>CorporateIdentityNumber</code> fact is parsed), market-cap band.</li>
+      <li><code>filings</code> — one row per company-FY: source URL, SHA-256 checksum, submission and revision dates, pipeline status, fact counts.</li>
+      <li><code>xbrl_facts</code> — every reported concept with raw value, unit, context, period and dimensional members. Nothing is discarded at parse time even when no mapping exists.</li>
+      <li><code>extracted_fields</code> → <code>field_version_pins</code> → <code>metrics</code> / <code>scores</code> — the publishing chain. A metric cannot exist without a pin; a database trigger enforces that the pin, the extracted field and the filing all agree.</li>
+      <li>Raw artifacts live in object storage under <code>raw/{identifier}/{fy}/{filename}</code> and are immutable.</li>
+    </ul>
+    <p>All of it is one Postgres 16 database with pgvector. There is no separate search cluster and no data warehouse; that is a deliberate architecture decision recorded in <code>00_ARCHITECTURE.md</code>.</p>
+  </div></details>
+</section>
+
+<section id="journeys">
+  <span class="eyebrow">The product</span>
+  <h2>Three journeys — click through each</h2>
+  <p>The navigation offers three verbs, not a feature list: <strong>Explore insights</strong>, <strong>Analyse my BRSR</strong>, <strong>File with Studio</strong>. Two supporting surfaces — <strong>Ask</strong> and <strong>Learn</strong> — sit alongside them. Select a tab to walk the journey.</p>
+
+  <div class="tabs">
+    <div class="tabbar" role="tablist" aria-label="Product journeys">
+      <button role="tab" id="t-explore" aria-controls="p-explore" aria-selected="true">Explore insights<small>/explore</small></button>
+      <button role="tab" id="t-ask" aria-controls="p-ask" aria-selected="false">Ask<small>/ask</small></button>
+      <button role="tab" id="t-analyse" aria-controls="p-analyse" aria-selected="false">Analyse my BRSR<small>/analyse</small></button>
+      <button role="tab" id="t-studio" aria-controls="p-studio" aria-selected="false">Filing Studio<small>/studio</small></button>
+      <button role="tab" id="t-learn" aria-controls="p-learn" aria-selected="false">Learn<small>/learn</small></button>
+    </div>
+
+    <div class="tabpanel" role="tabpanel" id="p-explore" aria-labelledby="t-explore">
+      <p><strong>The job:</strong> a first-time visitor gets a real, defensible answer without configuring anything.</p>
+      <p>Explore is a guided-question hub. Thirteen curated questions each carry an approved query, a plain-language summary, a limitation-aware explanation, follow-up questions, tier eligibility, and an expert destination. Selecting one runs the governed query and renders the result — no filter-building required.</p>
+      <div class="screen">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">brsrlens.app/explore?question=substance-by-sector</span></div>
+        <div class="body">
+          <div class="srow"><div><div class="stitle">Which sectors report the most renewable energy?</div><div class="ssub">FY 2024–25 · 89 companies with converted energy totals · share of total GJ from renewable sources</div></div><span class="pill prov">Provisional</span></div>
+          <div class="chart" id="chart-explore">
+            <div class="bar"><span class="k">Information Tech</span><span class="t"><span class="f" style="width:100%"></span></span><span class="v">63.0%</span></div>
+            <div class="bar"><span class="k">FMCG</span><span class="t"><span class="f" style="width:86%"></span></span><span class="v">54.3%</span></div>
+            <div class="bar"><span class="k">Healthcare</span><span class="t"><span class="f" style="width:53%"></span></span><span class="v">33.6%</span></div>
+            <div class="bar"><span class="k">Capital Goods</span><span class="t"><span class="f" style="width:34%"></span></span><span class="v">21.5%</span></div>
+            <div class="bar"><span class="k">Automobile</span><span class="t"><span class="f" style="width:31%"></span></span><span class="v">19.8%</span></div>
+            <div class="bar"><span class="k">Financial Svcs</span><span class="t"><span class="f" style="width:9%"></span></span><span class="v">5.8%</span></div>
+            <div class="bar"><span class="k">Metals &amp; Mining</span><span class="t"><span class="f" style="width:1.4%"></span></span><span class="v">0.9%</span></div>
+            <div class="bar"><span class="k">Oil, Gas &amp; Fuels</span><span class="t"><span class="f" style="width:1%"></span></span><span class="v">0.6%</span></div>
+            <div class="bar"><span class="k">Power</span><span class="t"><span class="f" style="width:0.5%"></span></span><span class="v">0.2%</span></div>
+          </div>
+          <div class="axnote">Real values from the live FY25 database. Sectors with fewer than 4 reporting companies omitted.</div>
+        </div>
+      </div>
+      <p>Every result carries four things the user cannot dismiss: the <strong>cohort</strong> it describes, the <strong>takeaway</strong> in one sentence, the <strong>limitation</strong> that stops the number being over-read, and the <strong>sources</strong>. Loading, empty, suppressed, tier-locked and error states are all explicit — nothing silently renders as zero.</p>
+      <p>Follow-ups turn a chart into a conversation: "normalise this by turnover", "keep comparisons within a sector". Each follow-up is a real query merged onto the current one, not a canned answer.</p>
+      <details class="hood"><summary>Under the hood — the guided question registry</summary>
+      <div class="hoodbody">
+        <p>Questions are versioned code, not database content: <code>frontend/src/content/guided-questions.ts</code>, registry version <code>1.0.0</code>. Adding a question means adding an entry with a stable ID and shipping it — reviewable in a pull request, traceable in analytics.</p>
+        <ul>
+          <li>State lives in the URL: <code>?question=&lt;id&gt;&amp;q=&lt;encoded DSL&gt;</code>, so any view is shareable and reproducible.</li>
+          <li>Eight questions are public; five environment questions require a paid tier and show a labelled lock rather than disappearing.</li>
+          <li>Analytics events carry the stable question ID only. Raw question text, company names and query text are prohibited in event payloads.</li>
+        </ul>
+      </div></details>
+    </div>
+
+    <div class="tabpanel" role="tabpanel" id="p-ask" aria-labelledby="t-ask" hidden>
+      <p><strong>The job:</strong> an expert asks anything, in English, and gets an answer they can defend.</p>
+      <p>Ask is the full governed-query workspace. A natural-language question goes to <code>/api/nlq</code>, which translates it into the semantic DSL, validates it against the measure catalog, applies tier and cohort policy, compiles it to SQL, executes it, and returns the result <em>with its lineage</em>. The model chooses a query; it never invents a number.</p>
+      <div class="screen">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">brsrlens.app/ask</span></div>
+        <div class="body">
+          <div class="stitle">"Which power companies use the most energy per crore of turnover?"</div>
+          <div class="ssub" style="margin-top:10px">Translated to <code>measures: [normalized.energy_gj_per_inr_crore] · dimensions: [company] · filters: sector = Power, fy = 2025 · sort: desc</code></div>
+          <div class="chart">
+            <div class="bar"><span class="k">NTPC</span><span class="t"><span class="f" style="width:100%"></span></span><span class="v">21,449</span></div>
+            <div class="bar"><span class="k">ADANIPOWER</span><span class="t"><span class="f" style="width:77%"></span></span><span class="v">16,503</span></div>
+            <div class="bar"><span class="k">ADANIENSOL</span><span class="t"><span class="f" style="width:49%"></span></span><span class="v">10,454</span></div>
+            <div class="bar"><span class="k">TATAPOWER</span><span class="t"><span class="f" style="width:37%"></span></span><span class="v">7,942</span></div>
+          </div>
+          <div class="axnote">GJ per INR crore · FY25 · click any value for its source fact</div>
+        </div>
+      </div>
+      <p>The response includes a <strong>merge provenance</strong> object stating which filters were applied, which were inherited from the previous question, and which were overridden — so a follow-up never silently changes the cohort under the user's feet.</p>
+      <details class="hood"><summary>Under the hood — why the LLM cannot fabricate a figure</summary>
+      <div class="hoodbody">
+        <p>The language model's only output is a semantic query object. That object then passes through the same path as a hand-built query:</p>
+        <ul>
+          <li><strong>Catalog validation</strong> — unknown measures or dimensions are rejected outright.</li>
+          <li><strong>Tier policy</strong> — paid measures return a lock state, not data.</li>
+          <li><strong>Cohort suppression</strong> — groups below the minimum are withheld.</li>
+          <li><strong>Compiler and execution</strong> — parameterised SQL against materialised metrics.</li>
+          <li><strong>Lineage attachment</strong> — every returned value carries its pin ID.</li>
+        </ul>
+        <p>Prompts are versioned files in <code>prompts/*.yaml</code> with committed fixture responses, so the test suite never needs a live LLM call. If the provider is down, NLQ degrades to an honest "temporarily unavailable" banner rather than a wrong answer.</p>
+      </div></details>
+    </div>
+
+    <div class="tabpanel" role="tabpanel" id="p-analyse" aria-labelledby="t-analyse" hidden>
+      <p><strong>The job:</strong> a company uploads its own draft or filed BRSR and sees where it stands, privately.</p>
+      <p>Analyse is the bridge between the public corpus and a company's own position. The user uploads their report; the same parsing, extraction and scoring pipeline runs against it; and they get their completeness, substance and readiness profile plotted against the peers already in the corpus.</p>
+      <p>The privacy promise is stated <em>before</em> a file is selected, not in a footer after: private by default, not added to the public corpus, retention stated, deletable on request. That promise is a legal-gate item, not a marketing line.</p>
+      <div class="note">
+        <h4>Where this sits in the roadmap</h4>
+        <p>The public promise and journey shell are live. The upload pipeline itself is the S20 session's scope. A PM should treat the Analyse tab today as a validated intent surface with the processing pipeline behind it, not as a shipped self-serve upload.</p>
+      </div>
+    </div>
+
+    <div class="tabpanel" role="tabpanel" id="p-studio" aria-labelledby="t-studio" hidden>
+      <p><strong>The job:</strong> turn a pile of internal documents into a filed-ready BRSR draft, without the AI quietly deciding what the company says.</p>
+      <p>Filing Studio is an authenticated workspace built around the prescribed BRSR form schema. The flow:</p>
+      <ul class="plain">
+        <li><strong>Create a filing</strong> for the organisation and financial year. The questionnaire renders section by section from the versioned form schema.</li>
+        <li><strong>Upload source documents</strong> — policies, HR data, energy and water records, last year's filing.</li>
+        <li><strong>Run AI mapping per section.</strong> The mapper proposes an answer for each field with a confidence and a citation into the uploaded document.</li>
+        <li><strong>Review every proposal.</strong> A human accepts, edits or rejects. Bulk-accept exists but is an explicit action, and prior-year candidates are offered separately so carry-forward is a decision rather than a default.</li>
+        <li><strong>Validate.</strong> The engine runs the form's completeness and consistency checks and produces a document-gap report showing what evidence is still missing.</li>
+        <li><strong>Export.</strong> SEBI-format XBRL, a board-ready PDF/DOCX draft, and an assurance-readiness gap report.</li>
+      </ul>
+      <div class="screen">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">brsrlens.app/studio</span></div>
+        <div class="body">
+          <div class="srow"><div class="stitle">Principle 6 · Environment</div><span class="pill prov">14 proposals awaiting review</span></div>
+          <div class="tablewrap" style="margin-top:14px">
+            <table><thead><tr><th>Field</th><th>Proposed</th><th>Confidence</th><th>Source</th><th>State</th></tr></thead>
+            <tbody>
+              <tr><td><code>p6.e1.energy_total_gj</code></td><td>1,204,880</td><td>0.94</td><td>Energy register.xlsx</td><td><span class="pill pub">Accepted</span></td></tr>
+              <tr><td><code>p6.e2.water_total_kl</code></td><td>842,110</td><td>0.71</td><td>EHS annual.pdf p.31</td><td><span class="pill prov">Needs review</span></td></tr>
+              <tr><td><code>p6.e3.scope2_tco2e</code></td><td>—</td><td>—</td><td>No source found</td><td><span class="pill held">Gap</span></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+      <details class="hood"><summary>Under the hood — Studio services and guardrails</summary>
+      <div class="hoodbody">
+        <ul>
+          <li><code>worker/studio/schema.py</code> is validated on every <code>make verify</code> run — a malformed form schema fails the build, not production.</li>
+          <li><code>worker/studio/mapper.py</code> holds the LLM mapping; <code>worker/studio/engine.py</code> holds the questionnaire and validation logic; <code>worker/exportgen/</code> produces XBRL and documents.</li>
+          <li>Studio consumption is metered per organisation (<code>studio_tokens_per_month</code>) with quotas enforced in <code>api/app/services/quotas.py</code>.</li>
+          <li>Nothing a company uploads to Studio enters the public corpus. Ever. This is enforced at the data model level — Studio filings are a separate table family from corpus <code>filings</code>.</li>
+        </ul>
+      </div></details>
+    </div>
+
+    <div class="tabpanel" role="tabpanel" id="p-learn" aria-labelledby="t-learn" hidden>
+      <p><strong>The job:</strong> make the vocabulary learnable in context, for the sponsor and the newly-appointed sustainability manager alike.</p>
+      <p>Learn is a contextual aid and a hub, not a separate product. Every guided question carries its own explanation inline; the Library holds the longer-form pieces — what BRSR Core is, what limited versus reasonable assurance means, what a substantive disclosure looks like next to boilerplate.</p>
+      <p>The Methodology page is the public, permanent version of this: it is generated from <code>scoring.yaml</code>, so the published method description cannot drift from the code that computes the scores.</p>
+    </div>
+  </div>
+</section>
+
+<section id="routes">
+  <span class="eyebrow">The product</span>
+  <h2>Every screen, and who owns it</h2>
+  <p>A single-page React app with plain path routing. This is the complete surface — if a maintainer needs to change something a user saw, it is on this table.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Route</th><th>What the user does</th><th>Component</th><th>Access</th></tr></thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>Chooses a journey; sees a live guided insight</td><td><code>HomePage</code></td><td><span class="pill tier">Public</span></td></tr>
+        <tr><td><code>/explore</code></td><td>Guided question hub — the canonical insights entry</td><td><code>GuidedExplorePage</code></td><td><span class="pill tier">Public</span></td></tr>
+        <tr><td><code>/ask</code></td><td>Natural-language and DSL query workspace</td><td><code>AskPage</code></td><td><span class="pill tier">Public, quota'd</span></td></tr>
+        <tr><td><code>/sectors</code></td><td>Detailed sector scorecards</td><td><code>SectorPage</code></td><td><span class="pill tier">Public</span></td></tr>
+        <tr><td><code>/companies</code></td><td>Company deep-dive</td><td><code>CompanyPage</code></td><td><span class="pill tier">Pro</span></td></tr>
+        <tr><td><code>/benchmarks</code></td><td>Peer benchmarking and gap boards</td><td><code>BenchmarksPage</code></td><td><span class="pill tier">Pro</span></td></tr>
+        <tr><td><code>/materiality</code></td><td>Materiality evidence map</td><td><code>MaterialityPage</code></td><td><span class="pill tier">Public</span></td></tr>
+        <tr><td><code>/assurance</code></td><td>Assurance adoption trends</td><td><code>AssurancePage</code></td><td><span class="pill tier">Public</span></td></tr>
+        <tr><td><code>/library</code> · <code>/learn</code></td><td>Learning library</td><td><code>LibraryPage</code></td><td><span class="pill tier">Public</span></td></tr>
+        <tr><td><code>/analyse</code></td><td>Private BRSR analysis journey</td><td><code>AnalysePage</code></td><td><span class="pill tier">Public entry</span></td></tr>
+        <tr><td><code>/studio</code></td><td>Filing preparation workspace</td><td><code>StudioPage</code></td><td><span class="pill tier">Studio</span></td></tr>
+        <tr><td><code>/methodology</code></td><td>Reads how scores are computed</td><td><code>MethodologyPage</code></td><td><span class="pill tier">Public</span></td></tr>
+        <tr><td><code>/pricing</code></td><td>Compares plans, requests an invoice</td><td><code>PricingPage</code></td><td><span class="pill tier">Public</span></td></tr>
+        <tr><td><code>/deep-dive</code></td><td>Requests a productised expert analysis</td><td><code>DeepDivePage</code></td><td><span class="pill tier">Signed in</span></td></tr>
+        <tr><td><code>/billing</code></td><td>Views licence state, requests an invoice</td><td><code>BillingPage</code></td><td><span class="pill tier">Signed in</span></td></tr>
+        <tr><td><code>/privacy</code></td><td>Exports or deletes their data, sets preferences</td><td><code>PrivacyPage</code></td><td><span class="pill tier">Signed in</span></td></tr>
+        <tr><td><code>/account</code></td><td>QA review sampling queue</td><td><code>QualityReview</code></td><td><span class="pill held">Platform admin</span></td></tr>
+        <tr><td><code>/admin/ingestion</code></td><td>Corpus inventory, run history, mapping review</td><td><code>AdminIngestionPage</code></td><td><span class="pill held">Platform admin</span></td></tr>
+        <tr><td><code>/admin/analytics</code></td><td>Product funnels and event aggregates</td><td><code>AdminAnalyticsPage</code></td><td><span class="pill held">Platform admin</span></td></tr>
+        <tr><td><code>/admin/leads</code></td><td>Scored leads and outcomes</td><td><code>AdminLeadsPage</code></td><td><span class="pill held">Platform admin</span></td></tr>
+        <tr><td><code>/styleguide</code></td><td>Design system reference</td><td><code>StyleguidePage</code></td><td><span class="pill tier">Internal</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <details class="hood"><summary>Under the hood — shell and accessibility contract</summary>
+  <div class="hoodbody">
+    <ul>
+      <li><code>SiteHeader</code> owns the brand, journey navigation, utility navigation, account controls and the mobile menu. Desktop journey and utility navigation are separate labelled landmarks.</li>
+      <li>Active destinations expose <code>aria-current="page"</code>, including retained detail-route families.</li>
+      <li>At 900&nbsp;px and below, navigation collapses to a menu button that closes on Escape and returns focus to its trigger. It uses ordinary links, so browser navigation stays dependable.</li>
+      <li>A keyboard-visible skip link targets <code>#main-content</code>; route headings receive programmatic focus on history navigation; sticky navigation never covers focused content.</li>
+      <li>Public pages are prerendered (<code>frontend/scripts/prerender.mjs</code>) so they are indexable and citable — see <code>docs/adr/0002-public-prerender.md</code>.</li>
+    </ul>
+  </div></details>
+</section>
+
+<section id="tiers">
+  <span class="eyebrow">The product</span>
+  <h2>Access tiers</h2>
+  <p>Four tiers, defined in <code>plans.yaml</code> and enforced server-side. Paid capabilities are always <em>labelled</em> rather than hidden — a locked view still explains what it would show.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Tier</th><th>Price</th><th>Seats</th><th>NLQ / day</th><th>Exports / mo</th><th>Headline capability</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Explore</strong></td><td>Free</td><td>1</td><td>10</td><td>0</td><td>Public dashboards, methodology, lineage</td></tr>
+        <tr><td><strong>Pro</strong></td><td>₹36,000 / yr</td><td>5</td><td>100</td><td>25</td><td>Company deep-dives, peer benchmarking, board PDF exports</td></tr>
+        <tr><td><strong>Studio</strong></td><td>Annual licence</td><td>10</td><td>100</td><td>50</td><td>Everything in Pro, plus Filing Studio and AI-assisted mapping</td></tr>
+        <tr><td><strong>Research</strong></td><td>Talk to us</td><td>10</td><td>500</td><td>100</td><td>Scoped API keys, public-measure query API, dataset export</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note go">
+    <h4>The commercial line a PM should be able to say without hedging</h4>
+    <p>Paid tiers never change the underlying numbers. Every tier uses the same governed definitions, the same QA pins and the same suppression policy. What money buys is scope, seats, throughput and export rights — not a different truth.</p>
+  </div>
+  <p>There is no card payment flow by design. Paid access is activated against an agreed invoice and licence term, so permitted use, delivery and retention are explicit — which is what a full-corpus licensee needs and what makes the legal gate signable.</p>
+</section>
+
+<section id="pipeline">
+  <span class="eyebrow">How it works</span>
+  <h2>From a filing on NSE to a number on screen</h2>
+  <p>Seven stages. Select any one to see what it does, what it refuses to do, and where the code lives.</p>
+
+  <div class="pipe" id="pipe" role="group" aria-label="Pipeline stages">
+    <button aria-pressed="true" data-step="0">1 · Acquire</button><span class="arrow">→</span>
+    <button aria-pressed="false" data-step="1">2 · Parse</button><span class="arrow">→</span>
+    <button aria-pressed="false" data-step="2">3 · Map</button><span class="arrow">→</span>
+    <button aria-pressed="false" data-step="3">4 · Convert</button><span class="arrow">→</span>
+    <button aria-pressed="false" data-step="4">5 · Pin</button><span class="arrow">→</span>
+    <button aria-pressed="false" data-step="5">6 · Score</button><span class="arrow">→</span>
+    <button aria-pressed="false" data-step="6">7 · Publish</button>
+  </div>
+  <div class="pipedetail" id="pipedetail" aria-live="polite"></div>
+
+  <details class="hood"><summary>Under the hood — the two rules that govern the whole pipeline</summary>
+  <div class="hoodbody">
+    <p><strong>Fail closed.</strong> Source adapters ship disabled. <code>SOURCE_NSE_BRSR_ENABLED</code> defaults to <code>false</code>, and flipping it in production configuration is the technical expression of the legal gate signature. Requests are rate-limited globally at <code>ACQUISITION_RATE_PER_SECOND</code> (default 0.5 — one request every two seconds).</p>
+    <p><strong>Withhold rather than guess.</strong> An unresolvable unit or scale withholds that single value; it does not abort the batch and no factor is invented. Three FY25 issuers file energy totals under a bare <code>J</code> token at mutually inconsistent magnitudes — TVSMOTOR at 676,660 and JINDALSTEL at 239.51 cannot be the same unit — so the token establishes no scale and those nine values stay unpublished. A wrongly scaled figure silently corrupts every intensity derived from it, which is a worse outcome than a gap.</p>
+  </div></details>
+</section>
+
+<section id="lineage">
+  <span class="eyebrow">How it works</span>
+  <h2>What "click any number" actually returns</h2>
+  <p>This is a real chain from the live database, not an illustration. It is what a user sees when they click Hindustan Unilever's renewable energy figure on the FY25 energy view.</p>
+  <div class="chain">
+    <div class="link"><div class="spine"><i class="dot"></i><i class="rod"></i></div><div class="content">
+      <div class="lab">The published number</div>
+      <div class="val">p6.e1.energy_renewable_gj = 3,444,905 GJ</div>
+      <div class="say">97.0% of HUL's total FY25 energy consumption of 3,552,034 GJ — the highest renewable share in the cohort.</div>
+    </div></div>
+    <div class="link"><div class="spine"><i class="dot"></i><i class="rod"></i></div><div class="content">
+      <div class="lab">The pinned field version</div>
+      <div class="val">method = xbrl · confidence = 0.95 · qa_status = provisional</div>
+      <div class="say">A specific immutable version of the extracted field. Re-running extraction creates a new version; the pin does not move until a reviewer moves it, so a published number cannot change under a citation.</div>
+    </div></div>
+    <div class="link"><div class="spine"><i class="dot"></i><i class="rod"></i></div><div class="content">
+      <div class="lab">The mapping applied</div>
+      <div class="val">TotalEnergyConsumedFromRenewableSources → p6.e1.energy_renewable_gj</div>
+      <div class="say">Unit rules <code>{GJ:1, MJ:0.001, TJ:1000}</code>. Selection strategy <code>current_fy_dcy_main</code> — the entity-wide current-year context, which excludes facility-level dimensional breakdowns.</div>
+    </div></div>
+    <div class="link"><div class="spine"><i class="dot"></i><i class="rod"></i></div><div class="content">
+      <div class="lab">The raw XBRL fact</div>
+      <div class="val">value 3444905 · unit GJ · context DCYMain · period_end 2025-03-31</div>
+      <div class="say">Persisted losslessly at parse time. The prior-year fact (DPYMain, 3,570,604 GJ) sits beside it untouched, which is how year-on-year deltas are computed without a second fetch.</div>
+    </div></div>
+    <div class="link"><div class="spine"><i class="dot"></i></div><div class="content">
+      <div class="lab">The source document</div>
+      <div class="val">BRSR_1486091_18072025110717_WEB.xml<br>sha256 10966d6382a9925dcdff221aa26b56768141c3ec37c8022f5e20bcc8d1857adb</div>
+      <div class="say">Filed 18 July 2025 on nsearchives.nseindia.com. The checksum is how a refresh detects that an issuer revised its filing — a changed hash replaces the artifact; an unchanged hash costs nothing.</div>
+    </div></div>
+  </div>
+  <div class="note">
+    <h4>Why this matters more than any chart in the product</h4>
+    <p>Everything else is reproducible by a competitor with a scraper. The chain above is the reason a sustainability lead can put a BRSR Lens figure in a board pack, and the reason a correction can be traced, filed and audited rather than argued about.</p>
+  </div>
+</section>
+
+<section id="governance">
+  <span class="eyebrow">How it works</span>
+  <h2>The rules that decide whether a number may be published</h2>
+  <p>This platform publishes figures about named companies. Five mechanisms stand between an extracted value and a public screen.</p>
+
+  <h3>1 · Pinned field versions</h3>
+  <p>A metric or score cannot exist without a <code>field_version_pins</code> row, and a database trigger validates that the pin, the extracted field and the filing all agree. Re-extraction produces a new version; the pin stays until a human moves it.</p>
+
+  <h3>2 · Versioned scoring methods</h3>
+  <p>Every score stores its method version, its component values, a configuration hash and its pinned anchor. The current corpus carries <code>1.1.0-provisional-nse</code>. Method changes are visible, comparable and never silent — the methodology page regenerates from <code>scoring.yaml</code>, and a score-drift dashboard exists specifically to review the effect of a version bump before it ships.</p>
+
+  <h3>3 · Cohort suppression</h3>
+  <p>Sector percentiles are suppressed below <strong>5</strong> companies. Twelve of seventeen FY25 sector cohorts are below that minimum, some at n=1 where the "sector average" is one company's own value. Those cohorts are shown with an explicit footnote rather than blanked, but their percentiles stay withheld.</p>
+
+  <h4>4 · Withhold rather than guess</h4>
+  <p>Sixteen FY25 values are currently withheld: seven unresolved turnover scales and nine energy facts under an ambiguous unit token. Turnover scale is resolved from a reviewed per-issuer registry with evidence and confidence, never inferred from magnitude — a rule that exists because magnitude inference had put Coal India's turnover at ₹14,337 crore instead of ₹1,43,369 crore and its energy intensity ten times too high.</p>
+
+  <h4>5 · Three human gates</h4>
+  <div class="cards three">
+    <div class="card"><div class="who">Unsigned</div><h4>Legal gate</h4><p>Counsel reviews source acquisition terms, the upload privacy and retention promise, the methodology and correction pages, and the Studio liability line. Enabling a source adapter in production configuration <em>is</em> the signature.</p></div>
+    <div class="card"><div class="who">Unsigned</div><h4>Editorial gate</h4><p>No company-level figure goes public below the confidence threshold or without QA-sampled extraction accuracy at target. Two decisions are open: whether provisional NSE pins may appear on public surfaces, and whether the cohort minimum of 5 is right.</p></div>
+    <div class="card"><div class="who">Unsigned</div><h4>UX gate</h4><p>Comprehension, accessibility and expert-bypass checks must pass on the deployed release candidate. Currently blocked: the visual and keyboard passes need a browser runtime that the build environment does not yet provide.</p></div>
+  </div>
+  <div class="note stop">
+    <h4>Launch blocker, stated plainly</h4>
+    <p>All three gate files exist under <code>docs/gates/</code> and all three are unsigned. The build plan is explicit that there is no launch without them. A new PM's first substantive act should be to get these three signatures scheduled with the right humans — this is a coordination task, not an engineering one, and it is on the critical path.</p>
+  </div>
+</section>
+
+<section id="stack">
+  <span class="eyebrow">How it works</span>
+  <h2>Stack and services</h2>
+  <p>Deliberately light. One database, one queue, one node — chosen so a small team can operate it.</p>
+  <dl class="kv">
+    <dt>Frontend</dt><dd>React 18 + TypeScript + Vite, Tailwind, ECharts via a wrapped chart kit. Public routes prerendered for indexability.</dd>
+    <dt>API</dt><dd>FastAPI on Python 3.12/3.13, SQLAlchemy async, Alembic migrations (head <code>0011</code>), Pydantic schemas per router.</dd>
+    <dt>Workers</dt><dd>Celery with Redis broker plus a Beat scheduler. Task families: <code>acquire</code>, <code>parse</code>, <code>extract</code>, <code>score</code>, <code>studio</code>, <code>exportgen</code>, <code>engagement</code>.</dd>
+    <dt>Data</dt><dd>PostgreSQL 16 with pgvector — relational spine, raw facts, embeddings and events in one database. No Elastic, no warehouse.</dd>
+    <dt>Storage</dt><dd>S3-compatible object store for immutable raw filings and generated artifacts.</dd>
+    <dt>LLM</dt><dd>Provider-abstracted with versioned prompts in <code>prompts/*.yaml</code> and committed fixtures. Production configuration rejects <code>LLM_PROVIDER=fake</code>.</dd>
+    <dt>Config as data</dt><dd><code>scoring.yaml</code>, <code>plans.yaml</code>, <code>events.yaml</code>, <code>leads.yaml</code>, <code>taxonomy/*.yaml</code> — the analytics, pricing, scoring and mapping behaviour lives in reviewable files.</dd>
+  </dl>
+  <details class="hood"><summary>Under the hood — the analytics and lead engine</summary>
+  <div class="hoodbody">
+    <p>Product analytics are first-party and schema-governed. <code>events.yaml</code> declares every permitted event and its payload; <code>api/app/services/track.py</code> validates against it. Events land in a monthly-partitioned <code>events</code> table (see <code>docs/adr/0001-events-partitioning.md</code>) and roll up nightly into <code>event_daily_aggregates</code>.</p>
+    <p><code>leads.yaml</code> defines the scoring model: which behaviours signal intent, how they weight, and where a qualified lead routes. High-intent actions — repeated peer-gap views, gap-report generation, deep-dive requests — produce a scored lead with context for the BD team, visible at <code>/admin/leads</code> with an outcome field so the model can be tuned against reality.</p>
+    <p>Privacy is enforced in the same layer: event payloads may never contain report text, uploaded content, natural-language questions, semantic query text, company names, emails or organisation names. Users can export and delete their data from <code>/privacy</code>.</p>
+  </div></details>
+</section>
+
+<section id="operate">
+  <span class="eyebrow">Running it</span>
+  <h2>Operator commands</h2>
+  <p>Verbs live in the Makefile. These are the ones a maintainer runs.</p>
+
+  <h4>Bring the stack up locally</h4>
+<pre><span class="c"># Python 3.12–3.13, Node 20, pnpm 9, uv, Docker Compose</span>
+cp .env.example .env
+<span class="k">make</span> bootstrap    <span class="c"># uv sync + pnpm install</span>
+<span class="k">make</span> up           <span class="c"># compose up --build -d</span>
+<span class="k">make</span> migrate      <span class="c"># alembic upgrade head</span>
+<span class="k">make</span> seed         <span class="c"># access fixtures + taxonomy only — no company data</span>
+<span class="k">make</span> verify       <span class="c"># schema lint · ruff · mypy · pytest · tsc · eslint · vitest</span></pre>
+  <p><code>make seed</code> creates access fixtures and taxonomy definitions <em>only</em>. It deliberately creates no fictional company or filing data — that was removed in favour of the real importer, and the distinction matters: nothing in this product should ever show a made-up company.</p>
+
+  <h4>Build and extend the corpus</h4>
+<pre><span class="c"># first cohort — the first 25 rows of NSE's official NIFTY 50 CSV order</span>
+<span class="k">make</span> ingest-nse-initial NSE_FY=2025
+
+<span class="c"># next batch — advances the persisted registry cursor</span>
+<span class="k">make</span> ingest-nse-next NSE_FY=2025 NSE_LIMIT=10
+
+<span class="c"># revisit registered companies without advancing the cursor;</span>
+<span class="c"># replaces an artifact only when the official XBRL checksum changed</span>
+<span class="k">make</span> ingest-nse-refresh NSE_FY=2025 NSE_LIMIT=10
+
+<span class="c"># re-map and re-pin after a mapping review, without re-fetching</span>
+<span class="k">make</span> publish-nse NSE_FY=2025
+
+<span class="c"># deterministic full rebuild of metrics and scores</span>
+<span class="k">make</span> rebuild-metrics</pre>
+  <p>Each command prints its own audit line — <code>discovered / fetched / parsed / missing / errors</code>, then <code>published / pinned / mapping_missing / withheld / metrics / scores</code>. Every run is also written to <code>ingestion_runs</code>. A failed company never aborts the rest of the batch.</p>
+
+  <h4>Scheduled refresh</h4>
+<pre>NSE_BRSR_SCHEDULE_ENABLED=true
+NSE_BRSR_REFRESH_HOURS=168        <span class="c"># weekly</span>
+NSE_BRSR_DEFAULT_FY=2025
+NSE_BRSR_DEFAULT_BATCH_SIZE=10</pre>
+  <p>Restart <code>scheduler</code> and <code>worker</code> after changing these. New financial-year filings arrive seasonally, so the annual reprocess is a planned batch event with a budget, not a surprise.</p>
+
+  <div class="note">
+    <h4>The refresh checklist, before any cohort run</h4>
+    <p>Confirm the source gate and the monitored contact in <code>NSE_BRSR_CONTACT</code> are current → set <code>NSE_BRSR_DEFAULT_FY</code> to the portal's <code>fyTo</code> → run a one-company canary with <code>initial --start 0 --limit 1</code> → check <code>/admin/ingestion</code> for a parsed filing with non-zero facts → run the real cohort → review errors and source revisions before publishing.</p>
+  </div>
+
+  <details class="hood"><summary>Under the hood — two traps that have already bitten this repo</summary>
+  <div class="hoodbody">
+    <ul>
+      <li><strong>Single-file bind mounts pin an inode.</strong> <code>scoring.yaml</code>, <code>plans.yaml</code> and <code>events.yaml</code> are mounted individually. An editor that replaces the file rather than writing in place leaves the container serving the old content. Restart <code>api</code>, <code>worker</code> and <code>scheduler</code> after editing them.</li>
+      <li><strong>The documented publish commands run inside the api container</strong>, so that container mounts current <code>worker/</code> code rather than the copy baked into the image. Dev and prod compose files must stay in parity here — a mismatch previously left api and worker serving stale configuration.</li>
+    </ul>
+  </div></details>
+</section>
+
+<section id="admin">
+  <span class="eyebrow">Running it</span>
+  <h2>The admin cockpit</h2>
+  <p>Public product, private cockpit. Admin routes are gated by role <em>and</em> an IP allowlist in production.</p>
+  <div class="cards two">
+    <div class="card"><h4><code>/admin/ingestion</code></h4><p>Source and scheduler state, refresh interval, default FY, next cohort offset. Company inventory with status, submission dates, fact counts and a link to the original NSE XBRL. The ten most recent runs with error and missing totals. <strong>And the mapping review queue</strong> — each NSE concept mapping with its rationale, assumption, confidence, evidence URL, and an accept / needs-review / reject decision with reviewer notes.</p></div>
+    <div class="card"><h4><code>/account</code> — QA review</h4><p>Draws a sample of extracted fields for human verification, records corrections, and feeds the extraction-accuracy figures that the editorial gate depends on.</p></div>
+    <div class="card"><h4><code>/admin/quality</code> &amp; score drift</h4><p>Per-family extraction accuracy against targets, and the effect of a scoring method version bump before it is published.</p></div>
+    <div class="card"><h4><code>/admin/analytics</code> &amp; <code>/admin/leads</code></h4><p>Funnels from the governed event schema, and scored leads with outcome tracking.</p></div>
+  </div>
+  <div class="note">
+    <h4>First review priority</h4>
+    <p>Sixteen NSE concept mappings are live and all are marked <code>provisional</code>. The top of the queue is <code>MtCO2e</code>: NSE's token is currently read as metric tonnes rather than megatonnes, because issuer magnitudes would otherwise be physically implausible. That reading is at confidence 0.80 and needs a domain owner's decision. Every Scope 1 and 2 figure and every emissions intensity in the product depends on it.</p>
+  </div>
+</section>
+
+<section id="limits">
+  <span class="eyebrow">Running it</span>
+  <h2>Known limits — read before promising anything</h2>
+  <p>A new PM will be asked what this product can claim. These are the honest boundaries as of the FY25 NIFTY 100 corpus.</p>
+  <ul class="plain">
+    <li><strong>Every published environmental figure is provisional.</strong> The mappings are declared, reviewable and evidence-linked, but none has domain sign-off yet. The product labels this on every surface; a PM must not drop the label in a deck.</li>
+    <li><strong>The substance index is not yet meaningful on this corpus.</strong> It scores 20.00 for all 92 companies, because substance measures specificity in narrative text and the XBRL path carries no narrative. It becomes real when PDF text extraction runs against the same filings — the PDFs are already downloaded.</li>
+    <li><strong>Assurance flags cover 25 filings, not 100.</strong> Treat cohort-wide assurance claims as unsupported today.</li>
+    <li><strong>Cohorts are thin.</strong> Twelve of seventeen sectors are under the suppression minimum. Cross-sector comparison is a screening tool, not a verdict.</li>
+    <li><strong>Reported figures are not a performance ranking.</strong> NTPC reports 327 million tCO2e Scope 1+2 because it generates a large share of India's electricity. Boundaries, scale and estimation method must be read before any comparison — which is why every ranking view offers a normalise-by-turnover follow-up.</li>
+    <li><strong>Some filings say implausible things.</strong> Hindustan Unilever's filing reports Scope 2 emissions of zero. The portal shows what was filed and flags it for review; it does not correct an issuer's disclosure silently.</li>
+    <li><strong>Market-cap band is uniform.</strong> All 100 companies are <code>large</code>, so the "quality by market-cap band" question has nothing to compare until the corpus extends beyond NIFTY 100.</li>
+    <li><strong>Batch 1 facts predate the <code>decimals</code> column</strong> and are null until re-ingested. No published number depends on it — and note that XBRL <code>decimals</code> is precision, not scale, and must never be used to infer scale.</li>
+  </ul>
+  <div class="note go">
+    <h4>What it can claim, without qualification</h4>
+    <p>Complete, checksummed, losslessly-persisted coverage of the NIFTY 100's FY25 BRSR filings, with 204,880 raw facts queryable, common-unit conversions for energy, water and emissions, turnover-normalised intensities, and full source lineage on every published figure. No competitor product in this market attaches evidence to the number.</p>
+  </div>
+</section>
+
+<section id="glossary">
+  <span class="eyebrow">Reference</span>
+  <h2>Glossary</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Term</th><th>What it means here</th></tr></thead>
+      <tbody>
+        <tr><td><strong>BRSR</strong></td><td>Business Responsibility and Sustainability Report — SEBI's mandated annual sustainability disclosure for large listed companies.</td></tr>
+        <tr><td><strong>BRSR Core</strong></td><td>The subset of BRSR attributes requiring reasonable assurance. Carries double weight in the completeness score.</td></tr>
+        <tr><td><strong>XBRL</strong></td><td>The machine-readable format the filing is tagged in. Each tagged value is a "fact" with a concept, unit, context and period.</td></tr>
+        <tr><td><strong>DCYMain</strong></td><td>The XBRL context for the issuer's entity-wide current financial year. Facts are read from this context so facility-level breakdowns do not double-count. <code>DPYMain</code> is the prior year.</td></tr>
+        <tr><td><strong>Completeness</strong></td><td>Weighted field coverage on the QA-pinned disclosure set. Says information is present — not that it is specific or assured.</td></tr>
+        <tr><td><strong>Substance</strong></td><td>An index combining quantified targets (35%), dated commitments (25%), named methodologies (20%) and corpus originality (20%). Screens for specificity, not correctness.</td></tr>
+        <tr><td><strong>Boilerplate</strong></td><td>A near-verbatim 8-word phrase appearing in at least 3 companies' filings. The shared-phrase table regenerates from the pinned corpus on every rebuild.</td></tr>
+        <tr><td><strong>Assurance readiness</strong></td><td>Assurance status (40%) + BRSR Core coverage (35%) + complete source lineage (25%). <strong>Not</strong> a statement that anything has been independently assured.</td></tr>
+        <tr><td><strong>Pin</strong></td><td>A <code>field_version_pins</code> row locking one immutable extracted-field version as the published one. Metrics and scores reference pins, not raw fields.</td></tr>
+        <tr><td><strong>Withheld</strong></td><td>A value that exists in the filing but cannot be resolved to a trustworthy unit or scale. Published as a gap with a reason, never as a guess.</td></tr>
+        <tr><td><strong>Suppressed</strong></td><td>A cohort statistic hidden because the group has fewer than 5 companies and would identify or misrepresent individuals.</td></tr>
+        <tr><td><strong>Provisional</strong></td><td>A mapping or figure that is declared and evidence-linked but has not been signed off by a domain reviewer.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:26px">Deeper reading, in the repository: <code>00_ARCHITECTURE.md</code> for stack decisions, <code>DEPLOYMENT.md</code> for topology and the launch checklist, <code>QA_PLAN.md</code> for the accuracy benchmark strategy, <code>docs/operations/NSE_BRSR_INGESTION.md</code> for the full ingestion runbook, <code>docs/ux/experience-contract.md</code> for the navigation and event contract, and <code>docs/state/HANDOFF.md</code> for the current session state and sharp edges.</p>
+</section>
+
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+  // ---- tabs ----
+  var bar = document.querySelector('.tabbar');
+  if (bar) {
+    var btns = Array.prototype.slice.call(bar.querySelectorAll('button'));
+    function select(btn){
+      btns.forEach(function(b){
+        var on = b === btn;
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+        b.tabIndex = on ? 0 : -1;
+        document.getElementById(b.getAttribute('aria-controls')).hidden = !on;
+      });
+    }
+    btns.forEach(function(b, i){
+      b.tabIndex = i === 0 ? 0 : -1;
+      b.addEventListener('click', function(){ select(b); });
+      b.addEventListener('keydown', function(e){
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        var next = btns[(btns.indexOf(b) + d + btns.length) % btns.length];
+        select(next); next.focus();
+      });
+    });
+  }
+
+  // ---- pipeline stepper ----
+  var steps = [
+    { h:'1 · Acquire', p:'Reads NSE’s official NIFTY 50 and Next 50 registry CSVs, concatenated and deduplicated into a stable 100-row cohort, then queries the BRSR filing index for the requested financial year. Selects the latest revision, downloads the XBRL only from nsearchives.nseindia.com, validates that it is XML, hashes it, and stores the raw artifact before parsing anything.',
+      r:'Refuses to fetch at all unless the source gate is enabled. Refuses to guess a filing that is not published — seven FY25 companies are recorded as missing rather than filled in.',
+      m:['worker/acquire/nse.py','worker/acquire/cli.py','ingestion_runs','ingestion_state'] },
+    { h:'2 · Parse', p:'Reads every tagged concept out of the XBRL instance and persists it losslessly: raw value, numeric value, unit, context, period and dimensional members. 204,880 facts across 93 FY25 filings. Nothing is discarded because no mapping exists for it yet.',
+      r:'Does not interpret. A fact with an unknown concept is stored, not dropped and not renamed.',
+      m:['worker/parse/xbrl.py','worker/parse/pdf.py','xbrl_facts','filing_pages'] },
+    { h:'3 · Map', p:'Applies the versioned provisional mapping registry: 16 declared NSE concept → semantic field mappings, each with a rationale, a stated assumption, a confidence and an evidence URL. Only declared mappings can be published; every other fact stays queryable but unpublished.',
+      r:'Will not map a concept on resemblance. Adding a mapping is a reviewable change to taxonomy/nse_concept_mappings.yaml, visible in the admin review queue.',
+      m:['worker/acquire/mappings.py','taxonomy/nse_concept_mappings.yaml','extracted_fields'] },
+    { h:'4 · Convert', p:'Puts values on common units — MJ/GJ/TJ to GJ, kL for water, tCO2e for emissions — and derives Scope 1+2 totals plus three turnover-normalised intensities. Turnover scale comes from a reviewed per-issuer registry with evidence, never from magnitude.',
+      r:'An unresolvable unit or an unregistered turnover scale withholds that one value and reports it as withheld. It never invents a factor and never aborts the batch.',
+      m:['api/app/services/units.py','turnover_scale registry','withheld = 16'] },
+    { h:'5 · Pin', p:'Locks one immutable extracted-field version as the published one. 1,255 pins across 92 filings. A database trigger validates that the pin, the extracted field and the filing all agree before the row is accepted.',
+      r:'A metric or score cannot exist without a pin. Re-extraction creates a new version; the pin does not move until a reviewer moves it, so a cited number cannot change beneath the citation.',
+      m:['field_version_pins','trg_validate_field_version_pin'] },
+    { h:'6 · Score', p:'Materialises 1,527 metrics and 351 scores from pinned fields, under method version 1.1.0-provisional-nse. Completeness, substance and assurance readiness each store their component values, their configuration hash and their pinned anchor.',
+      r:'Suppresses sector percentiles below a 5-company cohort. make rebuild-metrics is a deterministic full rebuild — the same inputs always produce the same outputs.',
+      m:['worker/score/materialize.py','scoring.yaml','metrics','scores'] },
+    { h:'7 · Publish', p:'Invalidates the semantic cache and makes the new materialisation live to the semantic layer, the guided questions, Ask, and the export and API surfaces — all of which read the same governed measures.',
+      r:'Publication policy gates what may reach a public surface: confidence thresholds, QA sampling status, and the editorial gate’s open decision on whether provisional pins may appear publicly at all.',
+      m:['api/app/services/publication_policy.py','worker/score/tasks.py','/api/catalog'] }
+  ];
+  var pipe = document.getElementById('pipe');
+  var detail = document.getElementById('pipedetail');
+  function render(i){
+    var s = steps[i];
+    detail.innerHTML = '<h4>' + s.h + '</h4><p>' + s.p +
+      '</p><p style="color:var(--ink)"><strong>What it refuses to do:</strong> ' + s.r +
+      '</p><div class="meta">' + s.m.map(function(x){ return '<span>' + x + '</span>'; }).join('') + '</div>';
+    Array.prototype.forEach.call(pipe.querySelectorAll('button'), function(b){
+      b.setAttribute('aria-pressed', b.dataset.step === String(i) ? 'true' : 'false');
+    });
+  }
+  if (pipe) {
+    pipe.addEventListener('click', function(e){
+      var b = e.target.closest('button');
+      if (b) render(Number(b.dataset.step));
+    });
+    render(0);
+  }
+
+  // ---- scrollspy ----
+  var links = Array.prototype.slice.call(document.querySelectorAll('#railnav a'));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting) {
+        links.forEach(function(a){ a.classList.remove('on'); });
+        if (map[en.target.id]) map[en.target.id].classList.add('on');
+      }
+    });
+  }, { rootMargin: '-15% 0px -70% 0px' });
+  document.querySelectorAll('section[id]').forEach(function(s){ obs.observe(s); });
+})();
+</script>
+
+</body>
+</html>

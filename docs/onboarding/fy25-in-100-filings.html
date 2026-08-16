@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FY25 in 100 Filings</title>
+<style>
+:root{
+  --ground:#F4F6F5; --surface:#FFFFFF; --stage:#0D1618; --stage-2:#162326; --stage-3:#1E3033;
+  --stage-ink:#EAF1EF; --stage-ink-2:#9FB2B3; --stage-ink-3:#71888A; --stage-line:#294044;
+  --ink:#0F1A1C; --ink-2:#465659; --ink-3:#6E8084;
+  --line:#D3DDDA; --line-2:#BFCCC9; --surface-2:#EAEFEE;
+  --accent:#0E6E66; --accent-soft:#DFEDEA;
+  --beam:#4FC0AF; --beam-2:#8FDCCD;
+  --ochre:#D8A64A; --brick:#E28369; --good:#63C08C;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#080E0F; --surface:#101A1C; --surface-2:#172326;
+    --ink:#E9F0EE; --ink-2:#A2B3B4; --ink-3:#7B8D8F;
+    --line:#243336; --line-2:#2F4247;
+    --accent:#4FC0AF; --accent-soft:#10312E;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#080E0F; --surface:#101A1C; --surface-2:#172326;
+  --ink:#E9F0EE; --ink-2:#A2B3B4; --ink-3:#7B8D8F;
+  --line:#243336; --line-2:#2F4247;
+  --accent:#4FC0AF; --accent-soft:#10312E;
+}
+
+*{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); line-height:1.6; -webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display); font-weight:600; margin:0; text-wrap:balance; line-height:1.15}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--beam); outline-offset:3px; border-radius:3px}
+code{font-family:var(--mono)}
+
+.page{max-width:1080px; margin:0 auto; padding:36px 28px 80px}
+
+/* ---------- masthead ---------- */
+.masthead{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-bottom:22px}
+.mh-l{min-width:0}
+.kicker{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin-bottom:8px}
+.masthead h1{font-size:clamp(30px,4vw,42px); letter-spacing:-.025em}
+.masthead .sub{color:var(--ink-2); font-size:15px; margin-top:8px; max-width:56ch}
+
+/* ---------- track switch ---------- */
+.track{display:flex; flex-direction:column; gap:7px; flex:none}
+.track .lab{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3)}
+.switch{display:flex; background:var(--surface-2); border:1px solid var(--line); border-radius:7px; padding:3px; gap:3px}
+.switch button{
+  appearance:none; border:0; cursor:pointer; background:transparent; color:var(--ink-2);
+  font-family:var(--body); font-size:12.5px; font-weight:600; padding:7px 13px; border-radius:5px; white-space:nowrap;
+}
+.switch button:hover{color:var(--ink)}
+.switch button[aria-pressed="true"]{background:var(--accent); color:#fff}
+
+/* ---------- stage ---------- */
+.stagewrap{
+  border-radius:12px; overflow:hidden; background:var(--stage); border:1px solid var(--stage-line);
+  box-shadow:0 24px 60px -32px rgba(0,0,0,.6);
+}
+.stage{
+  position:relative; aspect-ratio:16/9; min-height:340px; color:var(--stage-ink);
+  padding:clamp(24px,3.4vw,44px); display:flex; flex-direction:column; overflow:auto;
+}
+.stage::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(120% 90% at 12% 0%, rgba(79,192,175,.10), transparent 62%);
+}
+.slate{
+  position:absolute; top:14px; right:18px; font-family:var(--mono); font-size:10.5px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--stage-ink-3);
+}
+.scene{position:relative; display:flex; flex-direction:column; height:100%; min-height:0; animation:in .5s cubic-bezier(.2,.7,.3,1)}
+@keyframes in{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
+.scene .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--beam); margin-bottom:12px}
+.scene h2{font-size:clamp(22px,2.8vw,32px); letter-spacing:-.02em; color:var(--stage-ink); max-width:22ch}
+.scene .say{color:var(--stage-ink-2); font-size:clamp(14px,1.4vw,16px); margin-top:12px; max-width:60ch; line-height:1.6}
+.scene .fill{flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center}
+.scene .foot{font-family:var(--mono); font-size:10.5px; color:var(--stage-ink-3); margin-top:14px; letter-spacing:.03em}
+
+/* cover */
+.cover{justify-content:center}
+.cover h2{font-size:clamp(34px,5.2vw,58px); max-width:16ch; letter-spacing:-.03em}
+.cover .rule{width:64px; height:3px; background:var(--beam); margin:0 0 22px}
+
+/* big stat row */
+.bigrow{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:clamp(12px,2vw,28px); margin-top:8px}
+.big .n{font-family:var(--display); font-size:clamp(30px,4.6vw,52px); font-weight:600; letter-spacing:-.03em; line-height:1; font-variant-numeric:tabular-nums; color:var(--stage-ink)}
+.big .n.warn{color:var(--ochre)} .big .n.stop{color:var(--brick)} .big .n.go{color:var(--beam)}
+.big .l{font-size:12.5px; color:var(--stage-ink-3); margin-top:9px; line-height:1.35}
+
+/* hero number */
+.hero-n{font-family:var(--display); font-size:clamp(52px,9vw,104px); font-weight:600; letter-spacing:-.04em; line-height:.95; color:var(--beam); font-variant-numeric:tabular-nums}
+.hero-u{font-size:.3em; color:var(--stage-ink-2); letter-spacing:0; margin-left:.15em}
+
+/* bars */
+.bars{display:flex; flex-direction:column; gap:clamp(5px,.9vw,9px); margin-top:6px}
+.brow{display:grid; grid-template-columns:minmax(88px,150px) minmax(0,1fr) 78px; align-items:center; gap:12px; font-size:clamp(11.5px,1.25vw,13.5px)}
+.brow .k{color:var(--stage-ink-2); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.brow .t{height:clamp(11px,1.5vw,17px); background:var(--stage-3); border-radius:3px; overflow:hidden}
+.brow .f{display:block; height:100%; width:0; background:var(--beam); border-radius:0 3px 3px 0; transition:width .8s cubic-bezier(.2,.75,.3,1)}
+.brow.hi .f{background:var(--beam-2)}
+.brow.warn .f{background:var(--ochre)}
+.brow.alt .f{background:var(--stage-ink-3)}
+.brow .v{font-family:var(--mono); font-size:clamp(10.5px,1.15vw,12.5px); font-variant-numeric:tabular-nums; color:var(--stage-ink); text-align:right; white-space:nowrap}
+.legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; font-size:11.5px; color:var(--stage-ink-3); font-family:var(--mono)}
+.legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:-1px}
+
+/* two-column split */
+.split{display:grid; grid-template-columns:1fr 1fr; gap:clamp(18px,3vw,40px); align-items:center; flex:1; min-height:0}
+@media (max-width:720px){ .split{grid-template-columns:1fr; gap:14px} }
+
+/* lineage chain on stage */
+.chain{display:flex; flex-direction:column; gap:0; margin-top:4px}
+.clink{display:grid; grid-template-columns:20px minmax(0,1fr); gap:12px}
+.clink .sp{display:flex; flex-direction:column; align-items:center}
+.clink .dot{width:9px;height:9px;border-radius:50%;background:var(--beam);margin-top:6px;flex:none}
+.clink .rod{width:1px;flex:1;background:var(--stage-line);margin:3px 0}
+.clink:last-child .rod{display:none}
+.clink .c{padding-bottom:clamp(8px,1.4vw,14px); min-width:0}
+.clink .lab{font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--stage-ink-3)}
+.clink .val{font-family:var(--mono); font-size:clamp(10.5px,1.15vw,12.5px); color:var(--stage-ink); margin-top:3px; word-break:break-all}
+
+/* ledger list */
+.ledger{display:flex; flex-direction:column; gap:9px; margin-top:6px}
+.lrow{display:grid; grid-template-columns:auto minmax(0,1fr); gap:14px; align-items:baseline; padding-bottom:9px; border-bottom:1px solid var(--stage-line)}
+.lrow:last-child{border-bottom:0}
+.lrow .n{font-family:var(--display); font-size:clamp(20px,2.6vw,30px); font-weight:600; letter-spacing:-.02em; font-variant-numeric:tabular-nums; min-width:2.4ch}
+.lrow.warn .n{color:var(--ochre)} .lrow.stop .n{color:var(--brick)} .lrow.go .n{color:var(--beam)}
+.lrow .t{font-size:clamp(12px,1.3vw,14px); color:var(--stage-ink-2)}
+.lrow .t b{color:var(--stage-ink); font-weight:600; display:block; font-size:1.02em}
+
+/* journey cards on stage */
+.jcards{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-top:6px}
+.jcard{background:var(--stage-2); border:1px solid var(--stage-line); border-radius:8px; padding:14px}
+.jcard h3{font-size:15px; color:var(--stage-ink)}
+.jcard p{font-size:12.5px; color:var(--stage-ink-3); margin-top:6px; line-height:1.5}
+
+/* ---------- narration ---------- */
+.narration{
+  background:var(--stage-2); border-top:1px solid var(--stage-line);
+  padding:16px clamp(20px,3vw,40px); display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:start;
+  min-height:96px;
+}
+.narration .who{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--beam); border:1px solid var(--stage-line); border-radius:4px; padding:4px 8px; white-space:nowrap; margin-top:2px;
+}
+.narration .txt{color:var(--stage-ink); font-size:15px; line-height:1.55; max-width:78ch}
+
+/* ---------- transport ---------- */
+.transport{background:var(--stage); border-top:1px solid var(--stage-line); padding:12px clamp(16px,2.4vw,24px); display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.transport button{
+  appearance:none; cursor:pointer; background:var(--stage-3); border:1px solid var(--stage-line);
+  color:var(--stage-ink); border-radius:6px; width:36px; height:32px; display:grid; place-items:center;
+  font-size:13px; font-family:var(--body); flex:none;
+}
+.transport button:hover{background:var(--stage-line)}
+.transport button.play{width:44px; background:var(--beam); border-color:var(--beam); color:var(--stage); font-weight:700}
+.transport button.play:hover{background:var(--beam-2)}
+.progress{flex:1 1 200px; min-width:140px; height:5px; background:var(--stage-3); border-radius:3px; position:relative; overflow:hidden}
+.progress .p{position:absolute; inset:0 auto 0 0; width:0; background:var(--beam); border-radius:3px}
+.tc{font-family:var(--mono); font-size:11.5px; color:var(--stage-ink-3); font-variant-numeric:tabular-nums; flex:none}
+
+/* ---------- chapters ---------- */
+.chapters{margin-top:28px}
+.chapters h3{font-size:16px; margin-bottom:4px}
+.chapters .hint{font-size:13.5px; color:var(--ink-3); margin-bottom:14px}
+.chaplist{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:8px}
+.chap{
+  display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; align-items:start; text-align:left;
+  appearance:none; cursor:pointer; background:var(--surface); border:1px solid var(--line);
+  border-radius:8px; padding:11px 13px; font-family:var(--body); color:var(--ink-2);
+}
+.chap:hover{border-color:var(--accent)}
+.chap[aria-current="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.chap .num{font-family:var(--mono); font-size:11px; color:var(--ink-3); padding-top:2px}
+.chap[aria-current="true"] .num{color:var(--accent)}
+.chap .ttl{font-size:13.5px; font-weight:600; color:var(--ink); line-height:1.35}
+.chap .dur{font-family:var(--mono); font-size:10.5px; color:var(--ink-3); margin-top:3px}
+
+/* ---------- footnotes ---------- */
+.foot-notes{margin-top:34px; padding-top:22px; border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:22px}
+.foot-notes h4{font-family:var(--body); font-size:13px; font-weight:650; margin:0 0 6px; color:var(--ink)}
+.foot-notes p{font-size:13px; color:var(--ink-2); line-height:1.55}
+.foot-notes code{background:var(--surface-2); padding:1px 5px; border-radius:3px; font-size:12px}
+
+@media (max-width:640px){
+  .stage{aspect-ratio:auto; min-height:0}
+  .narration{grid-template-columns:1fr}
+  .brow{grid-template-columns:minmax(70px,110px) minmax(0,1fr) 62px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important}
+  .brow .f{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="masthead">
+  <div class="mh-l">
+    <div class="kicker">BRSR Lens · guided walkthrough</div>
+    <h1>FY25 in 100 Filings</h1>
+    <p class="sub">Twelve scenes, drawn live from the FY 2024–25 NIFTY 100 corpus. Every figure on screen is read from the database, not illustrated.</p>
+  </div>
+  <div class="track">
+    <span class="lab">Narration for</span>
+    <div class="switch" role="group" aria-label="Narration track">
+      <button id="tr-sponsor" aria-pressed="true">Business sponsor</button>
+      <button id="tr-lead" aria-pressed="false">Sustainability lead</button>
+    </div>
+  </div>
+</div>
+
+<div class="stagewrap">
+  <div class="stage"><div class="slate" id="slate"></div><div id="stage"></div></div>
+  <div class="narration"><span class="who" id="who">Sponsor</span><p class="txt" id="narr"></p></div>
+  <div class="transport">
+    <button id="prev" aria-label="Previous scene" title="Previous scene">◀</button>
+    <button id="play" class="play" aria-label="Pause" title="Play or pause">❚❚</button>
+    <button id="next" aria-label="Next scene" title="Next scene">▶</button>
+    <div class="progress" id="progress"><div class="p" id="pbar"></div></div>
+    <span class="tc" id="tc">0:00 / 0:00</span>
+  </div>
+</div>
+
+<div class="chapters">
+  <h3>Scenes</h3>
+  <p class="hint">Jump to any scene. Space plays and pauses; arrow keys step through.</p>
+  <div class="chaplist" id="chaps"></div>
+</div>
+
+<div class="foot-notes">
+  <div>
+    <h4>Where the numbers come from</h4>
+    <p>Read on 16 August 2026 from the live FY 2024–25 corpus: 100 NIFTY 100 companies, 93 parsed filings, 204,880 raw XBRL facts, 1,255 pinned fields, 1,527 metrics and 351 scores under scoring method <code>1.1.0-provisional-nse</code>.</p>
+  </div>
+  <div>
+    <h4>Provisional status</h4>
+    <p>All sixteen NSE concept mappings are marked <code>provisional</code>: declared, evidence-linked and reviewable, but not yet signed off by a domain owner. Read the methodology before citing any figure externally.</p>
+  </div>
+  <div>
+    <h4>Recording this as a video</h4>
+    <p>The walkthrough is timed and self-advancing. To produce a shareable file, open it full-screen, press play from scene 1, and screen-record for the 2&nbsp;min 42&nbsp;s runtime. The narration text doubles as the voice-over script.</p>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  var bar = function(k, pct, val, cls){
+    return '<div class="brow ' + (cls||'') + '"><span class="k">' + k + '</span>' +
+      '<span class="t"><b class="f" data-w="' + pct + '"></b></span>' +
+      '<span class="v">' + val + '</span></div>';
+  };
+  var bars = function(rows){ return '<div class="bars">' + rows.join('') + '</div>'; };
+
+  var scenes = [
+    { t:'Opening', d:11, slate:'Scene 1 · Opening',
+      html:'<div class="scene cover"><div class="rule"></div>' +
+        '<div class="eyebrow">FY 2024–25 · NIFTY 100</div>' +
+        '<h2>Every company said something. Almost nobody could compare it.</h2>' +
+        '<p class="say">One hundred sustainability filings. Two hundred thousand tagged facts. Until now, no way to ask a single question across all of them and get an answer you could defend.</p></div>',
+      sponsor:'Every large listed company in India files a sustainability report with the regulator. The filings are public. They are also, in practical terms, unreadable — hundreds of documents, thousands of tagged numbers each, in units that do not agree. This is what happens when you read all of them at once.',
+      lead:'BRSR filings are structured, public, and almost never compared. The XBRL is tagged, but units, contexts and boundaries vary enough that a naive comparison is worse than no comparison. This walkthrough shows what the FY25 NIFTY 100 cohort actually says, and where we deliberately refuse to answer.' },
+
+    { t:'The corpus', d:13, slate:'Scene 2 · The corpus',
+      html:'<div class="scene"><div class="eyebrow">What was ingested</div>' +
+        '<h2>The whole index, fetched from the official source</h2>' +
+        '<div class="fill"><div class="bigrow">' +
+        '<div class="big"><div class="n">100</div><div class="l">Companies in the NIFTY 100 registry</div></div>' +
+        '<div class="big"><div class="n go">93</div><div class="l">FY25 filings fetched, checksummed and parsed</div></div>' +
+        '<div class="big"><div class="n stop">7</div><div class="l">No FY25 filing published — recorded as missing, never inferred</div></div>' +
+        '<div class="big"><div class="n">204,880</div><div class="l">Raw XBRL facts persisted losslessly</div></div>' +
+        '</div></div>' +
+        '<div class="foot">Source: NSE registry CSVs + the official BRSR filing index · zero fetch or parse errors</div></div>',
+      sponsor:'We hold the complete index. Ninety-three of the hundred companies published a filing for this year and we have all ninety-three, downloaded from the exchange, hashed, and stored. The seven that are missing are genuinely missing — calendar-year filers and recently listed entities. We record the gap rather than filling it in.',
+      lead:'Coverage is registry-complete rather than sampled. Every filing is fetched from nsearchives, validated as XML, hashed and stored before parsing, so a revision is detectable by checksum. Two hundred thousand facts are retained losslessly — including concepts we do not yet map — so extending the semantic layer never needs a re-fetch.' },
+
+    { t:'Concentration', d:14, slate:'Scene 3 · Where the emissions are',
+      html:'<div class="scene"><div class="eyebrow">Scope 1 + 2, FY25, 92 reporting companies</div>' +
+        '<div class="split"><div>' +
+        '<div class="hero-n">37.1<span class="hero-u">%</span></div>' +
+        '<p class="say" style="margin-top:16px">of the entire cohort\'s reported Scope 1+2 emissions come from <b style="color:var(--stage-ink)">one company</b> — NTPC, at 327 million tCO2e against a cohort total of 882 million.</p>' +
+        '</div><div>' + bars([
+          bar('NTPC','100','327.0 Mt','hi'),
+          bar('ADANIPOWER','26.4','86.4 Mt'),
+          bar('ULTRACEMCO','25.4','83.0 Mt'),
+          bar('VEDL','20.5','66.9 Mt'),
+          bar('JSWSTEEL','16.7','54.8 Mt'),
+          bar('TATAPOWER','13.6','44.6 Mt'),
+          bar('RELIANCE','11.6','37.9 Mt'),
+          bar('COALINDIA','10.7','35.0 Mt'),
+          bar('median of 92','0.04','0.14 Mt','alt')
+        ]) + '<div class="foot">Absolute reported emissions · not a performance ranking</div>' +
+        '</div></div></div>',
+      sponsor:'Here is the first thing that only becomes visible at full coverage. Emissions in this index are not spread out — they are concentrated. One power company accounts for over a third of everything the hundred largest listed companies report. The median company reports about a two-thousandth of what NTPC does. Any conversation about corporate decarbonisation in India that treats these hundred companies as comparable is starting from the wrong picture.',
+      lead:'Absolute Scope 1+2 is a scale measure, and this chart shows why absolute rankings are a trap. NTPC is the largest reporter because it generates a large share of the country\'s electricity, not because it manages emissions worse than a bank. The median across ninety-two reporters is 143,361 tCO2e — three orders of magnitude below the top. Boundary, method and scale all have to be read before any of these figures are compared, which is why the next move is always to normalise.' },
+
+    { t:'Renewable share', d:14, slate:'Scene 4 · Renewable energy by sector',
+      html:'<div class="scene"><div class="eyebrow">Share of total energy from renewable sources</div>' +
+        '<h2>The sector gap is not subtle</h2>' +
+        '<div class="fill">' + bars([
+          bar('Information Tech','100','63.0%','hi'),
+          bar('FMCG','86','54.3%','hi'),
+          bar('Healthcare','53','33.6%'),
+          bar('Capital Goods','34','21.5%'),
+          bar('Automobile','31','19.8%'),
+          bar('Consumer Services','24','15.0%'),
+          bar('Financial Services','9','5.8%','warn'),
+          bar('Construction Mat.','7','4.4%','warn'),
+          bar('Metals &amp; Mining','1.4','0.9%','warn'),
+          bar('Oil, Gas &amp; Fuels','1','0.6%','warn'),
+          bar('Power','0.5','0.2%','warn')
+        ]) + '</div>' +
+        '<div class="foot">89 companies with converted energy totals · sectors with fewer than 4 reporters omitted</div></div>',
+      sponsor:'Split the same hundred companies by sector and a clean story appears. Technology and consumer goods companies run most of their operations on renewable energy — sixty-three percent and fifty-four percent. Heavy industry and power run almost none. That is not a moral gap, it is a physics and capital gap, and it tells you exactly where the transition money has to go.',
+      lead:'These are aggregate shares — total renewable GJ over total GJ per sector — so they are weighted by consumption rather than averaged across companies, which stops a small clean company flattering a heavy sector. The Power sector reading of 0.2% is dominated by NTPC\'s thermal generation; the company-level mean in that sector is nearer sixteen percent because it includes a pure renewable generator. Both numbers are true and the product shows both.' },
+
+    { t:'Leaders', d:13, slate:'Scene 5 · Company leaders',
+      html:'<div class="scene"><div class="eyebrow">Highest renewable share, FY25</div>' +
+        '<div class="split"><div>' + bars([
+          bar('HINDUNILVR','97','97.0%','hi'),
+          bar('UNITDSPR','93.8','93.8%','hi'),
+          bar('BOSCHLTD','86.9','86.9%','hi'),
+          bar('ADANIGREEN','83.7','83.7%','hi'),
+          bar('TCS','79.2','79.2%'),
+          bar('WIPRO','79.1','79.1%'),
+          bar('LODHA','78.4','78.4%'),
+          bar('INFY','68.9','68.9%')
+        ]) + '</div><div>' +
+        '<div class="ledger">' +
+        '<div class="lrow go"><span class="n">14</span><span class="t"><b>at 50% or more</b>renewable share of total energy</span></div>' +
+        '<div class="lrow"><span class="n">12</span><span class="t"><b>between 25% and 50%</b>the transitioning middle</span></div>' +
+        '<div class="lrow warn"><span class="n">31</span><span class="t"><b>below 5%</b>the largest single group</span></div>' +
+        '<div class="lrow stop"><span class="n">5</span><span class="t"><b>at exactly zero</b>including two lenders and one power generator</span></div>' +
+        '</div></div></div>' +
+        '<div class="foot">89 companies with a converted energy total</div></div>',
+      sponsor:'At company level the leaders are recognisable names, and the distribution is the interesting part. Fourteen companies are already majority-renewable. Thirty-one are under five percent. Five report exactly zero. If you are selling transition services, that bottom group is your addressable market and we can name every company in it.',
+      lead:'Hindustan Unilever at ninety-seven percent is the cohort leader, and it is a real disclosure — 3,444,905 of 3,552,034 GJ, which we can trace to the tagged fact in scene nine. The zero-reporters need care before interpretation: for a lender, zero renewable energy may reflect a narrow operational boundary rather than an absence of procurement. That is exactly the kind of claim the source-linked view is there to settle.' },
+
+    { t:'Scale vs efficiency', d:15, slate:'Scene 6 · Normalising',
+      html:'<div class="scene"><div class="eyebrow">The move that makes filings comparable</div>' +
+        '<h2>Divide by turnover, and a different company is worst</h2>' +
+        '<div class="fill"><div class="split">' +
+        '<div><div class="lab" style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stage-ink-3);margin-bottom:10px">Absolute energy · GJ</div>' + bars([
+          bar('NTPC','100','3.61 bn','hi'),
+          bar('ADANIPOWER','27','972 m'),
+          bar('VEDL','18.7','673 m'),
+          bar('TATASTEEL','16.3','588 m')
+        ]) + '</div>' +
+        '<div><div class="lab" style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stage-ink-3);margin-bottom:10px">Per INR crore of turnover · GJ</div>' + bars([
+          bar('NTPC','100','21,449','warn'),
+          bar('ADANIPOWER','77','16,503','warn'),
+          bar('SHREECEM','27','5,836','warn'),
+          bar('cohort median','0.2','42.4','alt')
+        ]) + '</div>' +
+        '</div></div>' +
+        '<div class="foot">85 companies with a registry-resolved turnover · median energy intensity 42.4 GJ per INR crore</div></div>',
+      sponsor:'A big company uses more of everything, so raw totals mostly measure size. Divide by revenue and you get efficiency — how much energy the business consumes to earn a crore. The median company sits at forty-two. The heaviest sits at twenty-one thousand, five hundred times higher. That spread is the entire commercial thesis: it is where the risk is, and it is invisible without this normalisation.',
+      lead:'Normalising is where most benchmarking quietly goes wrong, because turnover in these filings arrives at inconsistent scales under the same INR tag. We resolve scale from a reviewed per-issuer registry with stated evidence, never from magnitude — magnitude inference had previously put Coal India\'s turnover ten times too low and its intensity ten times too high. Seven issuers have no registry entry yet, so their intensities are withheld rather than published wrong.' },
+
+    { t:'Intensity by sector', d:13, slate:'Scene 7 · Emissions intensity',
+      html:'<div class="scene"><div class="eyebrow">Median Scope 1+2 tCO2e per INR crore turnover</div>' +
+        '<h2>A two-thousand-fold spread between sectors</h2>' +
+        '<div class="fill">' + bars([
+          bar('Construction Mat.','100','989.8','warn'),
+          bar('Power','80.8','799.8','warn'),
+          bar('Metals &amp; Mining','21.1','208.4','warn'),
+          bar('Oil, Gas &amp; Fuels','6.9','68.1'),
+          bar('Healthcare','1.7','17.1'),
+          bar('FMCG','1.1','10.9'),
+          bar('Capital Goods','0.7','2.6'),
+          bar('Automobile','0.5','1.8'),
+          bar('Financial Services','0.4','0.9'),
+          bar('Information Tech','0.3','0.5')
+        ]) + '</div>' +
+        '<div class="foot">Sector medians · cohorts of 4 or more · cohort-wide median 4.4</div></div>',
+      sponsor:'Same view for emissions. A cement company emits roughly two thousand times more carbon per rupee of revenue than a software company. When someone asks which sectors carry transition risk, this chart is the answer, and it is built from what the companies themselves filed with the regulator.',
+      lead:'Medians rather than means, because these distributions are heavily skewed by one or two issuers per sector. Note that the sector ordering here is stable against the energy-intensity ordering, which is a useful internal consistency check — if a sector ranked cleanly on one and wildly on the other, we would suspect a unit-mapping error rather than a real signal.' },
+
+    { t:'Disclosure quality', d:13, slate:'Scene 8 · Quality, not quantity',
+      html:'<div class="scene"><div class="eyebrow">Two scores, method version 1.1.0-provisional-nse</div>' +
+        '<h2>How well a sector reports is a different question</h2>' +
+        '<div class="fill"><div class="split">' +
+        '<div><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stage-ink-3);margin-bottom:10px">Completeness · of 10</div>' + bars([
+          bar('Consumer Durables','100','8.16','hi'),
+          bar('Information Tech','97.9','7.99'),
+          bar('Healthcare','96.9','7.91'),
+          bar('FMCG','95','7.75'),
+          bar('Financial Services','94','7.67'),
+          bar('Automobile','91.5','7.47'),
+          bar('Power','89.3','7.29','warn')
+        ]) + '</div>' +
+        '<div><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stage-ink-3);margin-bottom:10px">Assurance readiness · of 100</div>' + bars([
+          bar('Information Tech','100','51.74','hi'),
+          bar('Healthcare','97.9','50.68'),
+          bar('FMCG','90.6','46.89'),
+          bar('Metals &amp; Mining','89.9','46.54'),
+          bar('Financial Services','89.3','46.23'),
+          bar('Automobile','87.1','45.07'),
+          bar('Power','67.2','34.77','warn')
+        ]) + '</div>' +
+        '</div></div>' +
+        '<div class="foot">Readiness is evidence coverage and validation, never a claim that anything was independently assured</div></div>',
+      sponsor:'Beyond what companies emit, there is how well they report it. Completeness asks whether the expected information is there. Readiness asks whether the evidence behind it would survive an auditor. Technology and healthcare lead both; the power sector — the one with the most at stake — trails both. That gap is a service opportunity stated in the companies\' own filings.',
+      lead:'Keep the two apart. Completeness is weighted field coverage on the pinned disclosure set, with BRSR Core attributes carrying double weight. Readiness combines assurance status at forty percent, Core coverage at thirty-five and complete source lineage at twenty-five. Neither means a figure has been independently assured — that is a separate engagement, and the product never conflates them.' },
+
+    { t:'Lineage', d:16, slate:'Scene 9 · Click any number',
+      html:'<div class="scene"><div class="eyebrow">The same figure, traced back through five layers</div>' +
+        '<h2>Every number opens to its evidence</h2>' +
+        '<div class="fill"><div class="chain">' +
+        '<div class="clink"><div class="sp"><i class="dot"></i><i class="rod"></i></div><div class="c"><div class="lab">The number on screen</div><div class="val">Hindustan Unilever · renewable energy · 3,444,905 GJ</div></div></div>' +
+        '<div class="clink"><div class="sp"><i class="dot"></i><i class="rod"></i></div><div class="c"><div class="lab">The pinned field version</div><div class="val">method xbrl · confidence 0.95 · qa_status provisional</div></div></div>' +
+        '<div class="clink"><div class="sp"><i class="dot"></i><i class="rod"></i></div><div class="c"><div class="lab">The mapping applied</div><div class="val">TotalEnergyConsumedFromRenewableSources → p6.e1.energy_renewable_gj · {GJ:1, MJ:0.001, TJ:1000}</div></div></div>' +
+        '<div class="clink"><div class="sp"><i class="dot"></i><i class="rod"></i></div><div class="c"><div class="lab">The raw XBRL fact</div><div class="val">value 3444905 · unit GJ · context DCYMain · period_end 2025-03-31</div></div></div>' +
+        '<div class="clink"><div class="sp"><i class="dot"></i></div><div class="c"><div class="lab">The source document</div><div class="val">BRSR_1486091_18072025110717_WEB.xml · filed 18 Jul 2025<br>sha256 10966d6382a9925dcdff221aa26b56768141c3ec37c8022f5e20bcc8d1857adb</div></div></div>' +
+        '</div></div></div>',
+      sponsor:'This is the part that matters commercially. Any number in this portal opens to the exact fact, in the exact document, with the exact checksum it came from. That is what lets a client put our figure in a board pack or a regulatory response. Nobody else in this market attaches the evidence to the number.',
+      lead:'The pin is the mechanism. A published metric points at one immutable version of an extracted field, and re-running extraction creates a new version rather than moving the pin — so a figure you cited last quarter cannot change underneath the citation. The checksum is how we detect an issuer revising its filing: a changed hash replaces the artifact and opens a new review, an unchanged hash costs nothing.' },
+
+    { t:'What we withhold', d:15, slate:'Scene 10 · The refusals',
+      html:'<div class="scene"><div class="eyebrow">Deliberate gaps</div>' +
+        '<h2>What this product refuses to tell you</h2>' +
+        '<div class="fill"><div class="ledger">' +
+        '<div class="lrow stop"><span class="n">7</span><span class="t"><b>filings recorded as missing</b>No FY25 BRSR published under that symbol. Not estimated, not carried forward from last year.</span></div>' +
+        '<div class="lrow warn"><span class="n">16</span><span class="t"><b>values withheld on units</b>Seven unresolved turnover scales, and nine energy facts filed under a bare “J” token at magnitudes that cannot all be the same unit.</span></div>' +
+        '<div class="lrow warn"><span class="n">12</span><span class="t"><b>of 17 sector cohorts below the minimum</b>Shown with a footnote; their percentiles stay suppressed at fewer than 5 companies.</span></div>' +
+        '<div class="lrow"><span class="n">1</span><span class="t"><b>score not yet meaningful</b>The substance index reads 20.00 for every company, because it measures specificity in narrative text and the XBRL path carries none.</span></div>' +
+        '</div></div>' +
+        '<div class="foot">A wrongly scaled figure silently corrupts every intensity derived from it — a gap is the cheaper error</div></div>',
+      sponsor:'And this is the part that earns the trust. We publish gaps. Where a filing is missing, we say missing. Where a unit is ambiguous, we withhold the number rather than pick the likely one. Where a sector has too few companies to average honestly, we suppress the average. A product that always has an answer is a product nobody can rely on.',
+      lead:'Each refusal has a named mechanism. Turnover scale comes from a reviewed per-issuer registry with evidence and a confidence, and an unregistered issuer is withheld rather than guessed. Cohorts below five companies suppress percentiles. And every one of the sixteen live concept mappings is flagged provisional pending domain sign-off — including the reading of NSE\'s MtCO2e token as metric tonnes, which sits at confidence 0.80 and is first in the review queue.' },
+
+    { t:'Where it goes', d:13, slate:'Scene 11 · From insight to action',
+      html:'<div class="scene"><div class="eyebrow">Three journeys, one evidence layer</div>' +
+        '<h2>What a user does after the chart</h2>' +
+        '<div class="fill"><div class="jcards">' +
+        '<div class="jcard"><h3>Explore &amp; Ask</h3><p>Thirteen guided questions with approved queries, or ask anything in English. The model picks a query; it never invents a number.</p></div>' +
+        '<div class="jcard"><h3>Analyse my BRSR</h3><p>Upload your own report and see your position against the corpus. Private by default, stated before a file is chosen.</p></div>' +
+        '<div class="jcard"><h3>Filing Studio</h3><p>Turn internal documents into a filed-ready draft — AI-mapped fields with confidence and citations, human review on every one, then SEBI-format XBRL and a board PDF.</p></div>' +
+        '<div class="jcard"><h3>Peer benchmarks &amp; deep-dives</h3><p>Gap boards against named peers, and a productised expert analysis request when the question outgrows the dashboard.</p></div>' +
+        '</div></div>' +
+        '<div class="foot">Same governed definitions, same pins, same suppression policy on every tier — paid access buys scope, not a different truth</div></div>',
+      sponsor:'The analytics are the front door, not the business. A sustainability lead arrives to compare, discovers their own gaps, and either buys benchmarking, buys the tool that prepares next year\'s filing, or asks us for an expert deep-dive. Each of those paths is instrumented, so we see intent forming and route it to the team with context.',
+      lead:'Everything downstream reads the same governed measures. The benchmark you see in Explore is the same definition Studio validates against and the same one the export API returns, which means a gap identified in the public view is directly actionable in the filing workspace. No tier changes a definition, a pin, or the suppression policy.' },
+
+    { t:'Close', d:12, slate:'Scene 12 · Close',
+      html:'<div class="scene cover"><div class="rule"></div>' +
+        '<div class="eyebrow">FY 2024–25 · provisional corpus</div>' +
+        '<h2>Complete coverage. Attached evidence. Published gaps.</h2>' +
+        '<p class="say">204,880 facts from 93 filings, converted to common units, normalised by turnover, and traceable to the checksum of the document each one came from.</p>' +
+        '<div class="foot" style="margin-top:22px">Read the methodology before citing. All mappings are provisional pending domain review.</div></div>',
+      sponsor:'That is the product. Complete coverage of the index, evidence attached to every number, and honest gaps where the filings do not support an answer. The corpus extends one command at a time — the next cohort is a batch run, not a rebuild.',
+      lead:'Next steps on our side are the three sign-off gates, the mapping review queue starting with the emissions unit token, and running PDF text extraction against the filings we have already downloaded — which is what makes the substance index real. None of that changes the lineage guarantee.' }
+  ];
+
+  var i = 0, playing = true, elapsed = 0, track = 'sponsor', timer = null;
+  var total = scenes.reduce(function(a,s){ return a + s.d; }, 0);
+
+  var stage = document.getElementById('stage'),
+      narr  = document.getElementById('narr'),
+      who   = document.getElementById('who'),
+      slate = document.getElementById('slate'),
+      pbar  = document.getElementById('pbar'),
+      tc    = document.getElementById('tc'),
+      chaps = document.getElementById('chaps'),
+      playBtn = document.getElementById('play');
+
+  function fmt(s){ s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+  function elapsedBefore(n){ return scenes.slice(0,n).reduce(function(a,s){ return a + s.d; }, 0); }
+
+  function paint(){
+    var s = scenes[i];
+    stage.innerHTML = s.html;
+    slate.textContent = s.slate;
+    narr.textContent = s[track];
+    who.textContent = track === 'sponsor' ? 'Sponsor' : 'Sustainability lead';
+    requestAnimationFrame(function(){
+      stage.querySelectorAll('.f').forEach(function(f){ f.style.width = f.dataset.w + '%'; });
+    });
+    Array.prototype.forEach.call(chaps.children, function(c, n){
+      c.setAttribute('aria-current', n === i ? 'true' : 'false');
+    });
+  }
+
+  function tick(){
+    elapsed += 0.1;
+    if (elapsed >= scenes[i].d) { go(i + 1 >= scenes.length ? 0 : i + 1, i + 1 >= scenes.length); return; }
+    update();
+  }
+  function update(){
+    var done = elapsedBefore(i) + Math.min(elapsed, scenes[i].d);
+    pbar.style.width = (done / total * 100) + '%';
+    tc.textContent = fmt(done) + ' / ' + fmt(total);
+  }
+  function go(n, stop){
+    i = n; elapsed = 0; paint(); update();
+    if (stop) setPlaying(false);
+  }
+  function setPlaying(on){
+    playing = on;
+    playBtn.textContent = on ? '❚❚' : '▶';
+    playBtn.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    clearInterval(timer);
+    if (on) timer = setInterval(tick, 100);
+  }
+
+  scenes.forEach(function(s, n){
+    var b = document.createElement('button');
+    b.className = 'chap';
+    b.innerHTML = '<span class="num">' + String(n+1).padStart(2,'0') + '</span>' +
+      '<span><span class="ttl">' + s.t + '</span><span class="dur">' + fmt(s.d) + '</span></span>';
+    b.addEventListener('click', function(){ go(n); setPlaying(true); });
+    chaps.appendChild(b);
+  });
+
+  playBtn.addEventListener('click', function(){ setPlaying(!playing); });
+  document.getElementById('prev').addEventListener('click', function(){ go(i > 0 ? i - 1 : scenes.length - 1); });
+  document.getElementById('next').addEventListener('click', function(){ go((i + 1) % scenes.length); });
+  document.getElementById('progress').addEventListener('click', function(e){
+    var r = this.getBoundingClientRect(), target = (e.clientX - r.left) / r.width * total, acc = 0;
+    for (var n = 0; n < scenes.length; n++) {
+      if (target < acc + scenes[n].d) { go(n); return; }
+      acc += scenes[n].d;
+    }
+  });
+
+  function setTrack(t){
+    track = t;
+    document.getElementById('tr-sponsor').setAttribute('aria-pressed', t === 'sponsor' ? 'true' : 'false');
+    document.getElementById('tr-lead').setAttribute('aria-pressed', t === 'lead' ? 'true' : 'false');
+    narr.textContent = scenes[i][track];
+    who.textContent = t === 'sponsor' ? 'Sponsor' : 'Sustainability lead';
+  }
+  document.getElementById('tr-sponsor').addEventListener('click', function(){ setTrack('sponsor'); });
+  document.getElementById('tr-lead').addEventListener('click', function(){ setTrack('lead'); });
+
+  document.addEventListener('keydown', function(e){
+    if (/^(INPUT|TEXTAREA|BUTTON)$/.test(e.target.tagName) && e.key === ' ') return;
+    if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); go((i + 1) % scenes.length); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); go(i > 0 ? i - 1 : scenes.length - 1); }
+  });
+
+  paint(); update(); setPlaying(true);
+})();
+</script>
+
+</body>
+</html>
