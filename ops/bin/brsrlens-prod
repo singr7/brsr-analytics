@@ -1,0 +1,245 @@
+#!/usr/bin/env bash
+# BRSR Lens production operator CLI.
+#
+# Runs from a workstation and drives the node through SSM Session Manager, so
+# the estate needs no SSH ingress and no key pair. Every command is auditable in
+# CloudTrail against the operator's own AWS identity.
+#
+#   brsrlens-prod push-ops                 publish infra/deploy/* to the node
+#   brsrlens-prod build [tag]              build and push both images
+#   brsrlens-prod deploy <tag>             roll out, health-gate, smoke, auto-rollback
+#   brsrlens-prod rollback [tag]           return to the previous release
+#   brsrlens-prod smoke                    run the smoke suite now
+#   brsrlens-prod status                   release, containers, corpus counts
+#
+#   brsrlens-prod ingest status            corpus counts and recent runs
+#   brsrlens-prod ingest initial [args]    first cohort
+#   brsrlens-prod ingest next [args]       next batch, advances the cursor
+#   brsrlens-prod ingest refresh [args]    re-check known companies
+#   brsrlens-prod ingest publish [args]    re-map and rebuild without fetching
+#
+#   brsrlens-prod backup [label]           snapshot the database to S3
+#   brsrlens-prod restore list|<name>      restore a snapshot (interactive)
+#   brsrlens-prod cert issue|renew|staging TLS certificate
+#   brsrlens-prod logs [service] [lines]   container logs
+#   brsrlens-prod psql "<sql>"             read-only query against the corpus
+#   brsrlens-prod shell                    interactive Session Manager shell
+#   brsrlens-prod run "<command>"          arbitrary command on the node
+#
+# Configuration, from the environment or infra/terraform outputs:
+#   BRSRLENS_INSTANCE_ID   target instance   (terraform output app_instance_id)
+#   AWS_REGION             region            (default ap-south-1)
+#   BRSRLENS_ENV           environment name  (default prod)
+set -euo pipefail
+
+REGION="${AWS_REGION:-ap-south-1}"
+ENVIRONMENT="${BRSRLENS_ENV:-prod}"
+PROJECT="brsrlens"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+die() { printf 'error: %s\n' "$*" >&2; exit 1; }
+info() { printf '\033[36m==>\033[0m %s\n' "$*"; }
+
+command -v aws >/dev/null || die "the AWS CLI is required"
+command -v jq  >/dev/null || die "jq is required"
+
+resolve_instance() {
+  if [[ -n "${BRSRLENS_INSTANCE_ID:-}" ]]; then
+    echo "$BRSRLENS_INSTANCE_ID"
+    return
+  fi
+  # Fall back to the tags Terraform sets, so the CLI works without extra setup.
+  local id
+  id="$(aws ec2 describe-instances --region "$REGION" \
+    --filters "Name=tag:Name,Values=${PROJECT}-${ENVIRONMENT}-app" \
+              "Name=instance-state-name,Values=running" \
+    --query 'Reservations[0].Instances[0].InstanceId' --output text 2>/dev/null || echo "None")"
+  [[ "$id" != "None" && -n "$id" ]] || die "no running app node found. Set BRSRLENS_INSTANCE_ID (terraform output app_instance_id)."
+  echo "$id"
+}
+
+# Sends a command and streams the result. SSM has no interactive stream, so this
+# polls to completion and then prints stdout and stderr in full.
+remote() {
+  local instance script command_id status
+  instance="$(resolve_instance)"
+  script="$1"
+
+  command_id="$(aws ssm send-command \
+    --region "$REGION" \
+    --instance-ids "$instance" \
+    --document-name AWS-RunShellScript \
+    --comment "brsrlens-prod ${2:-command}" \
+    --timeout-seconds 3600 \
+    --parameters "commands=[$(jq -Rn --arg s "$script" '$s')],executionTimeout=[\"7200\"]" \
+    --query Command.CommandId --output text)"
+
+  info "ssm command ${command_id} on ${instance}"
+
+  # AWS-RunShellScript needs a moment before the invocation is queryable.
+  sleep 3
+  while true; do
+    status="$(aws ssm get-command-invocation --region "$REGION" \
+      --command-id "$command_id" --instance-id "$instance" \
+      --query Status --output text 2>/dev/null || echo Pending)"
+    case "$status" in
+      Success|Failed|Cancelled|TimedOut) break ;;
+      *) sleep 4 ;;
+    esac
+  done
+
+  local out err
+  out="$(aws ssm get-command-invocation --region "$REGION" \
+    --command-id "$command_id" --instance-id "$instance" \
+    --query StandardOutputContent --output text)"
+  err="$(aws ssm get-command-invocation --region "$REGION" \
+    --command-id "$command_id" --instance-id "$instance" \
+    --query StandardErrorContent --output text)"
+
+  [[ -n "$out" && "$out" != "None" ]] && printf '%s\n' "$out"
+  [[ -n "$err" && "$err" != "None" ]] && printf '%s\n' "$err" >&2
+
+  if [[ "$status" != "Success" ]]; then
+    # SSM truncates captured output at 24 KB. Long ingests and deploys keep the
+    # full transcript on the node and in CloudWatch.
+    die "remote command ${status}. Full transcript: brsrlens-prod run 'tail -100 /opt/brsrlens/log/deploy.log'"
+  fi
+}
+
+artifacts_bucket() {
+  aws ssm get-parameter --region "$REGION" \
+    --name "/${PROJECT}/${ENVIRONMENT}/env/ARTIFACTS_BUCKET" \
+    --query Parameter.Value --output text
+}
+
+registry() {
+  local account
+  account="$(aws sts get-caller-identity --query Account --output text)"
+  echo "${account}.dkr.ecr.${REGION}.amazonaws.com"
+}
+
+CMD="${1:-help}"
+shift || true
+
+case "$CMD" in
+
+  push-ops)
+    # The node pulls its operator scripts from S3 rather than having them baked
+    # into the AMI, so a fix to deploy.sh does not require rebuilding a node.
+    BUCKET="$(artifacts_bucket)"
+    info "publishing operator scripts to s3://${BUCKET}/ops/"
+    aws s3 sync "${REPO_ROOT}/infra/deploy/" "s3://${BUCKET}/ops/" \
+      --region "$REGION" --delete --sse AES256 \
+      --exclude '*.Dockerfile' --exclude 'nginx/*'
+    remote 'brsrlens-sync-ops' "push-ops"
+    ;;
+
+  build)
+    TAG="${1:-sha-$(git -C "$REPO_ROOT" rev-parse --short HEAD)}"
+    REG="$(registry)"
+    DOMAIN="$(aws ssm get-parameter --region "$REGION" \
+      --name "/${PROJECT}/${ENVIRONMENT}/env/FRONTEND_URL" \
+      --query Parameter.Value --output text)"
+
+    info "building ${TAG} for ${DOMAIN}"
+    aws ecr get-login-password --region "$REGION" \
+      | docker login --username AWS --password-stdin "$REG"
+
+    docker build --platform linux/amd64 \
+      -f "${REPO_ROOT}/infra/deploy/api.Dockerfile" \
+      -t "${REG}/${PROJECT}/api:${TAG}" "$REPO_ROOT"
+
+    docker build --platform linux/amd64 \
+      -f "${REPO_ROOT}/infra/deploy/web.Dockerfile" \
+      --build-arg "VITE_API_URL=${DOMAIN}" \
+      -t "${REG}/${PROJECT}/web:${TAG}" "$REPO_ROOT"
+
+    docker push "${REG}/${PROJECT}/api:${TAG}"
+    docker push "${REG}/${PROJECT}/web:${TAG}"
+    info "pushed ${TAG}. Deploy with: brsrlens-prod deploy ${TAG}"
+    ;;
+
+  deploy)
+    TAG="${1:?usage: brsrlens-prod deploy <tag>}"
+    remote "/opt/brsrlens/bin/deploy.sh '${TAG}'" "deploy ${TAG}"
+    ;;
+
+  rollback)
+    remote "/opt/brsrlens/bin/rollback.sh ${1:-} 'operator requested'" "rollback"
+    ;;
+
+  smoke)
+    remote "/opt/brsrlens/bin/smoke.sh" "smoke"
+    ;;
+
+  status)
+    remote 'source /opt/brsrlens/env/node.env
+echo "release: $(aws ssm get-parameter --name "${SSM_PREFIX}/release/current" --query Parameter.Value --output text) (previous: $(aws ssm get-parameter --name "${SSM_PREFIX}/release/prev" --query Parameter.Value --output text))"
+echo
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps
+echo
+df -h /opt/brsrlens/data | tail -1
+echo
+/opt/brsrlens/bin/ingest.sh status' "status"
+    ;;
+
+  ingest)
+    SUB="${1:?usage: brsrlens-prod ingest {status|initial|next|refresh|publish} [args]}"
+    shift || true
+    remote "/opt/brsrlens/bin/ingest.sh ${SUB} $*" "ingest ${SUB}"
+    ;;
+
+  backup)
+    remote "/opt/brsrlens/bin/backup.sh '${1:-manual}'" "backup"
+    ;;
+
+  restore)
+    if [[ "${1:-list}" == "list" ]]; then
+      remote "/opt/brsrlens/bin/restore.sh list" "restore list"
+    else
+      # restore.sh prompts for confirmation, which SSM cannot provide.
+      die "restore is interactive by design. Open a shell and run it there:
+  brsrlens-prod shell
+  sudo /opt/brsrlens/bin/restore.sh $1"
+    fi
+    ;;
+
+  cert)
+    remote "/opt/brsrlens/bin/renew-cert.sh ${1:-renew}" "cert ${1:-renew}"
+    ;;
+
+  logs)
+    SERVICE="${1:-api}"
+    LINES="${2:-200}"
+    remote "source /opt/brsrlens/env/node.env
+docker compose -f \"\$COMPOSE_FILE\" --env-file \"\$ENV_FILE\" logs --tail=${LINES} --no-color ${SERVICE}" "logs ${SERVICE}"
+    ;;
+
+  psql)
+    SQL="${1:?usage: brsrlens-prod psql \"<sql>\"}"
+    # Wrapped in a read-only transaction: an ops query should never be able to
+    # write to the corpus by accident.
+    remote "source /opt/brsrlens/env/node.env
+docker compose -f \"\$COMPOSE_FILE\" --env-file \"\$ENV_FILE\" exec -T postgres \\
+  psql -U \"\${POSTGRES_USER:-brsrlens}\" -d \"\${POSTGRES_DB:-brsrlens}\" \\
+  -c 'begin read only;' -c \"${SQL//\"/\\\"}\"" "psql"
+    ;;
+
+  shell)
+    INSTANCE="$(resolve_instance)"
+    info "opening a Session Manager shell on ${INSTANCE}"
+    exec aws ssm start-session --region "$REGION" --target "$INSTANCE"
+    ;;
+
+  run)
+    remote "${1:?usage: brsrlens-prod run \"<command>\"}" "run"
+    ;;
+
+  help|--help|-h)
+    sed -n '2,45p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    ;;
+
+  *)
+    die "unknown command '${CMD}'. Try: brsrlens-prod help"
+    ;;
+esac
