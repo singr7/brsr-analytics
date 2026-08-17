@@ -1,0 +1,175 @@
+# Production stack for the single app node.
+#
+# Differences from docker-compose.yml that matter:
+#   * no source bind mounts - code comes from the image, so a deploy is an image
+#     swap and the running tree cannot drift from the release tag;
+#   * no mailhog, no dev reload, no exposed frontend dev server;
+#   * explicit memory limits implementing the t3.large split in DEPLOYMENT.md
+#     section 1 (PG 2.5g / api 1.5g / worker 2g / redis+web 0.5g);
+#   * state on the mounted data volume, not in named docker volumes.
+#
+# Required variables come from /opt/brsrlens/env/.env, rendered from Parameter
+# Store by render-env.sh, plus REGISTRY and RELEASE_TAG written by deploy.sh.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-app-image: &app-image
+  image: ${REGISTRY}/brsrlens/api:${RELEASE_TAG}
+  env_file: /opt/brsrlens/env/.env
+  restart: unless-stopped
+  logging: *logging
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  volumes:
+    - /opt/brsrlens/data/objects:/app/.data
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-brsrlens}
+      POSTGRES_USER: ${POSTGRES_USER:-brsrlens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /opt/brsrlens/data/postgres:/var/lib/postgresql/data
+    # Reachable from the batch node only: the security group has no rule for
+    # 5432 from anywhere else, and the node has no public Postgres ingress.
+    ports:
+      - "5432:5432"
+    mem_limit: 2500m
+    shm_size: 512m
+    command:
+      - postgres
+      - -c
+      - shared_buffers=768MB
+      - -c
+      - effective_cache_size=2GB
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=256MB
+      - -c
+      - max_connections=100
+      - -c
+      - log_min_duration_statement=2000
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    logging: *logging
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - /opt/brsrlens/data/redis:/data
+    ports:
+      - "6379:6379"
+    mem_limit: 320m
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  api:
+    <<: *app-image
+    command:
+      - uvicorn
+      - api.app.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --workers
+      - "2"
+      - --proxy-headers
+      - --forwarded-allow-ips
+      - "*"
+    mem_limit: 1536m
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz', timeout=5).status == 200 else 1)\""]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 40s
+
+  # Interactive queues only. Long extraction and corpus batches run on the batch
+  # node or off-hours; running them here starves the public site of memory.
+  worker:
+    <<: *app-image
+    command:
+      - celery
+      - -A
+      - worker.celery_app:celery_app
+      - worker
+      - --loglevel=INFO
+      - --concurrency=2
+      - --max-tasks-per-child=200
+    mem_limit: 2048m
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A worker.celery_app:celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+      start_period: 60s
+
+  scheduler:
+    <<: *app-image
+    command:
+      - celery
+      - -A
+      - worker.celery_app:celery_app
+      - beat
+      - --loglevel=INFO
+      - --schedule=/app/.data/celerybeat-schedule
+    mem_limit: 384m
+
+  web:
+    image: ${REGISTRY}/brsrlens/web:${RELEASE_TAG}
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      # Selects the certificate paths and server_name in the nginx template, and
+      # lets the entrypoint drop in a self-signed placeholder on a first boot.
+      DOMAIN_NAME: ${DOMAIN_NAME:?DOMAIN_NAME must be set}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Read-write: the entrypoint writes a placeholder certificate when none
+      # exists yet, and certbot renews into the same tree.
+      - /opt/brsrlens/tls:/etc/letsencrypt
+      - /opt/brsrlens/data/acme:/var/www/certbot
+      - /opt/brsrlens/nginx:/etc/nginx/extra:ro
+    mem_limit: 256m
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/nginx-health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # Run on demand, never at boot:
+  #   docker compose -f compose.prod.yml --profile certbot run --rm certbot ...
+  certbot:
+    image: certbot/certbot:latest
+    profiles: ["certbot"]
+    volumes:
+      - /opt/brsrlens/tls:/etc/letsencrypt
+      - /opt/brsrlens/data/acme:/var/www/certbot
+    entrypoint: ["certbot"]

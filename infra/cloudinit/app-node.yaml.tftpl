@@ -1,0 +1,194 @@
+#cloud-config
+# BRSR Lens node bootstrap.
+#
+# This file provisions the machine, not the application. It installs the runtime,
+# mounts the data volume, and installs the systemd unit. Application code,
+# configuration and secrets arrive later: images from ECR, operator scripts from
+# the artifacts bucket, and the .env rendered from Parameter Store at each start.
+#
+# Terraform renders this template, so shell variables are escaped as $${VAR}.
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - docker
+  - jq
+  - git
+  - amazon-cloudwatch-agent
+  - dnf-automatic
+  - postgresql16
+
+write_files:
+  # Node identity and estate wiring. Every operator script sources this.
+  - path: /opt/brsrlens/env/node.env
+    permissions: "0644"
+    content: |
+      PROJECT=${project}
+      ENVIRONMENT=${environment}
+      AWS_REGION=${aws_region}
+      AWS_DEFAULT_REGION=${aws_region}
+      SSM_PREFIX=${ssm_prefix}
+      ACCOUNT_ID=${account_id}
+      REGISTRY=${account_id}.dkr.ecr.${aws_region}.amazonaws.com
+      DOMAIN_NAME=${domain_name}
+      ALERTS_TOPIC_ARN=${alerts_topic}
+      BACKUPS_BUCKET=${backups_bucket}
+      APP_DIR=/opt/brsrlens
+      DATA_DIR=/opt/brsrlens/data
+      COMPOSE_FILE=/opt/brsrlens/bin/compose.prod.yml
+      ENV_FILE=/opt/brsrlens/env/.env
+
+  # Pulls the versioned operator scripts published by `brsrlens-prod push-ops`.
+  # Keeping them in S3 rather than baking them into this template means the
+  # deploy flow can be fixed without rebuilding the node.
+  - path: /usr/local/bin/brsrlens-sync-ops
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      source /opt/brsrlens/env/node.env
+      ARTIFACTS=$(aws ssm get-parameter --name "$${SSM_PREFIX}/env/ARTIFACTS_BUCKET" \
+        --query Parameter.Value --output text)
+      aws s3 sync "s3://$${ARTIFACTS}/ops/" /opt/brsrlens/bin/ --delete --only-show-errors
+      chmod +x /opt/brsrlens/bin/*.sh 2>/dev/null || true
+      echo "ops scripts synced from s3://$${ARTIFACTS}/ops/"
+
+  - path: /etc/systemd/system/brsrlens.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=BRSR Lens application stack
+      Requires=docker.service
+      After=docker.service network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      WorkingDirectory=/opt/brsrlens
+      EnvironmentFile=/opt/brsrlens/env/node.env
+      # Configuration is re-rendered from Parameter Store on every start, so a
+      # rotated secret takes effect on restart and never lives in an image.
+      ExecStartPre=/opt/brsrlens/bin/render-env.sh
+      ExecStart=/usr/bin/docker compose -f $${COMPOSE_FILE} --env-file $${ENV_FILE} up -d --remove-orphans
+      ExecStop=/usr/bin/docker compose -f $${COMPOSE_FILE} --env-file $${ENV_FILE} down
+      TimeoutStartSec=600
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /opt/aws/amazon-cloudwatch-agent/etc/brsrlens.json
+    permissions: "0644"
+    content: |
+      {
+        "agent": { "metrics_collection_interval": 60, "region": "${aws_region}" },
+        "metrics": {
+          "append_dimensions": { "InstanceId": "$${aws:InstanceId}" },
+          "metrics_collected": {
+            "mem": { "measurement": ["mem_used_percent"] },
+            "disk": {
+              "measurement": ["disk_used_percent"],
+              "resources": ["/", "/opt/brsrlens/data"]
+            }
+          }
+        },
+        "logs": {
+          "logs_collected": {
+            "files": {
+              "collect_list": [
+                {
+                  "file_path": "/opt/brsrlens/log/deploy.log",
+                  "log_group_name": "/${project}/${environment}/app",
+                  "log_stream_name": "deploy"
+                },
+                {
+                  "file_path": "/opt/brsrlens/log/ingest.log",
+                  "log_group_name": "/${project}/${environment}/app",
+                  "log_stream_name": "ingest"
+                }
+              ]
+            }
+          }
+        }
+      }
+
+  # Security patches apply themselves; feature upgrades stay an operator decision.
+  - path: /etc/dnf/automatic.conf
+    permissions: "0644"
+    content: |
+      [commands]
+      upgrade_type = security
+      random_sleep = 3600
+      network_online_timeout = 60
+      download_updates = yes
+      apply_updates = yes
+      reboot = never
+
+      [emitters]
+      emit_via = stdio
+
+  # Nightly database backup and a weekly certificate renewal check.
+  - path: /etc/cron.d/brsrlens
+    permissions: "0644"
+    content: |
+      SHELL=/bin/bash
+      PATH=/usr/local/bin:/usr/bin:/bin
+      30 19 * * * root /opt/brsrlens/bin/backup.sh >> /opt/brsrlens/log/backup.log 2>&1
+      15 3 * * 1 root /opt/brsrlens/bin/renew-cert.sh >> /opt/brsrlens/log/cert.log 2>&1
+
+runcmd:
+  - set -euxo pipefail
+
+  # --- data volume -------------------------------------------------------
+  # The corpus, the object store and Postgres live on a volume with
+  # prevent_destroy set, so rebuilding the node does not destroy the database.
+  - |
+    DEVICE=""
+    for candidate in ${data_device} /dev/nvme1n1 /dev/xvdf; do
+      if [ -b "$candidate" ]; then DEVICE="$candidate"; break; fi
+    done
+    if [ -z "$DEVICE" ]; then
+      echo "data volume not attached yet; systemd unit stays disabled" >&2
+      exit 0
+    fi
+    if ! blkid "$DEVICE" >/dev/null 2>&1; then
+      mkfs -t xfs "$DEVICE"
+    fi
+    mkdir -p /opt/brsrlens/data
+    UUID=$(blkid -s UUID -o value "$DEVICE")
+    grep -q "$UUID" /etc/fstab || \
+      echo "UUID=$UUID /opt/brsrlens/data xfs defaults,nofail 0 2" >> /etc/fstab
+    mount -a
+
+  - mkdir -p /opt/brsrlens/{bin,env,log,data,tls}
+  - mkdir -p /opt/brsrlens/data/{postgres,objects,redis,acme}
+  - chmod 750 /opt/brsrlens/env
+
+  # --- container runtime -------------------------------------------------
+  - systemctl enable --now docker
+  - |
+    ARCH=$(uname -m)
+    case "$ARCH" in
+      x86_64) COMPOSE_ARCH=x86_64 ;;
+      aarch64) COMPOSE_ARCH=aarch64 ;;
+      *) echo "unsupported architecture $ARCH" >&2; exit 1 ;;
+    esac
+    mkdir -p /usr/local/lib/docker/cli-plugins
+    curl -fsSL "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-$${COMPOSE_ARCH}" \
+      -o /usr/local/lib/docker/cli-plugins/docker-compose
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+    docker compose version
+
+  # --- observability and patching ---------------------------------------
+  - /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/brsrlens.json
+  - systemctl enable --now dnf-automatic.timer
+
+  # --- operator scripts --------------------------------------------------
+  # Best effort: the artifacts bucket is empty until the first `push-ops`, and a
+  # fresh node must not fail its boot because a deploy has not happened yet.
+  - /usr/local/bin/brsrlens-sync-ops || echo "ops bundle not published yet"
+  - systemctl daemon-reload
+  - systemctl enable brsrlens.service
+
+final_message: "BRSR Lens node ready after $UPTIME seconds. Publish the ops bundle and deploy."

@@ -1,0 +1,154 @@
+# Rendered by the nginx image's envsubst hook. Only real environment variable
+# names are substituted, so nginx's own $host / $uri / $remote_addr survive.
+
+# --- rate limit zones -------------------------------------------------------
+# Public browsing is generous; the two expensive paths are metered separately so
+# a burst of NLQ or uploads cannot starve the dashboards.
+limit_req_zone $binary_remote_addr zone=public:10m  rate=120r/m;
+limit_req_zone $binary_remote_addr zone=nlq:10m     rate=20r/m;
+limit_req_zone $binary_remote_addr zone=uploads:10m rate=30r/m;
+limit_req_status 429;
+limit_conn_zone $binary_remote_addr zone=perip:10m;
+
+# Trust the proxy chain for a single hop only.
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  ''      close;
+}
+
+upstream api_upstream {
+  server api:8000 max_fails=3 fail_timeout=15s;
+  keepalive 32;
+}
+
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+  server_name ${DOMAIN_NAME};
+
+  # Certbot webroot. Must stay reachable over plain HTTP for renewals.
+  location ^~ /.well-known/acme-challenge/ {
+    root /var/www/certbot;
+    default_type "text/plain";
+    try_files $uri =404;
+  }
+
+  location = /nginx-health {
+    access_log off;
+    return 200 "ok\n";
+  }
+
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
+
+server {
+  listen 443 ssl default_server;
+  listen [::]:443 ssl default_server;
+  http2 on;
+  server_name ${DOMAIN_NAME};
+
+  ssl_certificate     /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
+
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers off;
+  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+  ssl_session_cache shared:SSL:10m;
+  ssl_session_timeout 1d;
+  ssl_session_tickets off;
+  ssl_stapling on;
+  ssl_stapling_verify on;
+  resolver 169.254.169.253 valid=300s;
+  resolver_timeout 5s;
+
+  include /etc/nginx/security-headers.conf;
+
+  server_tokens off;
+  limit_conn perip 40;
+
+  gzip on;
+  gzip_vary on;
+  gzip_min_length 1024;
+  gzip_proxied any;
+  gzip_types text/plain text/css text/javascript application/javascript application/json application/xml image/svg+xml;
+
+  # Analysis and Studio uploads. Application-level caps remain the real limit
+  # (MANUAL_UPLOAD_MAX_BYTES, STUDIO_DOCUMENT_MAX_BYTES); this stops an
+  # oversized body reaching the app at all.
+  client_max_body_size 100m;
+  client_body_timeout 120s;
+
+  location ^~ /.well-known/acme-challenge/ {
+    root /var/www/certbot;
+    default_type "text/plain";
+    try_files $uri =404;
+  }
+
+  location = /nginx-health {
+    access_log off;
+    return 200 "ok\n";
+  }
+
+  # --- API ------------------------------------------------------------------
+  location /healthz {
+    proxy_pass http://api_upstream;
+    include /etc/nginx/proxy-common.conf;
+    access_log off;
+  }
+
+  # Natural-language querying calls the LLM provider: slow, metered, and the
+  # easiest way to run up a bill, so it gets its own zone and timeout.
+  location /api/nlq {
+    limit_req zone=nlq burst=10 nodelay;
+    proxy_pass http://api_upstream;
+    include /etc/nginx/proxy-common.conf;
+    proxy_read_timeout 120s;
+  }
+
+  location ~ ^/api/(studio|analysis)/ {
+    limit_req zone=uploads burst=20 nodelay;
+    proxy_pass http://api_upstream;
+    include /etc/nginx/proxy-common.conf;
+    proxy_read_timeout 300s;
+    proxy_request_buffering off;
+  }
+
+  # Public product, private cockpit: role checks in the app, network allowlist
+  # here. The included file is rendered from ADMIN_ALLOW_CIDRS.
+  location /api/admin/ {
+    include /etc/nginx/extra/admin-allowlist.conf;
+    deny all;
+
+    limit_req zone=public burst=40 nodelay;
+    proxy_pass http://api_upstream;
+    include /etc/nginx/proxy-common.conf;
+  }
+
+  location /api/ {
+    limit_req zone=public burst=60 nodelay;
+    proxy_pass http://api_upstream;
+    include /etc/nginx/proxy-common.conf;
+  }
+
+  # --- static bundle --------------------------------------------------------
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # Vite emits content-hashed asset names, so these are safe to pin.
+  location /assets/ {
+    include /etc/nginx/security-headers.conf;
+    expires 1y;
+    add_header Cache-Control "public, immutable" always;
+    try_files $uri =404;
+  }
+
+  # Prerendered public routes are real directories; everything else falls back
+  # to the SPA shell so client-side routes reload correctly.
+  location / {
+    include /etc/nginx/security-headers.conf;
+    add_header Cache-Control "no-cache" always;
+    try_files $uri $uri/index.html /index.html;
+  }
+}
