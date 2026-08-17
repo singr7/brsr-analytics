@@ -1,0 +1,35 @@
+# Copy to terraform.tfvars and fill in. Only the first three have no default.
+
+# The public hostname. Certbot issues the certificate for exactly this name.
+domain_name = "brsrlens.example.com"
+
+# Receives CloudWatch alarms, budget notices and the dead-man backup alarm.
+# Confirm the SNS subscription email after the first apply or nothing arrives.
+alert_email = "ops@example.com"
+
+# Required when create_dns_record is true (the default). Set create_dns_record
+# to false to manage DNS elsewhere and point the record at the elastic_ip output.
+route53_zone_id = "Z0123456789ABCDEFGHIJ"
+
+# --- optional ---------------------------------------------------------------
+
+# aws_region  = "ap-south-1"    # Mumbai keeps Indian filings in-country
+# environment = "prod"          # use "sandbox" in a separate account for drills
+
+# t3.large for beta; t3.xlarge at launch per DEPLOYMENT.md section 1.
+# app_instance_type = "t3.large"
+
+# Data volume holding Postgres, the object store and raw filings.
+# app_root_volume_gb = 100
+
+# Turn on for a corpus run or an annual reprocess, then turn it off again.
+# enable_batch_node   = false
+# batch_instance_type = "c6i.xlarge"
+
+# Normal access is SSM Session Manager, which needs no inbound rule at all.
+# Populate only during a break-glass incident, and empty it again afterwards.
+# break_glass_ssh_cidrs = []
+
+# monthly_budget_usd         = 300
+# backup_retention_days      = 30
+# filings_ia_transition_days = 90

@@ -1,0 +1,16 @@
+# Remote state. Copy to backend.tf and fill in the bucket and table created by
+# the bootstrap step in docs/operations/PRODUCTION_DEPLOYMENT.md.
+#
+# State is kept remote and locked because more than one operator will run this,
+# and a lost or concurrently-written state file is how an estate ends up with
+# orphaned resources nobody can destroy.
+
+terraform {
+  backend "s3" {
+    bucket         = "brsrlens-tfstate-<account-id>"
+    key            = "prod/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "brsrlens-tfstate-lock"
+    encrypt        = true
+  }
+}
