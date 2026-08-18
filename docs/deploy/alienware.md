@@ -3,6 +3,30 @@
 CPU only. No GPU, no app-code change. omen terminates TLS; alienware serves
 plain HTTP on **18080** and publishes nothing else to the host.
 
+## 0. The four addresses
+
+Four different addresses are involved and they are not interchangeable. Collect
+them first; every later step just substitutes from this table.
+
+| Placeholder | Which address | How to find it |
+|---|---|---|
+| `OMEN_LAN_IP` | omen's address **as alienware sees it** — private, not the static public one | on omen: `ip route get <ALIENWARE_LAN_IP>` → the `src` field |
+| `ALIENWARE_LAN_IP` | alienware's address on the omen↔alienware link | on alienware: `ip route get <OMEN_LAN_IP>` → the `src` field |
+| `OMEN_PUBLIC_IP` | omen's static public IP | your ISP/hosting record; `curl -s ifconfig.me` on omen |
+| `YOUR_PUBLIC_IP` | the public IP **you browse from** — the admin allowlist matches this | from your laptop: `curl -s ifconfig.me` |
+
+`ip route get` is the reliable answer for the first two: it reports the source
+address the kernel will actually use for that peer. `hostname -I` lists every
+interface (docker0, bridges, VPNs) with no indication of which one carries this
+traffic, so its first entry is only sometimes right.
+
+Used where:
+
+* `OMEN_LAN_IP` → `TRUSTED_PROXY_CIDR` in alienware's `.env.prod`
+* `ALIENWARE_LAN_IP` → `ALIENWARE_IP` in omen's vhost, and the ufw rule
+* `OMEN_PUBLIC_IP` → the Cloudflare A record
+* `YOUR_PUBLIC_IP` → `admin-allowlist.conf` on alienware
+
 ## 1. Alienware: prepare
 
 ```bash
@@ -40,7 +64,7 @@ Also set, for compose itself (same file):
 
 ```
 DOMAIN_NAME=brsr-analytics.radpretation.ai
-TRUSTED_PROXY_CIDR=<OMEN_IP>/32
+TRUSTED_PROXY_CIDR=<OMEN_LAN_IP>/32
 EDGE_PORT=18080
 DATA_ROOT=/srv/brsr-analytics/data
 ENV_FILE=/srv/brsr-analytics/app/.env.prod
@@ -63,7 +87,7 @@ curl -s localhost:18080/healthz             # expect status: ok
 Firewall: only omen needs the port.
 
 ```bash
-sudo ufw allow from <OMEN_IP> to any port 18080 proto tcp
+sudo ufw allow from <OMEN_LAN_IP> to any port 18080 proto tcp
 ```
 
 ## 3. Omen: nginx
@@ -71,7 +95,7 @@ sudo ufw allow from <OMEN_IP> to any port 18080 proto tcp
 ```bash
 sudo cp <repo>/infra/deploy/nginx/omen-brsr-analytics.conf \
         /etc/nginx/sites-available/brsr-analytics.radpretation.ai
-sudo sed -i 's/ALIENWARE_IP/<alienware ip>/' \
+sudo sed -i 's/ALIENWARE_IP/<ALIENWARE_LAN_IP>/' \
         /etc/nginx/sites-available/brsr-analytics.radpretation.ai
 # fix the ssl_certificate paths to the shared cert, then:
 sudo ln -s /etc/nginx/sites-available/brsr-analytics.radpretation.ai \
@@ -84,7 +108,7 @@ already sends them and nginx would emit duplicates.
 
 ## 4. Cloudflare
 
-Add `brsr-analytics` → omen's public IP (A record, proxied). SSL mode **Full
+Add `brsr-analytics` → `OMEN_PUBLIC_IP` (A record, proxied). SSL mode **Full
 (strict)** if the shared cert is a Cloudflare Origin cert or a public cert for
 `*.radpretation.ai`.
 
