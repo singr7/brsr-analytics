@@ -18,17 +18,40 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.add_column("orgs", sa.Column("seat_limit", sa.Integer(), nullable=False, server_default="1"))
-    for name in ("licence_starts_at", "licence_expires_at", "licence_grace_until"):
-        op.add_column("orgs", sa.Column(name, sa.DateTime(timezone=True), nullable=True))
-    op.add_column(
-        "api_keys",
-        sa.Column(
-            "scopes_json", sa.dialects.postgresql.JSONB(), nullable=False, server_default="[]"
-        ),
-    )
-    op.add_column("api_keys", sa.Column("last_used_at", sa.DateTime(timezone=True), nullable=True))
-    Base.metadata.create_all(bind=op.get_bind(), checkfirst=True)
+    # See 0006: 0001 builds the full model schema, so these may already exist.
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    additions = {
+        "orgs": {
+            "seat_limit": sa.Column("seat_limit", sa.Integer(), nullable=False, server_default="1"),
+            "licence_starts_at": sa.Column(
+                "licence_starts_at", sa.DateTime(timezone=True), nullable=True
+            ),
+            "licence_expires_at": sa.Column(
+                "licence_expires_at", sa.DateTime(timezone=True), nullable=True
+            ),
+            "licence_grace_until": sa.Column(
+                "licence_grace_until", sa.DateTime(timezone=True), nullable=True
+            ),
+        },
+        "api_keys": {
+            "scopes_json": sa.Column(
+                "scopes_json",
+                sa.dialects.postgresql.JSONB(),
+                nullable=False,
+                server_default="[]",
+            ),
+            "last_used_at": sa.Column("last_used_at", sa.DateTime(timezone=True), nullable=True),
+        },
+    }
+    for table, columns in additions.items():
+        if not inspector.has_table(table):
+            continue
+        existing = {column["name"] for column in inspector.get_columns(table)}
+        for name, column in columns.items():
+            if name not in existing:
+                op.add_column(table, column)
+    Base.metadata.create_all(bind=bind, checkfirst=True)
 
 
 def downgrade() -> None:

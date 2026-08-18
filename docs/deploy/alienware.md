@@ -10,9 +10,11 @@ sudo mkdir -p /srv/brsr-analytics/data/{postgres,redis,objects,nginx-extra}
 sudo chown -R 10001:10001 /srv/brsr-analytics/data/objects
 
 # nginx refuses to start without this include (it gates /api/admin/).
+# These are matched against the *visitor's public IP*, which omen forwards from
+# Cloudflare - not against LAN addresses. Use your office/home public IP.
 sudo tee /srv/brsr-analytics/data/nginx-extra/admin-allowlist.conf >/dev/null <<'ACL'
 allow 127.0.0.1;
-allow <YOUR_LAN_CIDR>;      # e.g. 192.168.1.0/24
+allow <YOUR_PUBLIC_IP>/32;
 ACL
 
 git clone <repo> /srv/brsr-analytics/app && cd /srv/brsr-analytics/app
@@ -85,6 +87,9 @@ already sends them and nginx would emit duplicates.
 Add `brsr-analytics` → omen's public IP (A record, proxied). SSL mode **Full
 (strict)** if the shared cert is a Cloudflare Origin cert or a public cert for
 `*.radpretation.ai`.
+
+Cloudflare caps request bodies at 100 MB on Free/Pro, matching the 100m limit on
+both proxies. The app's own caps are lower (50 MB filings, 25 MB Studio docs).
 
 ## 5. Operate
 

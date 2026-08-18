@@ -18,10 +18,10 @@ x-logging: &logging
     max-file: "5"
 
 x-app-image: &app-image
+  # The build is declared once, on `api`. Naming the same build in all three
+  # services makes buildx export the same tag three times in parallel, which
+  # fails with "image already exists"; worker and scheduler just reuse the tag.
   image: brsrlens/api:local
-  build:
-    context: ../..
-    dockerfile: infra/deploy/api.Dockerfile
   env_file: ${ENV_FILE:-../../.env.prod}
   restart: unless-stopped
   logging: *logging
@@ -85,6 +85,9 @@ services:
 
   api:
     <<: *app-image
+    build:
+      context: ../..
+      dockerfile: infra/deploy/api.Dockerfile
     command:
       - uvicorn
       - api.app.main:app

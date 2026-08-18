@@ -23,20 +23,33 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.add_column("xbrl_facts", sa.Column("decimals", sa.Integer(), nullable=True))
-    op.add_column(
-        "metrics",
-        sa.Column(
-            "contributing_pin_ids",
-            postgresql.JSONB(),
-            nullable=False,
-            server_default="[]",
-        ),
-    )
-    op.execute(
-        "UPDATE metrics SET contributing_pin_ids = "
-        "jsonb_build_array(field_version_pin_id::text)"
-    )
+    # 0001 creates every table from the model metadata, so on a database built
+    # from scratch these columns already exist. Guard them the way 0002-0004 do,
+    # so the chain replays on an empty database as well as on an S01-era one.
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+
+    if "decimals" not in {column["name"] for column in inspector.get_columns("xbrl_facts")}:
+        op.add_column("xbrl_facts", sa.Column("decimals", sa.Integer(), nullable=True))
+
+    if "contributing_pin_ids" not in {
+        column["name"] for column in inspector.get_columns("metrics")
+    }:
+        op.add_column(
+            "metrics",
+            sa.Column(
+                "contributing_pin_ids",
+                postgresql.JSONB(),
+                nullable=False,
+                server_default="[]",
+            ),
+        )
+        # Backfill only alongside the column that needs it: a database that
+        # already has it has already been backfilled, or was never populated.
+        op.execute(
+            "UPDATE metrics SET contributing_pin_ids = "
+            "jsonb_build_array(field_version_pin_id::text)"
+        )
 
 
 def downgrade() -> None:
