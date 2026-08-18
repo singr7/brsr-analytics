@@ -1,0 +1,169 @@
+# Stack for the alienware box: images built on the box, TLS terminated on omen.
+#
+# Differences from compose.prod.yml:
+#   * builds locally instead of pulling from ECR;
+#   * postgres and redis are NOT published to the host - nothing off-box talks
+#     to them, so there is no port to collide with anything else on alienware;
+#   * the web container serves plain HTTP on one host port (EDGE_PORT) and omen
+#     reverse-proxies to it; no certificates and no 80/443 binding here;
+#   * cpu limits alongside the memory limits, so the stack yields to the ML load.
+#
+# Usage:
+#   docker compose -f infra/deploy/compose.alienware.yml --env-file .env.prod up -d
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-app-image: &app-image
+  image: brsrlens/api:local
+  build:
+    context: ../..
+    dockerfile: infra/deploy/api.Dockerfile
+  env_file: ${ENV_FILE:-../../.env.prod}
+  restart: unless-stopped
+  logging: *logging
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  volumes:
+    - ${DATA_ROOT:-/srv/brsr-analytics/data}/objects:/app/.data
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-brsrlens}
+      POSTGRES_USER: ${POSTGRES_USER:-brsrlens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ${DATA_ROOT:-/srv/brsr-analytics/data}/postgres:/var/lib/postgresql/data
+    mem_limit: 2500m
+    cpus: 2.0
+    shm_size: 512m
+    command:
+      - postgres
+      - -c
+      - shared_buffers=768MB
+      - -c
+      - effective_cache_size=2GB
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=256MB
+      - -c
+      - max_connections=100
+      - -c
+      - log_min_duration_statement=2000
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    logging: *logging
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - ${DATA_ROOT:-/srv/brsr-analytics/data}/redis:/data
+    mem_limit: 320m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  api:
+    <<: *app-image
+    command:
+      - uvicorn
+      - api.app.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --workers
+      - "2"
+      - --proxy-headers
+      - --forwarded-allow-ips
+      - "*"
+    mem_limit: 1536m
+    cpus: 2.0
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS --max-time 5 http://localhost:8000/healthz >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 40s
+
+  worker:
+    <<: *app-image
+    command:
+      - celery
+      - -A
+      - worker.celery_app:celery_app
+      - worker
+      - --loglevel=INFO
+      - --concurrency=2
+      - --max-tasks-per-child=200
+    mem_limit: 2048m
+    cpus: 2.0
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A worker.celery_app:celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+      start_period: 60s
+
+  scheduler:
+    <<: *app-image
+    command:
+      - celery
+      - -A
+      - worker.celery_app:celery_app
+      - beat
+      - --loglevel=INFO
+      - --schedule=/app/.data/celerybeat-schedule
+    mem_limit: 384m
+    cpus: 0.5
+
+  web:
+    image: brsrlens/web:local
+    build:
+      context: ../..
+      dockerfile: infra/deploy/web.Dockerfile
+      args:
+        # Empty means same-origin: the bundle calls /api/... on whatever host
+        # served it, so the public URL can change without a rebuild.
+        VITE_API_URL: ""
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME:?DOMAIN_NAME must be set}
+      TRUSTED_PROXY_CIDR: ${TRUSTED_PROXY_CIDR:?TRUSTED_PROXY_CIDR must be set (omen's address)}
+    ports:
+      - "${EDGE_BIND:-0.0.0.0}:${EDGE_PORT:-18080}:8080"
+    volumes:
+      # Replaces the TLS-terminating template baked into the image.
+      - ./nginx/edge-http.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ${DATA_ROOT:-/srv/brsr-analytics/data}/nginx-extra:/etc/nginx/extra:ro
+    mem_limit: 256m
+    cpus: 1.0
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/nginx-health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5

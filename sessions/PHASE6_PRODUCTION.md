@@ -24,6 +24,46 @@
 
 ---
 
+## S24B — Object lifecycle: page-image reclamation
+
+**GOAL:** Give the object store a delete path and reclaim superseded parse artifacts, so the 1,000-filing corpus run does not accumulate orphaned page images. Must land before S25B.
+
+**READ:** HANDOFF, `api/app/services/storage.py`, `worker/parse/service.py:129-167`, `infra/terraform/storage.tf` (lifecycle rules), `infra/terraform/iam.tf` (`ReadWriteBuckets`).
+
+**WHY (analysis, 2026-08-17 — do not re-derive):**
+`parse_filing` renders every located BRSR page to a 150-DPI PNG and PUTs it under
+`pages/{filing_id}/v{parse_version}/`. On re-parse it deletes the `FilingPage` rows but the
+previous version's PNGs stay in S3 forever: `ObjectStore` exposes only `put` and `get`, with no
+delete anywhere in the codebase. At 1,000 filings and ~60 BRSR pages each that is ~60,000 objects
+and ~18 GB per parse version, permanently orphaned on every sweep — roughly $0.45/month added per
+sweep and never reclaimed, plus $0.30 in PUTs and $0.60 in lifecycle transitions per sweep.
+
+Re-parse is the trigger, and it is not rare. Extraction does **not** read the raw object
+(`run_extraction` reads `FilingPage.text` from Postgres), so prompt tuning costs nothing here. What
+forces a re-parse: `locate_brsr_sections` changes (it sets the section bounds, so a locator miss
+means those filings must be re-parsed — subsets weekly during pipeline work, full corpus 2–6 times
+this phase), `FieldDef.xbrl_concept` mapping changes for XBRL filings, `detect_table_regions`
+tuning, any DPI change, and DR when Postgres is restored older than the S3 objects.
+
+**Decided against:** a local read cache for raw filings. At 1,000 filings (~8 GB) a full-corpus
+re-parse reads ~$0.08 of S3 — GETs are $0.0004/1,000 and in-region transfer to EC2 is free — so six
+sweeps a year is under $0.50, while caching 8 GB on gp3 costs ~$8.75/year. The cache would cost
+more than the reads it eliminates, and the loop it would have accelerated does not touch S3.
+
+**TASKS**
+1. Extend the `ObjectStore` protocol with `delete(uri)` and `delete_prefix(prefix)`; implement on `LocalObjectStore` (same root-escape guard as `put`/`get`) and `S3ObjectStore` (SigV4 `DELETE`, plus `ListObjectsV2` paging for prefix deletes, batched via `POST ?delete` where it pays).
+2. Handle versioning honestly. The filings bucket has versioning enabled, so a plain `DeleteObject` writes a delete marker and the bytes stay billed until `noncurrent_version_expiration` (currently 90 days). Either delete by `versionId` — which needs `s3:DeleteObjectVersion` added to the `ReadWriteBuckets` statement, it is **not** granted today — or add a `pages/`-prefixed lifecycle rule with a short noncurrent expiration and expired-delete-marker cleanup. Record which and why.
+3. Call it on supersede: after `parse_filing` commits the new `parse_version`, delete the previous `pages/{filing_id}/v{n}/` prefix. Delete after commit, never before — a failed re-parse must not destroy the artifacts still referenced by live `FilingPage` rows.
+4. One-shot reclamation for what has already accumulated: an operator command in `ops/bin/brsrlens-prod` that lists `pages/` prefixes, diffs against the `parse_version` each `FilingPage` actually references, reports the reclaimable bytes, and deletes only on `--apply`. Dry-run by default.
+5. Split the lifecycle rules. `raw-filings-to-ia` uses `filter {}`, so it sweeps the page PNGs too, and STANDARD_IA bills a 128 KB minimum per object — most pages are smaller. Scope the IA transition to `raw/` and give `pages/` its own rule. Note the IA 30-day minimum-duration charge when deleting transitioned objects early.
+6. Tests: prefix delete removes only the target version; root-escape rejection on both stores; supersede leaves the current version's images intact and reachable via `trust.py`/`quality.py` image URLs; a failed re-parse deletes nothing; reclamation dry-run reports without deleting.
+
+**SELF-CHECK:** re-parse of a fixture filing leaves exactly one `pages/` version in the store · no orphan bytes after two consecutive re-parses (measure, don't assume) · delete-by-version or lifecycle path verified against a versioned bucket, with reclamation confirmed rather than delete-markered · reclamation command dry-run matches the DB-referenced set · `s3_image` URLs still resolve for every live page after reclamation · IAM change applied with an empty plan after apply · `make verify` green.
+**COMMITS:** `feat(storage): delete path for superseded parse artifacts [S24B]`, `infra(tf): page-image lifecycle and version-delete permission [S24B]`, `infra(ops): orphan reclamation command [S24B]`, close.
+**HANDOFF:** measured bytes reclaimed, per-sweep storage growth after the change, versioning decision and its reclamation lag, remaining prefixes with no delete path.
+
+---
+
 ## S25 — Corpus run, hardening, gates, and launch
 
 **GOAL:** The real 1,000-company corpus built under supervision; security/load hardening; editorial, legal, and UX gates signed; launch.
