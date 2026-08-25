@@ -92,12 +92,29 @@ sudo ufw allow from <OMEN_LAN_IP> to any port 18080 proto tcp
 
 ## 3. Omen: nginx
 
+The repository is not checked out on omen and does not need to be. Copy the
+vhost across from alienware, which has the clone:
+
 ```bash
-sudo cp <repo>/infra/deploy/nginx/omen-brsr-analytics.conf \
+# run on alienware
+scp /srv/brsr-analytics/app/infra/deploy/nginx/omen-brsr-analytics.conf \
+    <user>@<OMEN_LAN_IP>:/tmp/
+
+# run on omen
+sudo mv /tmp/omen-brsr-analytics.conf \
         /etc/nginx/sites-available/brsr-analytics.radpretation.ai
+```
+
+Then, on omen, point it at alienware and at the shared certificate. The paths
+the other sites already use are the ones to copy:
+
+```bash
+sudo nginx -T | grep -h ssl_certificate | sort -u   # find the shared cert paths
+
 sudo sed -i 's/ALIENWARE_IP/<ALIENWARE_LAN_IP>/' \
         /etc/nginx/sites-available/brsr-analytics.radpretation.ai
-# fix the ssl_certificate paths to the shared cert, then:
+sudo nano /etc/nginx/sites-available/brsr-analytics.radpretation.ai  # ssl_certificate*
+
 sudo ln -s /etc/nginx/sites-available/brsr-analytics.radpretation.ai \
            /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
