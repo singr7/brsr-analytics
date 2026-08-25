@@ -79,6 +79,7 @@ server {
   # oversized body reaching the app at all.
   client_max_body_size 100m;
   client_body_timeout 120s;
+  proxy_read_timeout 60s;
 
   location ^~ /.well-known/acme-challenge/ {
     root /var/www/certbot;
