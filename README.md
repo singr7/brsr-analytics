@@ -1,4 +1,4 @@
-# BRSR Lens — AI-Agent Build Plan
+# BRSR Lens — Build Plan
 ### Production-grade BRSR analytics platform + Filing Studio + engagement engine
 
 
