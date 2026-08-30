@@ -1,7 +1,7 @@
 # BRSR Lens — AI-Agent Build Plan
-### Production-grade BRSR analytics platform + Filing Studio + engagement engine, built in 25 self-sufficient sessions
+### Production-grade BRSR analytics platform + Filing Studio + engagement engine
 
-Companion pack to the VerityGrid build plan, same operating model: executed by an AI coding agent (Claude Opus / GPT-class) one session at a time, human operator supervising; every session self-verifies (`make verify`), commits cleanly, and hands off via a structured state file. **This is an independent product on an independent, deliberately lighter stack** (see 00_ARCHITECTURE — Postgres+pgvector single-database design; no Elastic, no EO). It can later exchange data with VerityGrid through plain APIs; nothing couples them at build time.
+
 
 ## What gets built (three pillars, one platform)
 1. **Insights** — interactive analytics over ~1,000 companies' BRSR filings: sector scorecards, substance-vs-boilerplate index, materiality maps, assurance tracker, company deep-dives, peer benchmarking — with **natural-language querying**, smart filters, and click-any-number-to-see-the-filing-text lineage.
@@ -25,26 +25,7 @@ Companion pack to the VerityGrid build plan, same operating model: executed by a
 | `DEPLOYMENT.md` | Topology, release flow, backups, launch checklist |
 | `QA_PLAN.md` | Test strategy incl. extraction-accuracy benchmarks and editorial gates |
 
-## How to run a session
-Identical protocol to the VerityGrid pack: fresh agent conversation + exactly three inputs — `01_CONVENTIONS.md`, the single session spec, current `docs/state/HANDOFF.md` — then: *"Execute session SNN per spec; follow the protocol exactly; end with DoD table + `make verify` output."* Human verifies, merges, moves on.
 
-## Token strategy (same doctrine, one addition)
-Handoff-file state · read-listed-files-only · vertical slices · phase-file splitting · verbs in Make. **Addition for this product:** all LLM prompts live in versioned files (`prompts/*.yaml`) with committed fixture responses for offline tests — sessions never depend on live LLM calls to pass `make verify` (live accuracy runs are nightly/manual; see QA_PLAN §4).
-
-## Special governance gates (this product publishes numbers about named companies)
-Three human gates are wired into the plan and cannot be skipped: **Editorial gate** (S07/S25 — no company-level figure goes public below the confidence threshold or without QA-sampled extraction accuracy ≥ target), **Legal gate** (S04/S25 — source acquisition terms, upload/privacy promises, and methodology reviewed before launch), and **UX gate** (S23/S25 — the intended journeys pass comprehension, accessibility, and expert-bypass checks). The agent builds the mechanisms; humans sign the gates.
-
-## Build order at a glance
-```
-PHASE 0  S01 scaffold → S02 schema → S03 auth+tiers
-PHASE 1  S04 acquisition+registry → S05 XBRL/PDF parsing → S06 LLM extraction+QA → S07 scoring engines
-PHASE 2  S08 semantic layer → S09 design system+shell → S10 dashboards → S11 NLQ+filters → S12 lineage+library
-PHASE 3  S13 questionnaire engine → S14 doc-to-draft AI → S15 exports (XBRL/PDF/gap)
-PHASE 4  S16 analytics+leads → S17 tiers+billing-lite
-PHASE 5  S18 shell+home → S19 guided Explore+Ask → S20 private analysis pipeline → S21 Analyse journey → S22 learning → S23 Studio alignment+UX gate
-PHASE 6  S24 infra+deploy → S25 corpus+hardening+launch
-```
-~25 sessions. S18–S23 deliberately precede production hardening so launch UAT validates the intended information architecture, upload privacy flow, accessibility, and analytics funnels rather than a superseded shell.
 
 ## Local development
 
